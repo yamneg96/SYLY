@@ -330,6 +330,20 @@
                 <label class="lbl" for="o-content"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-book"/></svg><span data-t="contentLabel">Content URL</span></label>
                 <input type="url" id="o-content" value="/demo/data/content.json" autocomplete="off">
               </div>
+              <div class="field">
+                <label class="lbl" for="o-selector"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-code"/></svg><span data-t="selectorLabel">Content selector (optional)</span></label>
+                <input type="text" id="o-selector" value="" autocomplete="off" spellcheck="false" aria-describedby="selector-hint">
+                <p id="selector-hint" class="hint" data-t="selectorHint"></p>
+              </div>
+              <div class="field">
+                <label class="lbl" for="o-readpage"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-eye"/></svg><span data-t="readPageLabel">Read the page</span></label>
+                <select id="o-readpage" aria-describedby="readpage-hint">
+                  <option value="fallback" data-t="readPage_fallback">Only if there is no other content (default)</option>
+                  <option value="always" data-t="readPage_always">Always, together with the content file</option>
+                  <option value="off" data-t="readPage_off">Never</option>
+                </select>
+                <p id="readpage-hint" class="hint" data-t="readPageHint"></p>
+              </div>
               <p class="note"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-shield"/></svg><span data-t="providerNote"></span></p>
             </form>
           </div>

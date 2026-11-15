@@ -92,5 +92,12 @@
   "f5Text": "ኪቦርድ፣ TalkBack፣ NVDA፣ 200% ማጉላት እና ያለ ድምፅ፣ በWCAG 2.2 AA መሠረት የተፈተሸ።",
   "f6Title": "የእርስዎ ሰርቨር፣ የእርስዎ የAI ምርጫ",
   "f6Text": "Gemini፣ Groq፣ የአካባቢ Ollama ሞዴል፣ ወይም ምንም። ቁልፎች በሰርቨርዎ ላይ ይቆያሉ።",
-  "contrastLabel": "ከነጭ ጽሑፍ ጋር ያለው ንፅፅር"
+  "contrastLabel": "ከነጭ ጽሑፍ ጋር ያለው ንፅፅር",
+  "selectorLabel": "የይዘት መምረጫ (አማራጭ)",
+  "selectorHint": "ለገጽ ንባብ የትምህርትዎ ጽሑፍ ያለበት ቦታ። ለምሳሌ፦ #lesson ወይም .course-content። ባዶ ከሆነ፦ main፣ article ወይም ሙሉ ገጹ።",
+  "readPageLabel": "ገጹን አንብብ",
+  "readPage_fallback": "ሌላ ይዘት ከሌለ ብቻ (ነባሪ)",
+  "readPage_always": "ሁልጊዜ፣ ከይዘት ፋይሉ ጋር",
+  "readPage_off": "በፍጹም",
+  "readPageHint": "ረዳቱ በገጹ ላይ ያለውን ትምህርት በተማሪው ብራውዘር ውስጥ ማንበብ ይችላል። ያለ ተማሪው ፈቃድ ምንም ወደ ሰርቨር አይላክም።"
 }

@@ -35,6 +35,9 @@
     var a = { lang: $('o-lang').value }, theme = radio('theme'), c = colour();
     if ($('o-api').value.trim()) a.api = $('o-api').value.trim();
     if ($('o-content').value.trim()) a.content = $('o-content').value.trim();
+  // Page reading (FR-AD4): only written into the tag when changed from the default.
+  if ($('o-selector').value.trim()) a['content-selector'] = $('o-selector').value.trim();
+  if ($('o-readpage').value !== 'fallback') a['read-page'] = $('o-readpage').value;
     if (theme !== 'auto' && theme !== 'custom') a.theme = theme;
     if (radio('mode') === 'inline') a.mode = 'inline';
     else if (radio('position') === 'start') a.position = 'start';
