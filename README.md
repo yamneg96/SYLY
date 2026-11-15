@@ -50,6 +50,10 @@ Services: `web` (nginx: starter at `/`, module at `/module`, demos at `/demo`, p
 
 Without Docker, module only: `python api/scripts/dev_static.py` (same layout on :8080, no API).
 
+### Publish it (Vercel or Cloudflare Pages + Render + Neon)
+
+No server to manage: the static side (portal, widget, demo pages) goes on **Vercel** (or Cloudflare Pages), the API on **Render** (Docker, `render.yaml`), the data in **Neon** (`DATABASE_URL`). `vercel.json` forwards `/api`, `/sms` and `/docs` to Render so the sign-in cookie works. The Telegram bot needs an always-on process (a paid Render worker, a VPS, or a team laptop). Step by step: `docs/deployment.md`, option D. **Not deployed yet**, and the Cloudflare Pages path is untested.
+
 ### Deploy on a server
 
 On an Ubuntu server with Docker and a domain pointing to it:
@@ -256,18 +260,18 @@ Beta means: the interface text and phrases are machine-assisted drafts (**needs 
 
 ## Developer portal
 
-A small website for the people who add SYLY to their sites. It lives in `site/` and is served at `/` by the same nginx; the learner pages (`/pages/...`, `/demo/...`, `/module/...`) are unchanged, and the Savanna starter's own index is at `/starter`. It uses test data only and everything in it is optional: with no `GOOGLE_CLIENT_ID`, sign-in and the dashboard say "Sign-in is not configured on this server" and every other page works. `docker compose up` needs no new setting.
+A small website for the people who add SYLY to their sites. It is a **React app in `web/`** (Vite, React 19, TypeScript, Tailwind 4 and [shadcn/ui](https://ui.shadcn.com) with the `b0` preset; TanStack Query and Table, Zod, Zustand, React Hook Form, React Router; tests with Vitest, Testing Library and axe). `docker compose up --build` builds it into the `web` image, and the same nginx serves it at `/`; the learner pages (`/pages/...`, `/demo/...`, `/module/...`) are unchanged and the Savanna starter's own index is at `/starter`. It uses test data only and everything in it is optional: with no `GOOGLE_CLIENT_ID`, sign-in and the dashboard say "Sign-in is not configured on this server" and every other page works. `docker compose up` needs no new setting.
 
 | Page | What it is |
 | --- | --- |
-| `/` | Home: what SYLY is, who it is for, the three levels, how it works, a live demo (our own `<db-assistant mode="inline">` answering about SYLY from `site/data/content.json`), team and licence |
-| `/docs.html` | Install (server, CDN, npm), attributes, events, REST API, content sources, Telegram bot, bring your own bot, accessibility, privacy. Our own assistant is on this page and reads it (`read-page="always"`) |
-| `/privacy.html` | What is stored for learners and for developers, how to delete |
-| `/signin.html` | Sign in with Google (developers only, never learners) |
-| `/dashboard.html` | Your sites: create, edit, delete, get the install code, download or delete your data |
+| `/` | Home: what SYLY is, who it is for, the three levels, how it works, a live demo (our own `<db-assistant mode="inline">` answering about SYLY from `web/public/data/content.json`), team and licence |
+| `/documentation` | Install (server, CDN, npm), attributes, events, REST API, content sources, Telegram bot, bring your own bot, accessibility, privacy. Our own assistant is on this page and reads it (`read-page="always"`) |
+| `/privacy` | What is stored for learners and for developers, how to delete |
+| `/signin` | Sign in with Google (developers only, never learners) |
+| `/dashboard` | Your sites: create, edit, delete, get the install code, download or delete your data |
 | `/demo/install.html` | The configurator with a live preview (unchanged, now linked from Home) |
 
-All page text is in `site/i18n/<page>.<lang>.json` (English and Amharic; the Amharic is a **draft, needs a native reader check**). A page language picker is in the header.
+All page text is in `web/src/i18n/en.json` and `am.json` (the Amharic is a **draft, needs a native reader check**); a test fails if the two files do not have the same keys. A page language picker and a light/dark button are in the header. There is no single-key keyboard shortcut (WCAG 2.1.4). Work on it with `npm --prefix web run dev` (http://localhost:5173, forwards `/api`, `/module` and `/demo` to the stack on :8080); `npm --prefix web test` runs the tests (**in PowerShell on Windows**: Git Bash's lower-case `d:` makes Vitest load twice).
 
 ### Sites and site keys
 
@@ -418,7 +422,7 @@ No feature depends on a paid service: with `PROVIDER=none` everything still work
 | Page reading fallback (FR-AD4) | Done on branch `new-feature`; unit, API and browser tests pass; manual screen-reader test pending |
 | TalkBack, NVDA, co-designer, Slow 3G time, clean-laptop install | **Pending manual tests** |
 | Addis AI (TTS fallback, Amharic STT) | Integrated from the official docs; key valid, but the account had **no credit** on 15 Nov, so audio from Addis is not yet verified. Top up and test |
-| Developer portal: Home, Docs, Privacy (A) | Done on `main`; axe en and am, skip link and 320 px checked by script; manual screen-reader test pending; Amharic draft |
+| Developer portal: Home, Docs, Privacy (A) | Done on `main`, as a React app (`web/`); 42 unit and component tests, axe clean in en and am, skip link and 320 px checked in a real browser; manual screen-reader test pending; Amharic draft |
 | Bring your own Telegram bot (B) | Done (guide on Install, Docs, README and in the dashboard); no token is stored anywhere |
 | CDN and npm (C) | CDN: documented, **needs the git tag `v1.0.0` pushed**. npm: package `syly-db-assistant` ready (`npm pack` checked), **not published** (needs the team lead's npm account) |
 | Google sign-in (D) | Built and tested with a mocked verifier; **not tried with a real `GOOGLE_CLIENT_ID`** (needs a Google OAuth client and a stable HTTPS address) |

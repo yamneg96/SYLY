@@ -35,7 +35,7 @@ Scope: the module (launcher, panel, inline mode, consent card, accommodation for
 
 ## Developer portal pages (added 15 Nov 2026)
 
-Pages for developers, not learners: `/` (Home), `/docs.html`, `/privacy.html`, `/signin.html`, `/dashboard.html` (signed out, and signed in with a seeded session). Checked by `module/scripts/site-check.mjs`: axe (WCAG 2.2 AA and best-practice tags) in English and Amharic, the skip link as the first Tab stop, 320 px reflow, the dashboard's forms, error messages, confirm dialog and Copy button. The same rules as the module: real elements, visible focus #F5A300, 44 px targets, `lang`, rem sizes, no time-outs (the session lasts 7 days).
+Pages for developers, not learners (a React app, `web/`; shadcn/ui parts changed to 44 px targets and an amber focus ring, and the single-key theme shortcut removed): `/` (Home), `/documentation`, `/privacy`, `/signin`, `/dashboard` (signed out, and signed in with a seeded session). Checked by `module/scripts/site-check.mjs`: axe (WCAG 2.2 AA and best-practice tags) in English and Amharic, the skip link as the first Tab stop, 320 px reflow, the dashboard's forms, error messages, confirm dialog and Copy button. The same rules as the module: real elements, visible focus #F5A300, 44 px targets, `lang`, rem sizes, no time-outs (the session lasts 7 days).
 
 | Page | Automated | Manual (screen reader, keyboard, 200% zoom) |
 | --- | --- | --- |
