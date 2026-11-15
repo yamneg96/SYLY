@@ -1,0 +1,158 @@
+{
+  "notice": "Written from the SYLY README; nothing invented. Amharic DRAFT – needs native reader check: title_am, text_am and keywords_am were drafted by the team (machine-assisted) from the English text.",
+  "lesson": {
+    "title_en": "About SYLY",
+    "title_am": "ስለ SYLY",
+    "url": "/"
+  },
+  "sections": [
+    {
+      "id": "what-is-syly",
+      "url": "/#what-is-syly",
+      "title_en": "What is SYLY?",
+      "title_am": "SYLY ምንድን ነው?",
+      "text_en": "SYLY is a small assistant that you add to a course website. SYLY is free to try and uses test data only. A learner asks a question about the lesson they are reading, in Amharic, English or Arabic, by typing or speaking. The assistant answers only from the course and links every answer to the lesson section it came from. It also reads the answer aloud, and one button always reaches a real person.",
+      "text_am": "SYLY በኮርስ ድረ ገጽ ላይ የሚጨመር ትንሽ ረዳት ነው። ተማሪው እያነበበው ስላለው ትምህርት በአማርኛ፣ በእንግሊዝኛ ወይም በዐረብኛ በመጻፍ ወይም በመናገር ይጠይቃል። ረዳቱ የሚመልሰው ከኮርሱ ብቻ ነው፣ እያንዳንዱንም መልስ ወደ ተወሰደበት የትምህርት ክፍል ያገናኛል። መልሱን ጮክ ብሎ ያነብባል፣ አንድ ቁልፍም ሁልጊዜ ወደ እውነተኛ ሰው ያደርሳል።",
+      "keywords_en": [
+        "syly",
+        "syly",
+        "what is syly",
+        "about syly",
+        "assistant",
+        "course",
+        "learner"
+      ],
+      "keywords_am": [
+        "ሲሊ",
+        "ረዳት",
+        "ምንድን",
+        "ኮርስ",
+        "ተማሪ",
+        "ጥያቄ",
+        "መልስ"
+      ]
+    },
+    {
+      "id": "who-is-it-for",
+      "url": "/#who-is-it-for",
+      "title_en": "Who is it for?",
+      "title_am": "ለማን ነው?",
+      "text_en": "Learners who think in Amharic, learners who use a screen reader such as TalkBack or NVDA, and learners on a low-cost phone with a slow connection. For developers, it is for colleges, course sites and learning platforms that want to add an accessible, multilingual assistant with two lines of code.",
+      "text_am": "በአማርኛ ለሚያስቡ ተማሪዎች፣ እንደ TalkBack ወይም NVDA ያሉ የስክሪን አንባቢዎችን ለሚጠቀሙ ተማሪዎች፣ እና በዝቅተኛ ዋጋ ስልክና በዝግታ ግንኙነት ለሚጠቀሙ ተማሪዎች ነው። ለገንቢዎች፣ SYLY ተደራሽ እና ብዙ ቋንቋ የሚናገር ረዳት በሁለት መስመር ኮድ ለመጨመር ለሚፈልጉ ኮሌጆች፣ የኮርስ ድረ ገጾች እና የመማሪያ መድረኮች ነው።",
+      "keywords_en": [
+        "learners",
+        "built for",
+        "audience",
+        "users",
+        "screen reader",
+        "developers",
+        "college"
+      ],
+      "keywords_am": [
+        "ለማን",
+        "ተማሪዎች",
+        "ስክሪን አንባቢ",
+        "ገንቢዎች",
+        "ኮሌጅ"
+      ]
+    },
+    {
+      "id": "three-levels",
+      "url": "/#three-levels",
+      "title_en": "The three plug-in levels",
+      "title_am": "ሦስቱ የመግጠሚያ ደረጃዎች",
+      "text_en": "Level 1 is two lines of HTML: a script tag and the db-assistant tag. Level 2 connects the assistant to a server for AI answers, a person to talk to, the text-message route and the Telegram bot. Level 3 marks up job posts with schema.org JobPosting data, including the accommodations an employer offers.",
+      "text_am": "ደረጃ 1 ሁለት መስመር HTML ነው፦ የስክሪፕት መለያ እና የdb-assistant መለያ። ደረጃ 2 ረዳቱን ለAI መልሶች፣ ለሰው ድጋፍ፣ ለጽሑፍ መልእክት እና ለቴሌግራም ቦት ከሰርቨር ጋር ያገናኛል። ደረጃ 3 የሥራ ማስታወቂያዎችን ከአሠሪው በሚሰጠው ማመቻቸት ጨምሮ በschema.org JobPosting ውሂብ ያሰፍራል።",
+      "keywords_en": [
+        "level",
+        "levels",
+        "plug",
+        "install",
+        "script",
+        "server",
+        "jobposting",
+        "schema"
+      ],
+      "keywords_am": [
+        "ደረጃ",
+        "ደረጃዎች",
+        "መግጠም",
+        "ሰርቨር",
+        "ስክሪፕት"
+      ]
+    },
+    {
+      "id": "how-it-works",
+      "url": "/#how-it-works",
+      "title_en": "How does it work?",
+      "title_am": "እንዴት ይሠራል?",
+      "text_en": "First it finds the matching part of the course. Only then does an AI service, if you allow it, put the words into a clear sentence; it may not add anything the course does not say. Every answer has a link to its source. If nothing in the course matches, it says so and offers a person. It never guesses.",
+      "text_am": "መጀመሪያ SYLY በኮርሱ ውስጥ የሚዛመደውን ክፍል ያገኛል። ከዚያ በኋላ ብቻ፣ ከፈቀዱ፣ የAI አገልግሎት ቃላቱን ወደ ግልጽ ዓረፍተ ነገር ያደርጋል፤ ኮርሱ የማይለውን ነገር መጨመር አይችልም። እያንዳንዱ መልስ ወደ ምንጩ አገናኝ አለው። በኮርሱ ውስጥ የሚዛመድ ነገር ከሌለ SYLY ይናገራል፣ ሰውም ያቀርባል። በፍጹም አይገምትም።",
+      "keywords_en": [
+        "how",
+        "works",
+        "find",
+        "source",
+        "link",
+        "ai",
+        "person",
+        "guess"
+      ],
+      "keywords_am": [
+        "እንዴት",
+        "ይሠራል",
+        "ምንጭ",
+        "አገናኝ",
+        "ሰው"
+      ]
+    },
+    {
+      "id": "privacy-and-consent",
+      "url": "/#privacy-and-consent",
+      "title_en": "Privacy and consent",
+      "title_am": "ግላዊነት እና ፈቃድ",
+      "text_en": "Learners' data stays private. Before a question is sent to an online AI service, the learner chooses: allow online answers, or use answers from the page only. Nothing about who the learner is is sent. Learners can download or delete what is stored, and requests to a person are stored with encrypted contact details.",
+      "text_am": "ጥያቄ ወደ በይነመረብ AI አገልግሎት ከመላኩ በፊት ተማሪው ይመርጣል፦ የበይነመረብ መልሶችን መፍቀድ፣ ወይም ከገጹ ብቻ የሆኑ መልሶችን መጠቀም። ተማሪው ማን እንደሆነ የሚገልጽ ምንም አይላክም። ተማሪዎች የተቀመጠውን ማውረድ ወይም መሰረዝ ይችላሉ፣ ለሰው የሚላኩ ጥያቄዎችም የመገናኛ ዝርዝራቸው ተመስጥሮ ይቀመጣል።",
+      "keywords_en": [
+        "privacy",
+        "private",
+        "data",
+        "my data",
+        "consent",
+        "delete",
+        "stored",
+        "safe",
+        "online"
+      ],
+      "keywords_am": [
+        "ግላዊነት",
+        "ፈቃድ",
+        "ውሂብ",
+        "መሰረዝ"
+      ]
+    },
+    {
+      "id": "telegram-and-text",
+      "url": "/#telegram-and-text",
+      "title_en": "Telegram and text messages",
+      "title_am": "ቴሌግራም እና የጽሑፍ መልእክት",
+      "text_en": "The same assistant works in a Telegram bot and by text message. The bot understands short commands such as lesson, jobs or talk to a person, typed or spoken, in Amharic, English and, in beta, Afaan Oromo, Tigrinya, Somali and Arabic. Each college can run it with its own bot: the bot token never reaches us.",
+      "text_am": "ተመሳሳዩ ረዳት በቴሌግራም ቦት እና በጽሑፍ መልእክት ይሠራል። ቦቱ እንደ ትምህርት፣ ሥራ ወይም ከሰው ጋር ተነጋገር ያሉ አጫጭር ትዕዛዞችን በአማርኛ፣ በእንግሊዝኛ እና በሙከራ በአፋን ኦሮሞ፣ በትግርኛ፣ በሶማልኛ እና በዐረብኛ ይረዳል። እያንዳንዱ ኮሌጅ በራሱ ቦት ሊያሄደው ይችላል፦ SYLY የቦቱን ቶክን ፈጽሞ አይቀበልም።",
+      "keywords_en": [
+        "telegram",
+        "bot",
+        "text message",
+        "sms",
+        "commands",
+        "voice"
+      ],
+      "keywords_am": [
+        "ቴሌግራም",
+        "ቦት",
+        "መልእክት",
+        "ትዕዛዝ",
+        "ድምፅ"
+      ]
+    }
+  ]
+}
