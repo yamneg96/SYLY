@@ -213,6 +213,47 @@ curl $B/api/v1/health
 
 schema.org **JobPosting** JSON-LD: one block per job on `savanna/pages/jobs.html` (and in `GET /api/v1/jobs`). Fields: `title`, `description`, `datePosted`, `validThrough`, `employmentType`, `hiringOrganization`, `jobLocation`, `jobLocationType`/`applicantLocationRequirements` for remote jobs, `experienceRequirements`, and **`jobBenefits` for the accommodations an employer offers**. Check with https://validator.schema.org (paste the page URL from the tunnel, or the page source). Test data only.
 
+## Telegram bot
+
+Start it with `docker compose up -d bot` (needs `TELEGRAM_BOT_TOKEN` in `.env`). The bot sets its command menu once at start (`setMyCommands`): English by default, plus one menu per language (`language_code` am, om, ti, so, ar). Every command also works by tapping the menu below the text box (Ask, Lesson, Talk to a person, Jobs, Settings), by typing a short phrase, or by sending a voice note.
+
+| Command | What it does | Example phrases (en / am) |
+| --- | --- | --- |
+| `/start` | Welcome, choose language, consent card | start, hello / ጀምር, ሰላም |
+| `/help` | What the bot can do, the menu | help, menu / እርዳታ, ምናሌ |
+| `/ask` | Ask a question about the lesson (any longer message is a question too) | question / ጥያቄ አለኝ |
+| `/lesson` | The lesson parts as buttons; tap one to read it (and hear it) | lesson / ትምህርት |
+| `/person` | Talk to a real person (a tutor); the tutor's reply comes back here | talk to a person / ከሰው ጋር አገናኘኝ |
+| `/status` | Your request to a person: waiting or answered | my request / ጥያቄዬ |
+| `/jobs` | Current jobs, deadline in Ethiopian calendar for Amharic | jobs / ሥራ |
+| `/alerts` | Job alerts: subscribe | alerts / ማሳወቂያዎች |
+| `/myalerts` | The alerts you have, with a Stop button each | my alerts / ማሳወቂያዎቼ |
+| `/stop` | Stop every job alert | stop / አቁም |
+| `/accommodate` | Ask for interview support (goes to a person, never straight to the employer) | interview support / የቃለ መጠይቅ ድጋፍ |
+| `/lang` | Change language | language / ቋንቋ |
+| `/simple` | Simple answers on or off | simple / ቀላል |
+| `/voice` | Voice replies on or off | voice / ድምፅ |
+| `/consent` | Allow online answers, or answers from this page only | |
+| `/mydata` | Everything stored about you, as a file | my data / መረጃዬ |
+| `/delete` | Delete everything (asks first) | delete my data / መረጃዬን ሰርዝ |
+
+All phrases are in `bot/intents.json` (3 to 8 per command and language). A message is treated as a command only if it is short (5 words or fewer, 40 characters or fewer) and matches a phrase exactly or closely (letter-trigram similarity 0.6 or more, with a clear lead over the next command). Everything else is a question. Spoken "delete" and "stop" always ask first: "Yes" or "No, it was a question".
+
+**Voice notes.** The bot downloads the note (up to 20 MB), converts it to 16 kHz WAV with ffmpeg (inside the Docker image), and sends it to the speech-to-text engines below in order, 15 seconds each (`STT_TIMEOUT`). It replies "I heard: «…»" and then acts on it. Audio leaves the server only after the learner allows online answers (`/consent`). If every engine fails, the bot says so and offers "Talk to a person". The same router is at `POST /api/v1/voice/transcribe` (returns `text`, `language`, `engine`). With `/voice` on, answers also come back as a voice note (OGG/Opus).
+
+| Language | Status | Speech-to-text, in order | Measured (`scripts/stt_check.py`, synthetic clips, 15 Nov) | Voice replies |
+| --- | --- | --- | --- | --- |
+| English (en) | Done | Groq Whisper → Gemini | 5/5 clips 100% (Groq) | Microsoft neural voice (edge-tts) |
+| Amharic (am) | Done, **weak speech-to-text** | Addis AI → Gemini → Groq Whisper | 13% word accuracy (Gemini; Addis had no credit). Typed Amharic works fully; spoken Amharic needs Addis credit and a real-phone test | edge-tts, Addis AI fallback |
+| Afaan Oromo (om) | Beta | Addis AI → Gemini | Untested (Addis no credit, no voice to make clips) | Addis AI (no credit) |
+| Tigrinya (ti) | Beta | Gemini (Meta MMS optional, off) | Untested | none (text only) |
+| Somali (so) | Beta | Groq Whisper → Gemini | See phase 2 | edge-tts |
+| Arabic (ar) | Beta | Groq Whisper → Gemini | See phase 2 | edge-tts |
+
+Beta means: the interface text and phrases are machine-assisted drafts (**needs native reader check**) and the speech engines have not been tested with real speakers. Meta MMS (`MMS_ENABLED=true`) runs locally but its weights are **CC-BY-NC 4.0 (non-commercial)**; it is off by default. Engine licences: Groq, Gemini and Addis AI are paid or free-tier online APIs under their own terms **[unverified for this use]**.
+
+**Add a language:** add its phrases to `bot/intents.json` (with `"_draft": {"xx": true}` until a native reader checks them), copy `bot/i18n/en.json` to `bot/i18n/xx.json` and translate every value, add `xx` to `LANGS` in `bot/bot.py` and to `ORDER` in `api/services/stt/router.py` with the engines that support it, add a voice to `VOICES` in `api/services/tts.py` if there is one, then run `python -m pytest bot api` and `python scripts/stt_check.py xx` with a few self-recorded clips.
+
 ## Languages
 
 All interface text is in JSON: `module/i18n/{en,am,ar}.json` (widget; inlined in `db-assistant.js` so one script tag works anywhere), `api/i18n/*.json` (text route, alerts, job notes), `bot/i18n/*.json` (Telegram), `demo/i18n/*.json` (helper and install pages). Tests check that every language has every key. To add a language to the widget: add `module/i18n/<code>.json` with the same keys and use `lang="<code>"` (it is fetched next to the script); run `npm --prefix module run i18n` to refresh the inlined copies after editing en/am/ar.
@@ -282,7 +323,7 @@ No feature depends on a paid service: with `PROVIDER=none` everything still work
 | Screen share (desktop) / screenshot (Android) | Done (frames by polling, no WebRTC); manual test pending |
 | Amharic voice: 65 pre-generated MP3s + `/voice/speak` | Done; generated with edge-tts; Amharic DRAFT |
 | Mic (browser speech recognition) | Done; Chrome's Amharic recognition quality needs a person to test (testing plan 4.8) |
-| Telegram bot (text, voice note, /help, /alerts, /stop, /lang, /consent) | Built; **not tested with a phone**: the team laptop's network cannot reach `api.telegram.org` (connection refused, checked 15 Nov), so the bot logs a clear message and retries. Run it on a network that reaches Telegram, or set `TELEGRAM_PROXY` |
+| Telegram bot: 17 commands, menu buttons, phrases, voice notes (am/en), voice replies, /mydata, /delete | Built on branch `new-feature-bot`; bot and API tests pass with a fake Telegram; **not tested with a phone**: the team laptop's network cannot reach `api.telegram.org`, so run it on a network that reaches Telegram or set `TELEGRAM_PROXY`. Amharic speech-to-text weak (see Telegram bot) |
 | Text route `/sms/inbound` (≤160 characters) | Done; tests check every reply length |
 | Jobs page, JobPosting JSON-LD, job answers with trust line and deadline, alerts, accommodation request | Done; validator.schema.org check pending |
 | Data export/delete, teacher view API | Done (teacher view: API only, no page) |
@@ -295,7 +336,10 @@ No feature depends on a paid service: with `PROVIDER=none` everything still work
 ## Development
 
 ```bash
-python scripts/verify_prototype.py                 # one-command demo check: PASS/FAIL per area (36 checks)
+python scripts/verify_prototype.py                 # one-command demo check: PASS/FAIL per area (37 checks)
+python -m pytest bot                               # bot commands, phrases, voice flow, /delete (fake Telegram)
+python scripts/stt_check.py --make-clips am en     # synthetic speech clips (edge-tts) into data/stt-clips
+python scripts/stt_check.py am en                  # speech-to-text engine and word accuracy per clip
 npm --prefix module test                           # i18n parity, search eval, contrast
 python -m pytest api                               # API logic and contract (31 tests)
 npm --prefix module install                        # dev only: puppeteer-core, axe-core
@@ -316,7 +360,9 @@ npm --prefix module run icons                      # re-copy Lucide icons into t
 | FastAPI, Starlette, Uvicorn, Pydantic, SQLAlchemy, httpx, python-multipart | `api/` | MIT / BSD-3 / BSD-3 / MIT / MIT / BSD-3 / Apache-2.0 |
 | cryptography | `api/` | Apache-2.0 or BSD-3 |
 | edge-tts | `api/` (voice) | LGPL-3.0 **[online service terms unverified]** |
-| aiogram | `bot/` | MIT |
+| aiogram, aiohttp-socks | `bot/` | MIT / Apache-2.0 |
+| ffmpeg (Debian package in the API image) | voice note conversion | LGPL-2.1+ (GPL parts not used) **[unverified build flags]** |
+| Meta MMS weights (optional, off) | `api/services/stt/mms_local.py` | CC-BY-NC 4.0, non-commercial |
 | nginx:alpine, python:3.12-slim | Docker images | BSD-2 / PSF and Debian licences |
 | pytest | tests | MIT |
 | puppeteer-core, axe-core, lucide-static | dev only | Apache-2.0 / MPL-2.0 / ISC |
