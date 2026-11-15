@@ -23,7 +23,7 @@ import httpx
 
 log = logging.getLogger("syly")
 BASE = "https://api.addisassistant.com"
-LANGS = {"am", "om", "ti"}
+LANGS = {"am", "om"}  # TTS used for these two; ti is text only (bot-voice-commands.md §0)
 STT_TYPES = {"audio/wav", "audio/x-wav", "audio/wave", "audio/mpeg", "audio/mp3", "audio/mp4", "audio/x-m4a", "audio/webm"}
 
 

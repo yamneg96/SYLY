@@ -1,0 +1,649 @@
+{
+  "_note": "Phrases per intent and language (bot-voice-commands.md §3.1). Typed or spoken; only short messages (5 words or fewer, 40 characters or fewer) can be commands. am phrases: team review pending. Languages marked draft need a native reader check.",
+  "_draft": {
+    "en": false,
+    "am": false,
+    "om": true,
+    "ti": true,
+    "so": true,
+    "ar": true
+  },
+  "start": {
+    "en": [
+      "start",
+      "begin",
+      "hello",
+      "hi",
+      "get started"
+    ],
+    "am": [
+      "ጀምር",
+      "መጀመር",
+      "እንጀምር",
+      "ሰላም",
+      "ጀምሩ",
+      "start"
+    ],
+    "om": [
+      "jalqabi",
+      "akkam",
+      "jalqabuu",
+      "nagaa",
+      "start"
+    ],
+    "ti": [
+      "ጀምር",
+      "ሰላም",
+      "ንጀምር",
+      "ምጅማር",
+      "start"
+    ],
+    "so": [
+      "bilow",
+      "salaan",
+      "haye",
+      "bilaabid",
+      "start"
+    ],
+    "ar": [
+      "ابدأ",
+      "مرحبا",
+      "السلام عليكم",
+      "بداية",
+      "start"
+    ]
+  },
+  "help": {
+    "en": [
+      "help",
+      "help me",
+      "commands",
+      "menu",
+      "what can you do"
+    ],
+    "am": [
+      "እርዳታ",
+      "እርዳኝ",
+      "ትዕዛዞች",
+      "ምን ታደርጋለህ",
+      "ምናሌ",
+      "help"
+    ],
+    "om": [
+      "gargaarsa",
+      "na gargaari",
+      "ajajoota",
+      "maal gochuu dandeessa",
+      "help"
+    ],
+    "ti": [
+      "ሓገዝ",
+      "ሓግዘኒ",
+      "ትእዛዛት",
+      "እንታይ ትገብር",
+      "help"
+    ],
+    "so": [
+      "caawimo",
+      "i caawi",
+      "amarrada",
+      "maxaad qaban kartaa",
+      "help"
+    ],
+    "ar": [
+      "مساعدة",
+      "ساعدني",
+      "الأوامر",
+      "ماذا تستطيع",
+      "help"
+    ]
+  },
+  "lang": {
+    "en": [
+      "language",
+      "change language",
+      "languages"
+    ],
+    "am": [
+      "ቋንቋ",
+      "ቋንቋ ቀይር",
+      "ቋንቋ መቀየር",
+      "language"
+    ],
+    "om": [
+      "afaan",
+      "afaan jijjiiri",
+      "afaanota",
+      "language"
+    ],
+    "ti": [
+      "ቋንቋ",
+      "ቋንቋ ቀይር",
+      "ቋንቋታት",
+      "language"
+    ],
+    "so": [
+      "luqad",
+      "luqadda",
+      "beddel luqadda",
+      "language"
+    ],
+    "ar": [
+      "اللغة",
+      "لغة",
+      "تغيير اللغة",
+      "language"
+    ]
+  },
+  "lesson": {
+    "en": [
+      "lesson",
+      "the lesson",
+      "lesson parts",
+      "course",
+      "sections"
+    ],
+    "am": [
+      "ትምህርት",
+      "ትምህርቱ",
+      "የትምህርት ክፍሎች",
+      "ክፍሎች",
+      "lesson"
+    ],
+    "om": [
+      "barnoota",
+      "barnoota kana",
+      "kutaalee barnootaa",
+      "koorsii",
+      "lesson"
+    ],
+    "ti": [
+      "ትምህርቲ",
+      "እቲ ትምህርቲ",
+      "ክፋላት ትምህርቲ",
+      "ኮርስ",
+      "lesson"
+    ],
+    "so": [
+      "cashar",
+      "casharka",
+      "qaybaha casharka",
+      "koorso",
+      "lesson"
+    ],
+    "ar": [
+      "الدرس",
+      "درس",
+      "أجزاء الدرس",
+      "الدورة",
+      "lesson"
+    ]
+  },
+  "ask": {
+    "en": [
+      "ask",
+      "question",
+      "i have a question",
+      "ask a question"
+    ],
+    "am": [
+      "ጠይቅ",
+      "ጥያቄ",
+      "ጥያቄ አለኝ",
+      "መጠየቅ እፈልጋለሁ",
+      "ask"
+    ],
+    "om": [
+      "gaafadhu",
+      "gaaffii",
+      "gaaffii qaba",
+      "ask"
+    ],
+    "ti": [
+      "ሕተት",
+      "ሕቶ",
+      "ሕቶ ኣለኒ",
+      "ask"
+    ],
+    "so": [
+      "weydii",
+      "su'aal",
+      "su'aal baan qabaa",
+      "ask"
+    ],
+    "ar": [
+      "اسأل",
+      "سؤال",
+      "عندي سؤال",
+      "ask"
+    ]
+  },
+  "simple": {
+    "en": [
+      "simple",
+      "simple answers",
+      "simpler",
+      "plain language"
+    ],
+    "am": [
+      "ቀላል",
+      "ቀላል ቋንቋ",
+      "ቀለል አድርግ",
+      "ቀላል መልስ",
+      "simple"
+    ],
+    "om": [
+      "salphaa",
+      "deebii salphaa",
+      "afaan salphaa",
+      "simple"
+    ],
+    "ti": [
+      "ቀሊል",
+      "ቀሊል መልሲ",
+      "ቀሊል ቋንቋ",
+      "simple"
+    ],
+    "so": [
+      "fudud",
+      "jawaab fudud",
+      "luqad fudud",
+      "simple"
+    ],
+    "ar": [
+      "بسيط",
+      "إجابات بسيطة",
+      "لغة بسيطة",
+      "simple"
+    ]
+  },
+  "person": {
+    "en": [
+      "person",
+      "talk to a person",
+      "human",
+      "tutor",
+      "real person",
+      "teacher"
+    ],
+    "am": [
+      "ከሰው ጋር አገናኘኝ",
+      "ሰው",
+      "ሰው እፈልጋለሁ",
+      "አስጠኚ",
+      "ከሰው ጋር ይነጋገሩ",
+      "ከሰው ጋር መነጋገር እፈልጋለሁ",
+      "person"
+    ],
+    "om": [
+      "nama waliin dubbadhu",
+      "nama",
+      "barsiisaa",
+      "nama barbaada",
+      "person"
+    ],
+    "ti": [
+      "ምስ ሰብ ተዛረብ",
+      "ሰብ",
+      "መምህር",
+      "ሰብ እደሊ",
+      "person"
+    ],
+    "so": [
+      "la hadal qof",
+      "qof",
+      "macallin",
+      "qof baan rabaa",
+      "person"
+    ],
+    "ar": [
+      "تحدث مع شخص",
+      "شخص",
+      "معلم",
+      "أريد شخصا",
+      "person"
+    ]
+  },
+  "status": {
+    "en": [
+      "status",
+      "my request",
+      "any reply",
+      "where is my request"
+    ],
+    "am": [
+      "ሁኔታ",
+      "ጥያቄዬ",
+      "መልስ መጣ",
+      "ጥያቄዬ የት ደረሰ",
+      "status"
+    ],
+    "om": [
+      "haala",
+      "gaaffii koo",
+      "deebiin dhufee",
+      "status"
+    ],
+    "ti": [
+      "ኩነታት",
+      "ሕቶይ",
+      "መልሲ መጺኡ ድዩ",
+      "status"
+    ],
+    "so": [
+      "xaalad",
+      "codsigayga",
+      "jawaab ma timid",
+      "status"
+    ],
+    "ar": [
+      "الحالة",
+      "طلبي",
+      "هل وصل رد",
+      "status"
+    ]
+  },
+  "jobs": {
+    "en": [
+      "jobs",
+      "job",
+      "find a job",
+      "work",
+      "vacancies"
+    ],
+    "am": [
+      "ስራ",
+      "ስራዎች",
+      "ሥራ",
+      "ሥራዎች",
+      "የሥራ ማስታወቂያ",
+      "jobs"
+    ],
+    "om": [
+      "hojii",
+      "hojiiwwan",
+      "hojii barbaadi",
+      "jobs"
+    ],
+    "ti": [
+      "ስራሕ",
+      "ስራሓት",
+      "ስራሕ ድለ",
+      "jobs"
+    ],
+    "so": [
+      "shaqo",
+      "shaqooyin",
+      "shaqo raadi",
+      "jobs"
+    ],
+    "ar": [
+      "وظائف",
+      "وظيفة",
+      "ابحث عن عمل",
+      "jobs"
+    ]
+  },
+  "myalerts": {
+    "en": [
+      "my alerts",
+      "alerts",
+      "my job alerts"
+    ],
+    "am": [
+      "ማሳወቂያዎቼ",
+      "ማሳወቂያዎች",
+      "የሥራ ማሳወቂያዎቼ",
+      "my alerts"
+    ],
+    "om": [
+      "beeksisa koo",
+      "beeksisa",
+      "beeksisa hojii koo",
+      "my alerts"
+    ],
+    "ti": [
+      "ሓበሬታታተይ",
+      "ሓበሬታታት",
+      "ናይ ስራሕ ሓበሬታታተይ",
+      "my alerts"
+    ],
+    "so": [
+      "ogeysiisyadayda",
+      "ogeysiisyada",
+      "ogeysiisyada shaqada",
+      "my alerts"
+    ],
+    "ar": [
+      "تنبيهاتي",
+      "التنبيهات",
+      "تنبيهات الوظائف",
+      "my alerts"
+    ]
+  },
+  "stop": {
+    "en": [
+      "stop",
+      "stop alerts",
+      "unsubscribe"
+    ],
+    "am": [
+      "አቁም",
+      "ማሳወቂያ አቁም",
+      "አቁሙ",
+      "stop"
+    ],
+    "om": [
+      "dhaabi",
+      "beeksisa dhaabi",
+      "dhaabadhu",
+      "stop"
+    ],
+    "ti": [
+      "ኣቋርጽ",
+      "ደው በል",
+      "ሓበሬታ ኣቋርጽ",
+      "stop"
+    ],
+    "so": [
+      "jooji",
+      "jooji ogeysiisyada",
+      "istaag",
+      "stop"
+    ],
+    "ar": [
+      "توقف",
+      "أوقف التنبيهات",
+      "إيقاف",
+      "stop"
+    ]
+  },
+  "accommodate": {
+    "en": [
+      "interview support",
+      "accommodation",
+      "accommodate",
+      "support for my interview"
+    ],
+    "am": [
+      "የቃለ መጠይቅ ድጋፍ",
+      "ድጋፍ እፈልጋለሁ",
+      "ለቃለ መጠይቅ ድጋፍ",
+      "accommodate"
+    ],
+    "om": [
+      "deeggarsa af-gaaffii",
+      "deeggarsa barbaada",
+      "deeggarsa",
+      "interview support"
+    ],
+    "ti": [
+      "ደገፍ ቃለ-መሕትት",
+      "ደገፍ እደሊ",
+      "ደገፍ",
+      "interview support"
+    ],
+    "so": [
+      "taageero wareysi",
+      "taageero baan u baahanahay",
+      "taageero",
+      "interview support"
+    ],
+    "ar": [
+      "دعم المقابلة",
+      "أحتاج دعما",
+      "ترتيبات المقابلة",
+      "interview support"
+    ]
+  },
+  "voice": {
+    "en": [
+      "voice",
+      "voice replies",
+      "voice on",
+      "voice off"
+    ],
+    "am": [
+      "ድምፅ",
+      "ድምጽ",
+      "የድምፅ መልስ",
+      "voice"
+    ],
+    "om": [
+      "sagalee",
+      "deebii sagalee",
+      "sagaleen",
+      "voice"
+    ],
+    "ti": [
+      "ድምጺ",
+      "ናይ ድምጺ መልሲ",
+      "ድምጺ ክፈት",
+      "voice"
+    ],
+    "so": [
+      "cod",
+      "jawaab cod ah",
+      "codka",
+      "voice"
+    ],
+    "ar": [
+      "الصوت",
+      "صوت",
+      "ردود صوتية",
+      "voice"
+    ]
+  },
+  "mydata": {
+    "en": [
+      "my data",
+      "mydata",
+      "what do you store",
+      "my information"
+    ],
+    "am": [
+      "መረጃዬ",
+      "የእኔ መረጃ",
+      "የተቀመጠ መረጃዬ",
+      "my data"
+    ],
+    "om": [
+      "daataa koo",
+      "odeeffannoo koo",
+      "maal olkaa'atte",
+      "my data"
+    ],
+    "ti": [
+      "ሓበሬታይ",
+      "ዳታይ",
+      "እንታይ ዓቂብካ",
+      "my data"
+    ],
+    "so": [
+      "xogtayda",
+      "macluumaadkayga",
+      "maxaad keydisay",
+      "my data"
+    ],
+    "ar": [
+      "بياناتي",
+      "معلوماتي",
+      "ماذا تحفظ",
+      "my data"
+    ]
+  },
+  "delete": {
+    "en": [
+      "delete",
+      "delete my data",
+      "erase my data",
+      "forget me"
+    ],
+    "am": [
+      "ሰርዝ",
+      "መረጃዬን ሰርዝ",
+      "ሁሉንም ሰርዝ",
+      "delete"
+    ],
+    "om": [
+      "haqi",
+      "daataa koo haqi",
+      "hunda haqi",
+      "delete"
+    ],
+    "ti": [
+      "ደምስስ",
+      "ሓበሬታይ ደምስስ",
+      "ኩሉ ደምስስ",
+      "delete"
+    ],
+    "so": [
+      "tirtir",
+      "tirtir xogtayda",
+      "dhammaan tirtir",
+      "delete"
+    ],
+    "ar": [
+      "احذف",
+      "احذف بياناتي",
+      "امسح كل شيء",
+      "delete"
+    ]
+  },
+  "settings": {
+    "en": [
+      "settings",
+      "options",
+      "preferences"
+    ],
+    "am": [
+      "ቅንብሮች",
+      "ቅንብር",
+      "settings"
+    ],
+    "om": [
+      "qindaa'ina",
+      "filannoo",
+      "qindeessi",
+      "settings"
+    ],
+    "ti": [
+      "ቅጥዕታት",
+      "ምርጫታት",
+      "ቅጥዒ",
+      "settings"
+    ],
+    "so": [
+      "dejinta",
+      "doorashooyinka",
+      "dejin",
+      "settings"
+    ],
+    "ar": [
+      "الإعدادات",
+      "إعدادات",
+      "الخيارات",
+      "settings"
+    ]
+  }
+}

@@ -92,5 +92,12 @@
   "f5Text": "Keyboard, TalkBack, NVDA, 200% zoom and sound off, tested against WCAG 2.2 AA.",
   "f6Title": "Your server, your choice of AI",
   "f6Text": "Gemini, Groq, a local Ollama model, or none at all. Keys stay on your server.",
-  "contrastLabel": "Contrast with white text"
+  "contrastLabel": "Contrast with white text",
+  "selectorLabel": "Content selector (optional)",
+  "selectorHint": "Where your lesson text is, for page reading. Example: #lesson or .course-content. Empty: main, article or the whole page.",
+  "readPageLabel": "Read the page",
+  "readPage_fallback": "Only if there is no other content (default)",
+  "readPage_always": "Always, together with the content file",
+  "readPage_off": "Never",
+  "readPageHint": "The assistant can read the lesson already on the page, in the learner's browser. Nothing is sent to a server without the learner's consent."
 }

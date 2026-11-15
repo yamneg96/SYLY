@@ -84,6 +84,8 @@ Or generate them on `demo/install.html` (live preview, contrast check for a cust
 | `theme` | `auto` (uses the host's `--bs-primary` only if it passes 4.5:1 with white, else `#002B56`), `light`, `dark` | `auto` |
 | `mode` | `panel` (pill on the side edge opens a full-height side panel) or `inline` (ask box in the page flow) | `panel` |
 | `position` | `end` (right edge, vertically centred; left in Arabic) or `start` (other edge) | `end` |
+| `content-selector` | CSS selector of the lesson on the page, for page reading, e.g. `#lesson` | `main`, `article`, `[role=main]`, then `body` |
+| `read-page` | empty (fallback), `always` (page sections added to the file), `off` | fallback |
 
 Events (all `bubbles: true, composed: true`):
 
@@ -96,6 +98,29 @@ document.addEventListener('db-assistant:language',  e => console.log(e.detail));
 Methods on the element: `open()`, `close()`, `ask(text)`, `openAccommodation({id, title})`, `showJobAlerts(keyword)`, `getText(key, lang?)`.
 
 The panel is a real `<dialog>` opened with `showModal()` (guide section 8); Escape closes it and returns focus to the launcher. Source links scroll to the lesson section **and move focus to its heading**. Styles live in a shadow root; the module adds nothing to the host page except `tabindex="-1"` on a heading it moves focus to.
+
+### How SYLY gets course content
+
+Three sources, in this order (FR-AD4):
+
+1. **A content file**: the `content` attribute points to a bilingual `content.json` (sections with `title_en/am`, `text_en/am`, `keywords_en/am`, `url`). This is what the Savanna pages and the demos use.
+2. **The server**: lessons sent once with `POST /api/v1/content`; `/api/v1/ask` searches them.
+3. **Page reading** (fallback): if there is no content file and the server has no sections for this page (or cannot be reached), the widget reads the lesson already on screen, in the learner's own browser. It reads only the page it is mounted on, never changes it, and re-reads it when the page changes (3 seconds after the last change).
+
+What page reading reads: the element matching `content-selector`, else `main`, `article` or `[role=main]`, else the whole page. It skips `nav`, `header`, `footer`, `aside`, forms, scripts, hidden content and the assistant itself. Each `h2`/`h3` starts a section (at most 50 sections, 4,000 characters each; sections under 40 characters are skipped). Source links use the heading's `id`, or a text fragment (`#:~:text=…`) when the heading has none; activating a link moves focus to that heading.
+
+```html
+<!-- the lesson is inside <div id="lesson"> on this site -->
+<db-assistant lang="en" api="https://syly.example.com/api" content-selector="#lesson"></db-assistant>
+```
+
+Limits:
+- An English page cannot be matched by an Amharic question offline (there is no Amharic text). The learner then gets "I could not find this in the course" and "Talk to a person". Online, after "Allow online answers", the AI receives the English sections and answers in Amharic.
+- Page sections are sent to the server only after the learner allows online answers, and the server never stores them.
+- Very short pages (one or two sections) can fall under the search threshold, which was tuned on full lessons.
+- `read-page="off"` turns it off; `read-page="always"` adds the page to the content file.
+
+Try it: `/demo/page-reading.html` (test content, no content file).
 
 ### Starter patch (guide section 12)
 
@@ -188,6 +213,47 @@ curl $B/api/v1/health
 
 schema.org **JobPosting** JSON-LD: one block per job on `savanna/pages/jobs.html` (and in `GET /api/v1/jobs`). Fields: `title`, `description`, `datePosted`, `validThrough`, `employmentType`, `hiringOrganization`, `jobLocation`, `jobLocationType`/`applicantLocationRequirements` for remote jobs, `experienceRequirements`, and **`jobBenefits` for the accommodations an employer offers**. Check with https://validator.schema.org (paste the page URL from the tunnel, or the page source). Test data only.
 
+## Telegram bot
+
+Start it with `docker compose up -d bot` (needs `TELEGRAM_BOT_TOKEN` in `.env`). The bot sets its command menu once at start (`setMyCommands`): English by default, plus one menu per language (`language_code` am, om, ti, so, ar). Every command also works by tapping the menu below the text box (Ask, Lesson, Talk to a person, Jobs, Settings), by typing a short phrase, or by sending a voice note.
+
+| Command | What it does | Example phrases (en / am) |
+| --- | --- | --- |
+| `/start` | Welcome, choose language, consent card | start, hello / ጀምር, ሰላም |
+| `/help` | What the bot can do, the menu | help, menu / እርዳታ, ምናሌ |
+| `/ask` | Ask a question about the lesson (any longer message is a question too) | question / ጥያቄ አለኝ |
+| `/lesson` | The lesson parts as buttons; tap one to read it (and hear it) | lesson / ትምህርት |
+| `/person` | Talk to a real person (a tutor); the tutor's reply comes back here | talk to a person / ከሰው ጋር አገናኘኝ |
+| `/status` | Your request to a person: waiting or answered | my request / ጥያቄዬ |
+| `/jobs` | Current jobs, deadline in Ethiopian calendar for Amharic | jobs / ሥራ |
+| `/alerts` | Job alerts: subscribe | alerts / ማሳወቂያዎች |
+| `/myalerts` | The alerts you have, with a Stop button each | my alerts / ማሳወቂያዎቼ |
+| `/stop` | Stop every job alert | stop / አቁም |
+| `/accommodate` | Ask for interview support (goes to a person, never straight to the employer) | interview support / የቃለ መጠይቅ ድጋፍ |
+| `/lang` | Change language | language / ቋንቋ |
+| `/simple` | Simple answers on or off | simple / ቀላል |
+| `/voice` | Voice replies on or off | voice / ድምፅ |
+| `/consent` | Allow online answers, or answers from this page only | |
+| `/mydata` | Everything stored about you, as a file | my data / መረጃዬ |
+| `/delete` | Delete everything (asks first) | delete my data / መረጃዬን ሰርዝ |
+
+All phrases are in `bot/intents.json` (3 to 8 per command and language). A message is treated as a command only if it is short (5 words or fewer, 40 characters or fewer) and matches a phrase exactly or closely (letter-trigram similarity 0.6 or more, with a clear lead over the next command). Everything else is a question. Spoken "delete" and "stop" always ask first: "Yes" or "No, it was a question".
+
+**Voice notes.** The bot downloads the note (up to 20 MB), converts it to 16 kHz WAV with ffmpeg (inside the Docker image), and sends it to the speech-to-text engines below in order, 15 seconds each (`STT_TIMEOUT`). It replies "I heard: «…»" and then acts on it. Audio leaves the server only after the learner allows online answers (`/consent`). If every engine fails, the bot says so and offers "Talk to a person". The same router is at `POST /api/v1/voice/transcribe` (returns `text`, `language`, `engine`). With `/voice` on, answers also come back as a voice note (OGG/Opus).
+
+| Language | Status | Speech-to-text, in order | Measured word accuracy (`scripts/stt_check.py`, 5 synthetic edge-tts clips each, 15 Nov; real phones will score lower) | Voice replies |
+| --- | --- | --- | --- | --- |
+| English (en) | Done | Groq Whisper → Gemini | 5/5 clips 100% (Groq) | Microsoft neural voice (edge-tts) |
+| Amharic (am) | Done, **weak speech-to-text** | Addis AI → Gemini → Groq Whisper | 9 to 13% word accuracy (Gemini; Groq Whisper 0%; Addis had no credit). Typed Amharic works fully; spoken Amharic needs Addis credit and a real-phone test | edge-tts, Addis AI fallback |
+| Afaan Oromo (om) | Beta | Addis AI → Gemini | **Untested**: Addis had no credit and there is no synthetic Oromo voice; needs self-recorded clips | Addis AI (no credit, so text only for now) |
+| Tigrinya (ti) | Beta | Gemini (Meta MMS optional, off) | **Untested**: no synthetic Tigrinya voice; needs self-recorded clips | none (text only) |
+| Somali (so) | Beta, **weak speech-to-text** | Gemini → Groq Whisper (swapped from the spec after measuring) | Gemini 20 to 23%, Groq Whisper 0% (wrote Somali sounds in English spelling) | edge-tts (so-SO-UbaxNeural) |
+| Arabic (ar) | Beta | Groq Whisper → Gemini | 90% (4 of 5 clips exact, Groq) | edge-tts |
+
+Beta means: the interface text and phrases are machine-assisted drafts (**needs native reader check**) and the speech engines have not been tested with real speakers. Meta MMS (`MMS_ENABLED=true`) runs locally but its weights are **CC-BY-NC 4.0 (non-commercial)**; it is off by default. Engine licences: Groq, Gemini and Addis AI are paid or free-tier online APIs under their own terms **[unverified for this use]**.
+
+**Add a language:** add its phrases to `bot/intents.json` (with `"_draft": {"xx": true}` until a native reader checks them), copy `bot/i18n/en.json` to `bot/i18n/xx.json` and translate every value, add `xx` to `LANGS` in `bot/bot.py` and to `ORDER` in `api/services/stt/router.py` with the engines that support it, add a voice to `VOICES` in `api/services/tts.py` if there is one, then run `python -m pytest bot api` and `python scripts/stt_check.py xx` with a few self-recorded clips.
+
 ## Languages
 
 All interface text is in JSON: `module/i18n/{en,am,ar}.json` (widget; inlined in `db-assistant.js` so one script tag works anywhere), `api/i18n/*.json` (text route, alerts, job notes), `bot/i18n/*.json` (Telegram), `demo/i18n/*.json` (helper and install pages). Tests check that every language has every key. To add a language to the widget: add `module/i18n/<code>.json` with the same keys and use `lang="<code>"` (it is fetched next to the script); run `npm --prefix module run i18n` to refresh the inlined copies after editing en/am/ar.
@@ -200,7 +266,7 @@ Dates: Ethiopian calendar for Amharic via `Intl.DateTimeFormat('am-ET-u-ca-ethio
 
 ## Offline and slow connection
 
-- `module/db-assistant.js`: 99 KB raw, **29 KB gzipped** (nginx gzip on), no dependencies. Lesson `content.json`: 17 KB raw, 6 KB gzipped. Audio (2.2 MB, 65 small MP3s) loads only when "Listen" is pressed.
+- `module/db-assistant.js`: 109 KB raw, **32 KB gzipped** (nginx gzip on), no dependencies. Lesson `content.json`: 17 KB raw, 6 KB gzipped. Audio (2.2 MB, 65 small MP3s) loads only when "Listen" is pressed.
 - **Slow 3G load time of `demo/blank.html`: to be measured** (Chrome DevTools, Network, Slow 3G).
 - Keyword search runs in the browser; the lesson is cached on the phone after the first load, so answers keep working without a connection.
 - With no connection, questions the phone cannot answer and requests for a person are kept: "Saved on this phone. It will send when you are online." They are sent on the `online` event.
@@ -257,11 +323,12 @@ No feature depends on a paid service: with `PROVIDER=none` everything still work
 | Screen share (desktop) / screenshot (Android) | Done (frames by polling, no WebRTC); manual test pending |
 | Amharic voice: 65 pre-generated MP3s + `/voice/speak` | Done; generated with edge-tts; Amharic DRAFT |
 | Mic (browser speech recognition) | Done; Chrome's Amharic recognition quality needs a person to test (testing plan 4.8) |
-| Telegram bot (text, voice note, /help, /alerts, /stop, /lang, /consent) | Built; **not tested with a phone**: the team laptop's network cannot reach `api.telegram.org` (connection refused, checked 15 Nov), so the bot logs a clear message and retries. Run it on a network that reaches Telegram, or set `TELEGRAM_PROXY` |
+| Telegram bot: 17 commands, menu buttons, phrases, voice notes (am/en), voice replies, /mydata, /delete | Built on branch `new-feature-bot`; bot and API tests pass with a fake Telegram; **not tested with a phone**: the team laptop's network cannot reach `api.telegram.org`, so run it on a network that reaches Telegram or set `TELEGRAM_PROXY`. Amharic speech-to-text weak (see Telegram bot) |
 | Text route `/sms/inbound` (≤160 characters) | Done; tests check every reply length |
 | Jobs page, JobPosting JSON-LD, job answers with trust line and deadline, alerts, accommodation request | Done; validator.schema.org check pending |
 | Data export/delete, teacher view API | Done (teacher view: API only, no page) |
 | Install page (no login) | Done; axe clean |
+| Page reading fallback (FR-AD4) | Done on branch `new-feature`; unit, API and browser tests pass; manual screen-reader test pending |
 | TalkBack, NVDA, co-designer, Slow 3G time, clean-laptop install | **Pending manual tests** |
 | Addis AI (TTS fallback, Amharic STT) | Integrated from the official docs; key valid, but the account had **no credit** on 15 Nov, so audio from Addis is not yet verified. Top up and test |
 | Hosted dashboard with login, LTI 1.3 | Not built (hardening sprint; LTI plan above) |
@@ -269,7 +336,10 @@ No feature depends on a paid service: with `PROVIDER=none` everything still work
 ## Development
 
 ```bash
-python scripts/verify_prototype.py                 # one-command demo check: PASS/FAIL per area (36 checks)
+python scripts/verify_prototype.py                 # one-command demo check: PASS/FAIL per area (37 checks)
+python -m pytest bot                               # bot commands, phrases, voice flow, /delete (fake Telegram)
+python scripts/stt_check.py --make-clips am en     # synthetic speech clips (edge-tts) into data/stt-clips
+python scripts/stt_check.py am en                  # speech-to-text engine and word accuracy per clip
 npm --prefix module test                           # i18n parity, search eval, contrast
 python -m pytest api                               # API logic and contract (31 tests)
 npm --prefix module install                        # dev only: puppeteer-core, axe-core
@@ -290,7 +360,9 @@ npm --prefix module run icons                      # re-copy Lucide icons into t
 | FastAPI, Starlette, Uvicorn, Pydantic, SQLAlchemy, httpx, python-multipart | `api/` | MIT / BSD-3 / BSD-3 / MIT / MIT / BSD-3 / Apache-2.0 |
 | cryptography | `api/` | Apache-2.0 or BSD-3 |
 | edge-tts | `api/` (voice) | LGPL-3.0 **[online service terms unverified]** |
-| aiogram | `bot/` | MIT |
+| aiogram, aiohttp-socks | `bot/` | MIT / Apache-2.0 |
+| ffmpeg (Debian package in the API image) | voice note conversion | LGPL-2.1+ (GPL parts not used) **[unverified build flags]** |
+| Meta MMS weights (optional, off) | `api/services/stt/mms_local.py` | CC-BY-NC 4.0, non-commercial |
 | nginx:alpine, python:3.12-slim | Docker images | BSD-2 / PSF and Debian licences |
 | pytest | tests | MIT |
 | puppeteer-core, axe-core, lucide-static | dev only | Apache-2.0 / MPL-2.0 / ISC |

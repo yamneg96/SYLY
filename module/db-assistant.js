@@ -647,6 +647,88 @@
     return order;
   };
 
+  /* ---------------------------------------------------------- page reading */
+  // FR-AD4 (SDS 1.8): read the lesson already on screen, in the learner's own browser, as a
+  // fallback content source. Read-only: never adds ids, classes or attributes to the host page.
+  var PAGE_MAX_SECTIONS = 50, PAGE_MAX_CHARS = 4000, PAGE_MIN_CHARS = 40;
+  var PAGE_SKIP = { NAV: 1, HEADER: 1, FOOTER: 1, ASIDE: 1, SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, TEMPLATE: 1, FORM: 1, 'DB-ASSISTANT': 1 };
+  var PAGE_BLOCK = /^(P|DIV|LI|UL|OL|DL|DT|DD|TABLE|TR|TD|TH|SECTION|ARTICLE|BLOCKQUOTE|PRE|FIGURE|FIGCAPTION|H4|H5|H6|BR|HR|MAIN)$/;
+
+  // Root: content-selector, else the first of main, article, [role=main], else body.
+  function pageRoot(doc, selector) {
+    var r = null;
+    if (selector) { try { r = doc.querySelector(selector); } catch (e) { r = null; } }
+    return r || doc.querySelector('main') || doc.querySelector('article') || doc.querySelector('[role="main"]') || doc.body;
+  }
+  function pageSkipped(el, win) {
+    if (PAGE_SKIP[el.tagName] || el.id === 'db-assistant-skip') return true;
+    if (el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true') return true;
+    try { return win.getComputedStyle(el).display === 'none'; } catch (e) { return false; }
+  }
+  // A text fragment for a heading without an id (Chrome/Edge/Safari support "#:~:text=").
+  function textFragment(title) {
+    var t = String(title || '').slice(0, 60);
+    if (String(title).length > 60 && t.lastIndexOf(' ') > 20) t = t.slice(0, t.lastIndexOf(' '));
+    return encodeURIComponent(t.trim()).replace(/-/g, '%2D').replace(/,/g, '%2C');
+  }
+  // Returns [{ id, title, text, url, lang, source: 'page' }] (SDS 1.8).
+  function readPage(root, ctx) {
+    var doc = ctx.doc, win = ctx.win, loc = ctx.loc;
+    var norm = function (t) { return String(t || '').replace(/\s+/g, ' ').trim(); };
+    var htmlLang = (doc.documentElement.getAttribute('lang') || '').toLowerCase();
+    var langOf = function (el) { var a = el && el.closest ? el.closest('[lang]') : null; return ((a && a.getAttribute('lang')) || htmlLang || 'en').toLowerCase(); };
+    var h1 = root.querySelector('h1') || doc.querySelector('h1');
+    var pageTitle = norm(h1 && h1.textContent) || norm(doc.title) || loc.pathname;
+    var sections = [];
+    var cur = { title: pageTitle, heading: null, parts: [] };
+    var push = function () {
+      var text = norm(cur.parts.join('')).slice(0, PAGE_MAX_CHARS);
+      if (text.length < PAGE_MIN_CHARS || sections.length >= PAGE_MAX_SECTIONS) return;
+      var hd = cur.heading, id;
+      if (hd && hd.id) id = hd.id; else id = hd ? 'page-section-' + (sections.length + 1) : 'page-intro';
+      sections.push({
+        id: id,
+        title: cur.title,
+        text: text,
+        url: hd ? (hd.id ? loc.pathname + '#' + hd.id : loc.pathname + '#:~:text=' + textFragment(cur.title)) : loc.pathname,
+        lang: langOf(hd || root),
+        source: 'page'
+      });
+    };
+    var walk = function (node) {
+      for (var c = node.firstChild; c; c = c.nextSibling) {
+        if (c.nodeType === 3) { cur.parts.push(c.nodeValue); continue; }
+        if (c.nodeType !== 1 || pageSkipped(c, win)) continue;
+        if (c.tagName === 'H1') { cur.parts.push(' '); continue; } // the h1 is the page title, not body text
+        if (c.tagName === 'H2' || c.tagName === 'H3') {
+          push();
+          cur = { title: norm(c.textContent) || pageTitle, heading: c, parts: [] };
+          continue;
+        }
+        walk(c);
+        if (PAGE_BLOCK.test(c.tagName)) cur.parts.push(' ');
+      }
+    };
+    walk(root);
+    push();
+    return sections;
+  }
+  // SDS 1.8 / FR-AD4 order: content file, then server sections for this page, then page reading.
+  // server: 'none' (no api attribute) | 'unreachable' | 'hasSections' | 'noSections'
+  function decidePageReading(mode, fileOk, server) {
+    if (mode === 'off') return false;
+    if (mode === 'always') return true;
+    if (fileOk) return false;
+    return server !== 'hasSections';
+  }
+  // A page section in the search index's bilingual shape (Amharic page text goes to the _am fields).
+  function pageToIndex(sec) {
+    var am = /^am/.test(sec.lang || '');
+    return { id: sec.id, url: sec.url, source: 'page', type: 'page', lang: sec.lang,
+      title_en: am ? '' : sec.title, text_en: am ? '' : sec.text, title_am: am ? sec.title : '', text_am: am ? sec.text : '',
+      keywords_en: [], keywords_am: [] };
+  }
+
   /* --------------------------------------------------------------- styles */
   var CSS = [
     ':host{all:initial;display:block;font-family:var(--bs-body-font-family,system-ui),"Noto Sans Ethiopic","Noto Naskh Arabic",sans-serif;font-size:1rem;line-height:1.5;}',
@@ -791,8 +873,12 @@
       window.addEventListener('online', this._onOnline);
       window.addEventListener('offline', this._onOffline);
       this._setLang(this.getAttribute('lang') || 'en', true);
-      this._loadContent();
-      this._loadConfig();
+      var self = this;
+      // Content sources (FR-AD4): 1. content file, 2. server sections for this page, 3. page reading.
+      Promise.all([this._loadContent(), this._loadConfig()]).then(function (r) {
+        var mode = (self.getAttribute('read-page') || '').toLowerCase();
+        if (decidePageReading(mode, r[0], r[1])) self._startPageReading(mode !== 'always');
+      });
     }
 
     disconnectedCallback() {
@@ -800,6 +886,41 @@
       window.removeEventListener('offline', this._onOffline);
       clearInterval(this._poll);
       this._stopVoice();
+      if (this._pageObserver) { this._pageObserver.disconnect(); this._pageObserver = null; }
+      clearTimeout(this._pageTimer);
+    }
+
+    /* page reading (FR-AD4, SDS 1.8) */
+    _startPageReading(pageOnly) {
+      var self = this;
+      this._pageOnly = pageOnly; // fallback: the page is the only local content; "always": added to the file
+      var root = pageRoot(document, this.getAttribute('content-selector'));
+      var read = function () {
+        self._pageSections = readPage(root, { doc: document, win: window, loc: location });
+        self._rebuildIndex();
+      };
+      read();
+      if (!window.MutationObserver) return;
+      var own = function (n) {
+        var el = n && (n.nodeType === 1 ? n : n.parentElement);
+        return !!el && (el === self || self.contains(el) || !!(el.closest && el.closest('db-assistant, #db-assistant-skip')));
+      };
+      this._pageObserver = new MutationObserver(function (list) {
+        var relevant = list.some(function (m) {
+          if (own(m.target)) return false;
+          var nodes = Array.prototype.slice.call(m.addedNodes).concat(Array.prototype.slice.call(m.removedNodes));
+          return !nodes.length || !nodes.every(own);
+        });
+        if (!relevant) return;
+        clearTimeout(self._pageTimer);
+        self._pageTimer = setTimeout(read, 3000); // debounced re-read
+      });
+      this._pageObserver.observe(root, { childList: true, subtree: true, characterData: true });
+    }
+    _rebuildIndex() {
+      var file = this._pageOnly ? [] : (this._fileSections || []);
+      var page = (this._pageSections || []).map(pageToIndex);
+      this._index = new Index(file.concat(page));
     }
 
     attributeChangedCallback(name, oldV, newV) {
@@ -940,7 +1061,7 @@
       this.$onlineBtn = h('button', { type: 'button', class: 'btn', 'aria-pressed': 'false', hidden: true, onclick: function () {
         self._setConsent(self._consent === 'yes' ? 'no' : 'yes', true);
       } }, iconText('online', tx('onlineAnswers')));
-      var head = h('header', { class: 'head' }, [
+      var head = h('div', { class: 'head' }, [
         h('div', { class: 'head-row' }, [
           h('h2', { id: 'title' }, [logoEl(), h('span', tx('title'))]),
           h('button', { type: 'button', class: 'btn', onclick: function () { self.close(); } }, iconText('close', tx('close')))
@@ -1078,22 +1199,27 @@
     }
 
     /* content */
+    // Resolves to true when the content attribute's file gave sections (fresh or cached).
     _loadContent() {
       var self = this;
       var src = this.getAttribute('content');
       var url = src ? new URL(src, document.baseURI).href : (this._apiBase() ? this._apiBase() + '/v1/content' : null);
-      if (!url) return;
+      if (!url) return Promise.resolve(false);
       var cacheKey = 'content:' + url;
       var use = function (data) {
         var list = Array.isArray(data) ? data : (data && (data.sections || data.items)) || [];
-        self._index = new Index(list.filter(function (s) { return s && s.url; }));
+        self._fileSections = list.filter(function (s) { return s && s.url; });
         self._contentBase = url; // section links are relative to the content file, not to the host page
+        self._rebuildIndex();
       };
       var cached = load(cacheKey, null);
       if (cached) use(cached);
-      fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(function (data) { use(data); save(cacheKey, data); })
-        .catch(function () { if (!self._index) self._contentFailed = true; /* else the cached copy stays in use */ });
+      return fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (data) { use(data); save(cacheKey, data); return !!src && self._fileSections.length > 0; })
+        .catch(function () {
+          if (!self._index) self._contentFailed = true; // else the cached copy stays in use
+          return !!src && !!cached;
+        });
     }
 
     /* api */
@@ -1110,15 +1236,17 @@
         return r.status === 204 ? null : r.json();
       }, function (e) { clearTimeout(timer); throw e; });
     }
+    // Resolves to 'none' | 'unreachable' | 'hasSections' | 'noSections' (FR-AD4 fallback order).
     _loadConfig() {
       var self = this;
-      if (!this._apiBase()) return;
-      this._fetchJson('/v1/config').then(function (cfg) {
+      if (!this._apiBase()) return Promise.resolve('none');
+      return this._fetchJson('/v1/config?page_url=' + encodeURIComponent(location.href)).then(function (cfg) {
         self._config = cfg || {};
         self._showConsentIfNeeded();
         self._setStatusNetwork();
         self._flushQueue();
-      }).catch(function () { self._config = null; });
+        return self._config.page_sections > 0 ? 'hasSections' : 'noSections';
+      }).catch(function () { self._config = null; return 'unreachable'; });
     }
 
     /* asking */
@@ -1152,13 +1280,20 @@
         this._status(this._t.statusSending);
         this._fetchJson('/v1/ask', { method: 'POST', body: JSON.stringify({
           question: text, language: this._lang, page_url: location.href, conversation_id: this._sessionId,
-          allow_ai: this._consent === 'yes', simple: this._simple
+          allow_ai: this._consent === 'yes', simple: this._simple,
+          // Page sections leave the browser only after "Allow online answers" (FR-AD4, NFR-S2).
+          sections: this._consent === 'yes' && this._pageSections && this._pageSections.length ? this._pageSections : undefined
         }) }).then(function (res) {
           self._setStatusNetwork();
           var sources = (res && res.sources || []).filter(function (s) { return s && s.url; });
           if (res && res.reason === 'no_advice') { self._addMessage({ role: 'bot', text: self._t.noAdvice, offerHelp: true }); return; }
+          // Server found nothing, but the browser's own search did (page read without consent): answer locally.
+          if ((!res || !res.answer || !sources.length) && local && local.found) { self._answerLocal(text, local); return; }
           if (!res || !res.answer || !sources.length) { self._notFound(); return; } // FR-T5: no source, no answer
-          sources = sources.map(function (src) { return { title: src.title, url: absUrl(src.url, self._apiOrigin()) }; });
+          var pageUrls = (self._pageSections || []).map(function (ps) { return ps.url; });
+          sources = sources.map(function (src) {
+            return { title: src.title, url: pageUrls.indexOf(src.url) >= 0 ? src.url : absUrl(src.url, self._apiOrigin()) };
+          });
           self._addMessage({ role: 'bot', text: res.answer, lang: res.language || self._lang, sources: sources,
             note: res.provider && res.provider !== 'none' ? self._t.answeredAi : self._t.answeredLocal, ai: res.provider && res.provider !== 'none', audio: res.audio || [] });
         }).catch(function () {
@@ -1186,18 +1321,19 @@
       var s = local.best.section;
       // Answer in the learner's language when the section has it; Arabic falls back to English text.
       var lang = this._lang === 'am' || local.lang === 'am' ? 'am' : 'en';
+      if (s.source === 'page') lang = s.text_am ? 'am' : 'en'; // page text has one language only
       var title = s['title_' + lang] || s.title_en;
       var n = this._simple ? 1 : 3;
       var idx = this._index.excerptIndices(text, s, lang, n);
       var body = this._index.excerpt(text, s, lang, n);
       // Pre-generated Amharic audio (api/scripts/gen_audio.py): title + each chosen sentence, offline.
-      var audio = lang === 'am' && s.type !== 'job'
+      var audio = lang === 'am' && s.type !== 'job' && s.type !== 'page'
         ? ['sections/' + s.id + '/title.am.mp3'].concat(idx.map(function (i) { return 'sections/' + s.id + '/' + i + '.am.mp3'; }))
         : [];
       this._addMessage({
         role: 'bot', lang: lang,
         text: fmt(this.getText('fromSection', lang), { title: title }) + '\n' + body + this._jobNotes(s, lang),
-        sources: [{ title: title, url: absUrl(s.url, this._contentBase) }],
+        sources: [{ title: title, url: s.source === 'page' ? s.url : absUrl(s.url, this._contentBase) }],
         note: this.getText('answeredLocal', lang),
         audio: audio,
         section: s.id
@@ -1265,7 +1401,10 @@
 
     /* links (SDS 1.4, FR-T5): scroll to the host section and move focus to its heading */
     _followSource(e, link) {
-      var url = new URL(link.getAttribute('href'), document.baseURI);
+      var raw = link.getAttribute('href') || '';
+      var tf = raw.indexOf('#:~:text=');
+      if (tf >= 0) { this._followTextFragment(e, raw, tf); return; }
+      var url = new URL(raw, document.baseURI);
       if (url.pathname !== location.pathname || !url.hash) return; // other page: normal navigation
       var target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
       if (!target) return;
@@ -1279,6 +1418,27 @@
       heading.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
       heading.focus({ preventScroll: true });
       try { history.replaceState(null, '', url.hash); } catch (err) { /* sandboxed */ }
+    }
+
+    // Page sections whose heading has no id use "#:~:text=": find the heading by its text, then do the
+    // same as for an id (SDS 1.4). Not found: let the browser navigate (it highlights the text itself).
+    _followTextFragment(e, raw, at) {
+      var path = new URL(raw.slice(0, at) || location.pathname, document.baseURI).pathname;
+      if (path !== location.pathname) return;
+      var want;
+      try { want = decodeURIComponent(raw.slice(at + 9).split('&')[0].split(',')[0]).replace(/\s+/g, ' ').trim().toLowerCase(); } catch (err) { return; }
+      if (!want) return;
+      var heading = null, all = document.querySelectorAll('h1,h2,h3,h4,h5,h6');
+      for (var i = 0; i < all.length && !heading; i++) {
+        if (all[i].closest('db-assistant')) continue;
+        if (all[i].textContent.replace(/\s+/g, ' ').trim().toLowerCase().indexOf(want) === 0) heading = all[i];
+      }
+      if (!heading) return;
+      e.preventDefault();
+      if (this._mode === 'panel' && this.$dialog.open && (MODAL_ALWAYS || this.$dialog.matches(':modal'))) this.close({ returnFocus: false });
+      if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+      heading.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+      heading.focus({ preventScroll: true });
     }
 
     /* human help (FR-H1, FR-H2) */
@@ -1667,6 +1827,6 @@
   }
 
   // Exposed for tests only through the element class (no globals).
-  DbAssistant._internals = { formatDate: formatDate, Index: Index, splitSentences: splitSentences, detectLang: detectLang, NO_ADVICE: NO_ADVICE, parseColor: parseColor, contrast: contrast, I18N: I18N };
+  DbAssistant._internals = { readPage: readPage, pageRoot: pageRoot, decidePageReading: decidePageReading, pageToIndex: pageToIndex, textFragment: textFragment, formatDate: formatDate, Index: Index, splitSentences: splitSentences, detectLang: detectLang, NO_ADVICE: NO_ADVICE, parseColor: parseColor, contrast: contrast, I18N: I18N };
   customElements.define('db-assistant', DbAssistant);
 })();

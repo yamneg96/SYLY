@@ -138,8 +138,8 @@ def test_server_i18n_parity():
 def test_bot_i18n_parity_and_audio_present():
     bot = REPO_DIR / "bot" / "i18n"
     en = json.loads((bot / "en.json").read_text(encoding="utf-8"))
-    for lang in ("am", "ar"):
-        assert set(json.loads((bot / f"{lang}.json").read_text(encoding="utf-8"))) == set(en)
+    for f in bot.glob("*.json"):  # en, am and the beta drafts om, ti, so, ar
+        assert set(json.loads(f.read_text(encoding="utf-8"))) == set(en), f.name
     audio = REPO_DIR / "module" / "audio"
     for sec in CONTENT["sections"]:
         assert (audio / "sections" / sec["id"] / "title.am.mp3").exists()

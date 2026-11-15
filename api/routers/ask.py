@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -15,6 +15,8 @@ from routers.help import helper_online
 from schemas import AskIn, AskOut, ConfigOut, ContentIn, ContentOut, Created
 from services import content, notify
 from services.answer import answer
+from services.content import same_page
+from services.retrieval import Index
 
 router = APIRouter(prefix="/api/v1", tags=["assistant"])
 
@@ -22,7 +24,14 @@ router = APIRouter(prefix="/api/v1", tags=["assistant"])
 @router.post("/ask", response_model=AskOut, summary="Answer a question from the course, with sources")
 async def ask(body: AskIn, db: Session = Depends(get_db)) -> AskOut:
     cid = body.conversation_id or uuid.uuid4().hex
-    out = await answer(content.index(db), body.question.strip(), body.language, body.allow_ai, body.simple)
+    idx = content.index(db)
+    if body.sections:
+        # FR-AD4: search the page's own sections plus our stored sections for this page.
+        # Same threshold, prompt and guard; page sections are never stored.
+        stored = [s for s in idx.sections if body.page_url and same_page(s["url"], body.page_url)]
+        page = [content.page_to_section(s.model_dump()) for s in body.sections if s.url and s.text]
+        idx = Index(stored + page, settings.threshold_en, settings.threshold_am)
+    out = await answer(idx, body.question.strip(), body.language, body.allow_ai, body.simple)
     db.add(
         Question(
             conversation_id=cid,
@@ -63,8 +72,10 @@ def get_content(db: Session = Depends(get_db)) -> ContentOut:
 
 
 @router.get("/config", response_model=ConfigOut, summary="What the widget needs to know at start")
-async def get_config(db: Session = Depends(get_db)) -> ConfigOut:
+async def get_config(page_url: str | None = Query(default=None, max_length=1000), db: Session = Depends(get_db)) -> ConfigOut:
+    page_sections = sum(1 for s in content.index(db).sections if page_url and same_page(s["url"], page_url))
     return ConfigOut(
+        page_sections=page_sections,
         ai=settings.ai_enabled,
         provider=settings.provider if settings.ai_enabled else "none",
         helper_online=helper_online(db),

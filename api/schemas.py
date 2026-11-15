@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 Lang = Literal["am", "en", "ar"]
 
@@ -15,6 +15,32 @@ class Source(BaseModel):
     url: str
 
 
+PAGE_MAX_SECTIONS, PAGE_MAX_CHARS = 50, 4000
+
+
+class PageSectionIn(BaseModel):
+    """A section the widget read from the page it is mounted on (FR-AD4). Long values are cut, not refused."""
+
+    id: str = Field(default="", description="Heading id, or page-section-N")
+    title: str = ""
+    text: str = Field(default="", description=f"At most {PAGE_MAX_CHARS} characters are used")
+    url: str = Field(default="", description="Same-page link: /path#id or /path#:~:text=...")
+    lang: str = "en"
+    source: Literal["page"] = "page"
+
+    @field_validator("id", "title", "text", "url", "lang", mode="before")
+    @classmethod
+    def _clip(cls, v: object, info) -> str:  # noqa: ANN001
+        limits = {"id": 200, "title": 300, "text": PAGE_MAX_CHARS, "url": 1000, "lang": 16}
+        return " ".join(str(v or "").split())[: limits[info.field_name]] if info.field_name != "url" else str(v or "")[:1000]
+
+    @field_validator("url")
+    @classmethod
+    def _safe_url(cls, v: str) -> str:
+        # Only a path or an http(s) address: never javascript: or data: links in the panel.
+        return v if v.startswith("/") or v.startswith("https://") or v.startswith("http://") else ""
+
+
 class AskIn(BaseModel):
     question: str = Field(min_length=1, max_length=1000, examples=["AI ምናባዊ ረዳቶችን ይተካል?"])
     language: Lang = "am"
@@ -22,6 +48,15 @@ class AskIn(BaseModel):
     conversation_id: str | None = Field(default=None, max_length=64)
     allow_ai: bool = Field(default=False, description="Learner consented to online AI answers (NFR-S2)")
     simple: bool = False
+    sections: list[PageSectionIn] | None = Field(
+        default=None,
+        description=f"Optional sections read from the page (FR-AD4). At most {PAGE_MAX_SECTIONS} are used; never stored.",
+    )
+
+    @field_validator("sections", mode="before")
+    @classmethod
+    def _cap_sections(cls, v: object) -> object:
+        return v[:PAGE_MAX_SECTIONS] if isinstance(v, list) else v
 
 
 class AskOut(BaseModel):
@@ -64,6 +99,7 @@ class ConfigOut(BaseModel):
     provider: str
     helper_online: bool
     telegram_bot: str | None = None
+    page_sections: int = Field(default=0, description="Stored sections for page_url (0 = the widget may read the page, FR-AD4)")
 
 
 class ConversationLine(BaseModel):
@@ -173,4 +209,5 @@ class ScreenshotIn(BaseModel):
 
 class SpeakIn(BaseModel):
     text: str = Field(min_length=1, max_length=3000)
-    language: Lang = "am"
+    language: Literal["am", "en", "ar", "om", "ti", "so"] = "am"
+    format: Literal["mp3", "ogg"] = Field(default="mp3", description="ogg = OGG/Opus, for Telegram voice notes (needs ffmpeg)")

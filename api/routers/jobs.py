@@ -102,6 +102,14 @@ def subscribe(body: AlertIn, db: Session = Depends(get_db)) -> Created:
     return Created(id=alert.id, message="Alert saved. Send STOP (text) or /stop (Telegram) to unsubscribe.")
 
 
+@router.get("/alerts", summary="Alerts of one Telegram chat or phone (for the bot's /myalerts)")
+def list_alerts(channel: str, address: str, db: Session = Depends(get_db)) -> list[dict]:
+    if channel == "sms":
+        address = phone.normalize(address) or address
+    rows = db.scalars(select(Alert).where(Alert.address_hash == address_hash(channel, address))).all()
+    return [{"id": a.id, "keyword": a.keyword, "location": a.location, "language": a.language} for a in rows]
+
+
 @router.delete("/alerts/{alert_id}", status_code=204, response_class=Response, summary="Unsubscribe one alert")
 def unsubscribe(alert_id: int, db: Session = Depends(get_db)) -> None:
     alert = db.get(Alert, alert_id)
