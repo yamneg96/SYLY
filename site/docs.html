@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Documentation: SYLY db-assistant</title>
+  <meta name="description" content="Install SYLY, every attribute, events, the REST API, content sources, the Telegram bot, bring your own bot, accessibility and privacy.">
+  <link rel="icon" type="image/png" href="/demo/assets/syly-logo.png">
+  <link rel="apple-touch-icon" href="/demo/assets/syly-logo.png">
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body>
+  <a class="skip" href="#main" data-t="skip">Skip to main content</a>
+
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true"><svg focusable="false" viewBox="0 0 200 200"><use href="/demo/icons.svg#i-logo"/></svg></span>
+        <span>SYLY</span>
+      </a>
+      <nav class="topnav" aria-label="Main" data-t-label="navLabel">
+        <a href="/" data-t="navHome">Home</a>
+        <a href="/docs.html" data-t="navDocs" aria-current="page">Docs</a>
+        <a href="/demo/install.html" data-t="navInstall">Install</a>
+        <a href="/signin.html" data-t="navSignin">Developer sign in</a>
+      </nav>
+      <div class="lang-pick">
+        <label for="page-lang" style="margin:0"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-languages"/></svg> <span data-t="pageLang">Page language</span></label>
+        <select id="page-lang">
+          <option value="en" lang="en">English</option>
+          <option value="am" lang="am">አማርኛ</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="hero small" aria-labelledby="h1">
+      <div class="wrap"><div><h1 id="h1" data-t="h1">Documentation</h1><p class="lead" data-t="lead"></p></div></div>
+    </section>
+    <section class="section">
+      <div class="wrap" style="max-width:56rem">
+        <nav aria-label="On this page" data-t-label="tocLabel"><ul class="toc"><li><a href="#install" data-t="tocInstall"></a></li><li><a href="#attributes" data-t="tocAttrs"></a></li><li><a href="#events" data-t="tocEvents"></a></li><li><a href="#api" data-t="tocApi"></a></li><li><a href="#content" data-t="tocContent"></a></li><li><a href="#bot" data-t="tocBot"></a></li><li><a href="#byob" data-t="tocByob"></a></li><li><a href="#accessibility" data-t="tocA11y"></a></li><li><a href="#privacy" data-t="tocPrivacy"></a></li></ul></nav>
+        <p id="copy-status" class="status" role="status" aria-live="polite"></p>
+
+        <h2 id="install" data-t="instH">Install</h2>
+        <p data-t="instP"></p>
+        <h3 data-t="inst1H"></h3><p data-t="inst1P"></p><div class="codebox"><pre id="c-server" tabindex="0"><code>&lt;script src="https://YOUR-SERVER/module/db-assistant.js" defer&gt;&lt;/script&gt;
+&lt;db-assistant lang="en" api="https://YOUR-SERVER/api" content="https://YOUR-SERVER/data/content.json"&gt;&lt;/db-assistant&gt;</code></pre><button type="button" class="btn btn-line copy" data-copy="c-server" data-t="copy">Copy code</button></div>
+        <h3 data-t="inst2H"></h3><p data-t="inst2P"></p><div class="codebox"><pre id="c-cdn" tabindex="0"><code>&lt;script src="https://cdn.jsdelivr.net/gh/yamneg96/SYLY@v1.0.0/module/db-assistant.js" defer&gt;&lt;/script&gt;
+&lt;db-assistant lang="en" api="https://YOUR-SERVER/api" content="https://YOUR-SERVER/data/content.json"&gt;&lt;/db-assistant&gt;</code></pre><button type="button" class="btn btn-line copy" data-copy="c-cdn" data-t="copy">Copy code</button></div>
+        <h3 data-t="inst3H"></h3><p data-t="inst3P"></p><div class="codebox"><pre id="c-npm" tabindex="0"><code>npm i syly-db-assistant</code></pre><button type="button" class="btn btn-line copy" data-copy="c-npm" data-t="copy">Copy code</button></div><div class="codebox"><pre id="c-npm2" tabindex="0"><code>import 'syly-db-assistant/db-assistant.js';
+// or, in HTML:
+// &lt;script src="/node_modules/syly-db-assistant/db-assistant.js" defer&gt;&lt;/script&gt;</code></pre><button type="button" class="btn btn-line copy" data-copy="c-npm2" data-t="copy">Copy code</button></div>
+        <p class="note" data-t="inst3Note"></p>
+        <p><span data-t="instGen"></span> <a href="/demo/install.html" data-t="instGenLink"></a></p>
+
+        <h2 id="attributes" data-t="attrsH">Attributes</h2>
+        <div class="table-scroll" tabindex="0"><table><caption data-t="attrsCap"></caption>
+          <thead><tr><th scope="col" data-t="thAttr"></th><th scope="col" data-t="thValues"></th><th scope="col" data-t="thDefault"></th><th scope="col" data-t="thWhat"></th></tr></thead>
+          <tbody><tr><th scope="row"><code>lang</code></th><td>am, en, ar, CODE</td><td>en</td><td data-t="a_lang"></td></tr>
+<tr><th scope="row"><code>api</code></th><td>https://…/api</td><td>–</td><td data-t="a_api"></td></tr>
+<tr><th scope="row"><code>content</code></th><td>https://…/content.json</td><td>–</td><td data-t="a_content"></td></tr>
+<tr><th scope="row"><code>site</code></th><td>pk_…</td><td>–</td><td data-t="a_site"></td></tr>
+<tr><th scope="row"><code>theme</code></th><td>auto, light, dark</td><td>auto</td><td data-t="a_theme"></td></tr>
+<tr><th scope="row"><code>mode</code></th><td>panel, inline</td><td>panel</td><td data-t="a_mode"></td></tr>
+<tr><th scope="row"><code>position</code></th><td>end, start</td><td>end</td><td data-t="a_position"></td></tr>
+<tr><th scope="row"><code>primary</code></th><td>#RRGGBB</td><td>–</td><td data-t="a_primary"></td></tr>
+<tr><th scope="row"><code>content-selector</code></th><td>CSS selector</td><td>main, article, [role=main], body</td><td data-t="a_selector"></td></tr>
+<tr><th scope="row"><code>read-page</code></th><td>always, off</td><td>–</td><td data-t="a_readpage"></td></tr></tbody></table></div>
+
+        <h2 id="events" data-t="evH">Events and methods</h2>
+        <p data-t="evP"></p><div class="codebox"><pre id="c-events" tabindex="0"><code>document.addEventListener('db-assistant:question',  e =&gt; console.log(e.detail)); // {text, language}
+document.addEventListener('db-assistant:escalated', e =&gt; console.log(e.detail)); // {ticketId}
+document.addEventListener('db-assistant:language',  e =&gt; console.log(e.detail)); // {language}</code></pre><button type="button" class="btn btn-line copy" data-copy="c-events" data-t="copy">Copy code</button></div>
+        <p data-t="evMethods"></p>
+
+        <h2 id="api" data-t="apiH">REST API</h2>
+        <p data-t="apiP"></p>
+        <p><a href="/docs" data-t="apiDocs"></a> · <a href="https://github.com/yamneg96/SYLY/blob/main/openapi.yaml" data-t="apiSpec"></a></p>
+        <div class="table-scroll" tabindex="0"><table>
+          <thead><tr><th scope="col" data-t="thRoute"></th><th scope="col" data-t="thWhat"></th></tr></thead>
+          <tbody><tr><th scope="row"><code>POST /api/v1/ask</code></th><td data-t="r_ask"></td></tr>
+<tr><th scope="row"><code>GET, POST /api/v1/content</code></th><td data-t="r_content"></td></tr>
+<tr><th scope="row"><code>GET /api/v1/config</code></th><td data-t="r_config"></td></tr>
+<tr><th scope="row"><code>/api/v1/escalations</code></th><td data-t="r_esc"></td></tr>
+<tr><th scope="row"><code>POST /api/v1/voice/speak, /transcribe</code></th><td data-t="r_voice"></td></tr>
+<tr><th scope="row"><code>GET /api/v1/jobs, /alerts, POST /accommodations</code></th><td data-t="r_jobs"></td></tr>
+<tr><th scope="row"><code>GET /api/v1/sites/{key}/config</code></th><td data-t="r_sites"></td></tr></tbody></table></div>
+
+        <h2 id="content" data-t="contentH">Content sources</h2>
+        <p data-t="contentP"></p>
+        <ol><li data-t="c1"></li><li data-t="c2"></li><li data-t="c3"></li></ol>
+
+        <h2 id="bot" data-t="botH">Telegram bot</h2>
+        <p data-t="botP"></p>
+        <div class="table-scroll" tabindex="0"><table>
+          <thead><tr><th scope="col" data-t="thCmd"></th><th scope="col" data-t="thDesc"></th></tr></thead>
+          <tbody><tr><th scope="row"><code>/start</code></th><td data-t="cmd_start"></td></tr>
+<tr><th scope="row"><code>/help</code></th><td data-t="cmd_help"></td></tr>
+<tr><th scope="row"><code>/ask</code></th><td data-t="cmd_ask"></td></tr>
+<tr><th scope="row"><code>/lesson</code></th><td data-t="cmd_lesson"></td></tr>
+<tr><th scope="row"><code>/person</code></th><td data-t="cmd_person"></td></tr>
+<tr><th scope="row"><code>/status</code></th><td data-t="cmd_status"></td></tr>
+<tr><th scope="row"><code>/jobs</code></th><td data-t="cmd_jobs"></td></tr>
+<tr><th scope="row"><code>/alerts</code></th><td data-t="cmd_alerts"></td></tr>
+<tr><th scope="row"><code>/myalerts</code></th><td data-t="cmd_myalerts"></td></tr>
+<tr><th scope="row"><code>/stop</code></th><td data-t="cmd_stop"></td></tr>
+<tr><th scope="row"><code>/accommodate</code></th><td data-t="cmd_accommodate"></td></tr>
+<tr><th scope="row"><code>/lang</code></th><td data-t="cmd_lang"></td></tr>
+<tr><th scope="row"><code>/simple</code></th><td data-t="cmd_simple"></td></tr>
+<tr><th scope="row"><code>/voice</code></th><td data-t="cmd_voice"></td></tr>
+<tr><th scope="row"><code>/consent</code></th><td data-t="cmd_consent"></td></tr>
+<tr><th scope="row"><code>/mydata</code></th><td data-t="cmd_mydata"></td></tr>
+<tr><th scope="row"><code>/delete</code></th><td data-t="cmd_delete"></td></tr></tbody></table></div>
+        <h3 data-t="botLangH"></h3><p data-t="botLangP"></p>
+        <div class="table-scroll" tabindex="0"><table>
+          <thead><tr><th scope="col" data-t="thLang"></th><th scope="col" data-t="thStatus"></th></tr></thead>
+          <tbody><tr><th scope="row" lang="en">English</th><td data-t="l_en"></td></tr>
+<tr><th scope="row" lang="am">አማርኛ</th><td data-t="l_am"></td></tr>
+<tr><th scope="row" lang="om">Afaan Oromoo</th><td data-t="l_om"></td></tr>
+<tr><th scope="row" lang="ti">ትግርኛ</th><td data-t="l_ti"></td></tr>
+<tr><th scope="row" lang="so">Soomaali</th><td data-t="l_so"></td></tr>
+<tr><th scope="row" lang="ar">العربية</th><td data-t="l_ar"></td></tr></tbody></table></div>
+
+        <h2 id="byob" data-t="byobH">Bring your own Telegram bot</h2>
+        <p data-t="byobP"></p>
+        <ol class="steps"><li data-t="byob1"></li><li data-t="byob2"></li><li data-t="byob3"></li><li data-t="byob4"></li><li data-t="byob5"></li><li data-t="byob6"></li></ol>
+        <p class="note bad"><strong data-t="byobWarn"></strong></p>
+        <p data-t="byobUser"></p>
+
+        <h2 id="accessibility" data-t="a11yH">Accessibility</h2>
+        <p data-t="a11yP"></p>
+        <p><a href="https://github.com/yamneg96/SYLY/blob/main/CONFORMANCE.md" data-t="a11yLink"></a></p>
+        <p class="hint" data-t="a11yGoogle"></p>
+
+        <h2 id="privacy" data-t="privH">Privacy</h2>
+        <p data-t="privP"></p>
+        <p><a href="/privacy.html" data-t="privLink"></a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <ul>
+        <li><a href="/docs.html" data-t="footDocs">Documentation</a></li>
+        <li><a href="/demo/install.html" data-t="footInstall">Install page</a></li>
+        <li><a href="/privacy.html" data-t="footPrivacy">Privacy</a></li>
+        <li><a href="https://github.com/yamneg96/SYLY/blob/main/CONFORMANCE.md" data-t="footAccess">Accessibility statement</a></li>
+        <li><a href="https://github.com/yamneg96/SYLY" data-t="footRepo">Source code</a></li>
+        <li><a href="/starter" data-t="footStarter">Starter pages</a></li>
+      </ul>
+      <p data-t="footTeam">Team SYLY: Lemi, Saron, Yabets, Yamlak. Digital Bridge Accessibility Hackathon, ALX, Track 3.</p>
+      <p data-t="footLicence">Licence: to be confirmed (TBD). Test data only; do not enter real personal information.</p>
+      <p data-t="footDraft">Amharic text on this site is a draft and needs a native reader check.</p>
+    </div>
+  </footer>
+  <db-assistant lang="en" read-page="always" content-selector="main"></db-assistant>
+
+  <script src="/site.js"></script>
+  <script src="/docs.js"></script>
+  <script>SYLYSite.init("docs");</script>
+  <script src="/module/db-assistant.js" defer></script>
+</body>
+</html>
