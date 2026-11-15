@@ -134,8 +134,10 @@ def main() -> int:
     section("8. Languages and audio (NFR-E1, NFR-E5, FR-T8)")
     for folder in ("module/i18n", "api/i18n", "bot/i18n"):
         en = json.loads((ROOT / folder / "en.json").read_text(encoding="utf-8"))
-        ok = all(set(json.loads((ROOT / folder / f"{lang}.json").read_text(encoding="utf-8"))) == set(en) for lang in ("am", "ar"))
-        check(f"{folder}: am and ar have every en key", ok)
+        files = sorted(p.stem for p in (ROOT / folder).glob("*.json") if p.stem != "en")
+        keys = {lang: set(json.loads((ROOT / folder / f"{lang}.json").read_text(encoding="utf-8"))) for lang in files}
+        ok = keys.get("am") == set(en) and all(k <= set(en) for k in keys.values())
+        check(f"{folder}: am has every en key, no language has extra keys ({', '.join(files)})", ok)
     from services.retrieval import split_sentences
 
     missing = [f"{s['id']}/{i}" for s in content["sections"] for i, _ in enumerate(split_sentences(s["text_am"]))

@@ -1,0 +1,5 @@
+{
+  "_note": "Five test sentences per language for scripts/stt_check.py (commands and lesson questions). Beta languages are drafts: needs native reader check.",
+  "am": ["AI ምናባዊ ረዳቶችን ይተካል?", "ከሰው ጋር አገናኘኝ", "የትምህርቱን ክፍሎች አሳየኝ", "ደንበኞች ምን ዓይነት ክህሎቶችን ያደንቃሉ?", "መረጃዬን ሰርዝ"],
+  "en": ["Will AI replace virtual assistants?", "Talk to a person", "Show me the lesson", "What skills will clients value?", "Delete my data"]
+}
