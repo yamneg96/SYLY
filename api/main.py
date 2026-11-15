@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -114,6 +115,15 @@ app.include_router(escalations_router, prefix="/api/v1")
 app.include_router(voice_router, prefix="/api/v1")
 app.include_router(accommodations_router, prefix="/api/v1")
 app.include_router(sms_router)
+
+# Mount static directories for frontend demo and web component
+_project_root = Path(__file__).resolve().parent.parent
+if (_project_root / "savanna").exists():
+    app.mount("/savanna", StaticFiles(directory=str(_project_root / "savanna"), html=True), name="savanna")
+if (_project_root / "demo").exists():
+    app.mount("/demo", StaticFiles(directory=str(_project_root / "demo")), name="demo")
+if (_project_root / "module").exists():
+    app.mount("/module", StaticFiles(directory=str(_project_root / "module")), name="module")
 
 
 if __name__ == "__main__":
