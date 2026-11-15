@@ -18,5 +18,6 @@
   "alertsUsage": "Send /alerts and a word, for example: /alerts accountant Addis Ababa",
   "alertsOn": "Alerts on for “{keyword}”. Send /stop to stop.",
   "stopped": "All your job alerts are stopped.",
-  "apiDown": "The service is not reachable right now. Please try again later."
+  "apiDown": "The service is not reachable right now. Please try again later.",
+  "error": "Sorry, something went wrong. Please try again, or send /help to reach a person."
 }

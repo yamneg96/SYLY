@@ -20,7 +20,7 @@ import httpx
 from aiogram import Bot, Dispatcher, F
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command, CommandObject, CommandStart
-from aiogram.types import BufferedInputFile, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import BufferedInputFile, ErrorEvent, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s bot: %(message)s")
 log = logging.getLogger("bot")
@@ -158,6 +158,19 @@ async def voice_reply(m: Message, text: str) -> None:
 
 
 dp = Dispatcher()
+
+
+@dp.error()
+async def on_error(event: ErrorEvent) -> bool:
+    """Any handler error: log it for the team, tell the learner in words (never silence)."""
+    log.exception("handler error: %s", type(event.exception).__name__, exc_info=event.exception)
+    msg = event.update.message or (event.update.callback_query.message if event.update.callback_query else None)
+    if msg is not None:
+        try:
+            await msg.answer(t(chats.get(str(msg.chat.id), {"lang": "am"}), "error"))
+        except Exception:  # noqa: BLE001 - Telegram itself unreachable: nothing more we can do
+            pass
+    return True
 
 
 @dp.message(CommandStart())

@@ -18,5 +18,6 @@
   "alertsUsage": "/alerts እና ቃል ይላኩ፤ ለምሳሌ፦ /alerts accountant Addis Ababa",
   "alertsOn": "ለ“{keyword}” ማሳወቂያ በርቷል። ለማቆም /stop ይላኩ።",
   "stopped": "ሁሉም የሥራ ማሳወቂያዎችዎ ቆመዋል።",
-  "apiDown": "አገልግሎቱ አሁን አይገኝም። እባክዎ ቆይተው ይሞክሩ።"
+  "apiDown": "አገልግሎቱ አሁን አይገኝም። እባክዎ ቆይተው ይሞክሩ።",
+  "error": "ይቅርታ፣ ችግር ተፈጥሯል። እባክዎ እንደገና ይሞክሩ፣ ወይም ሰው ለማግኘት /help ይላኩ።"
 }
