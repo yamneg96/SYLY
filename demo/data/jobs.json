@@ -1,0 +1,198 @@
+{
+  "notice": "TEST DATA ONLY: fictional employers and jobs for the hackathon demo. Amharic DRAFT – needs native reader check.",
+  "jobs": [
+    {
+      "id": "va-remote-001",
+      "title_en": "Junior Virtual Assistant (Remote)",
+      "title_am": "ጀማሪ ምናባዊ ረዳት (በርቀት)",
+      "employer": "Test Employer PLC",
+      "location_en": "Addis Ababa",
+      "location_am": "አዲስ አበባ",
+      "employment_type": "PART_TIME",
+      "remote": true,
+      "date_posted": "2026-11-10",
+      "deadline": "2026-11-30",
+      "experience_months": 0,
+      "summary_en": "Help a small business with email, calendars and simple customer messages. Training is given. No experience needed.",
+      "summary_am": "አንድ አነስተኛ ንግድን በኢሜል፣ በቀን መቁጠሪያ እና በቀላል የደንበኛ መልእክቶች ይርዱ። ስልጠና ይሰጣል። የሥራ ልምድ አያስፈልግም።",
+      "requirements_en": "You need basic computer skills and good written English or Amharic.",
+      "requirements_am": "መሠረታዊ የኮምፒውተር ክህሎት እና ጥሩ የእንግሊዝኛ ወይም የአማርኛ ጽሑፍ ችሎታ ያስፈልግዎታል።",
+      "accommodations_en": [
+        "remote work",
+        "flexible hours",
+        "screen reader friendly tools",
+        "written interview questions"
+      ],
+      "accommodations_am": [
+        "የርቀት ሥራ",
+        "ተለዋዋጭ የሥራ ሰዓት",
+        "ለስክሪን አንባቢ የሚመቹ መሣሪያዎች",
+        "በጽሑፍ የሚቀርቡ የቃለ መጠይቅ ጥያቄዎች"
+      ],
+      "keywords_en": [
+        "virtual assistant",
+        "va",
+        "remote",
+        "admin",
+        "assistant"
+      ],
+      "keywords_am": [
+        "ምናባዊ ረዳት",
+        "ረዳት",
+        "ርቀት"
+      ]
+    },
+    {
+      "id": "accountant-002",
+      "title_en": "Accountant",
+      "title_am": "ሒሳብ ሠራተኛ",
+      "employer": "Sample Trading Share Company",
+      "location_en": "Addis Ababa",
+      "location_am": "አዲስ አበባ",
+      "employment_type": "FULL_TIME",
+      "remote": false,
+      "date_posted": "2026-11-12",
+      "deadline": "2026-11-23",
+      "experience_months": 24,
+      "summary_en": "Keep the company's books, prepare monthly reports and pay suppliers on time.",
+      "summary_am": "የኩባንያውን ሒሳብ ይያዙ፣ ወርሃዊ ሪፖርቶችን ያዘጋጁ እና ለአቅራቢዎች በጊዜ ይክፈሉ።",
+      "requirements_en": "You need a diploma or degree in accounting and two years of experience.",
+      "requirements_am": "በሒሳብ አያያዝ ዲፕሎማ ወይም ዲግሪ እና የሁለት ዓመት የሥራ ልምድ ያስፈልግዎታል።",
+      "accommodations_en": [
+        "sign-language interpreter for interviews",
+        "accessible ground-floor office",
+        "extra time in tests"
+      ],
+      "accommodations_am": [
+        "ለቃለ መጠይቅ የምልክት ቋንቋ አስተርጓሚ",
+        "ተደራሽ የመሬት ወለል ቢሮ",
+        "በፈተና ተጨማሪ ጊዜ"
+      ],
+      "keywords_en": [
+        "accountant",
+        "accounting",
+        "finance",
+        "bookkeeping"
+      ],
+      "keywords_am": [
+        "ሒሳብ",
+        "ሂሳብ",
+        "ሒሳብ ሠራተኛ",
+        "ፋይናንስ"
+      ]
+    },
+    {
+      "id": "support-agent-003",
+      "title_en": "Customer Support Agent (Amharic and English)",
+      "title_am": "የደንበኞች ድጋፍ ሰጪ (አማርኛ እና እንግሊዝኛ)",
+      "employer": "Demo Telecom Services",
+      "location_en": "Adama",
+      "location_am": "አዳማ",
+      "employment_type": "FULL_TIME",
+      "remote": false,
+      "date_posted": "2026-11-08",
+      "deadline": "2026-12-05",
+      "experience_months": 6,
+      "summary_en": "Answer customer questions by phone and chat in Amharic and English.",
+      "summary_am": "የደንበኞችን ጥያቄዎች በስልክ እና በቻት በአማርኛ እና በእንግሊዝኛ ይመልሱ።",
+      "requirements_en": "You need six months of customer service experience. Chat-only roles are open to Deaf and hard-of-hearing applicants.",
+      "requirements_am": "የስድስት ወር የደንበኞች አገልግሎት ልምድ ያስፈልግዎታል። በቻት ብቻ የሚሠሩ ሚናዎች መስማት ለተሳናቸው እና የመስማት ችግር ላለባቸው አመልካቾች ክፍት ናቸው።",
+      "accommodations_en": [
+        "chat-only role available",
+        "sign-language interpreter for interviews",
+        "flexible shifts"
+      ],
+      "accommodations_am": [
+        "በቻት ብቻ የሚሠራ ሚና አለ",
+        "ለቃለ መጠይቅ የምልክት ቋንቋ አስተርጓሚ",
+        "ተለዋዋጭ ፈረቃ"
+      ],
+      "keywords_en": [
+        "customer support",
+        "call center",
+        "chat",
+        "service"
+      ],
+      "keywords_am": [
+        "የደንበኞች ድጋፍ",
+        "ደንበኛ",
+        "ቻት",
+        "አገልግሎት"
+      ]
+    },
+    {
+      "id": "data-entry-004",
+      "title_en": "Data Entry Clerk",
+      "title_am": "የመረጃ ማስገቢያ ሠራተኛ",
+      "employer": "Example NGO Ethiopia",
+      "location_en": "Hawassa",
+      "location_am": "ሀዋሳ",
+      "employment_type": "CONTRACTOR",
+      "remote": true,
+      "date_posted": "2026-11-01",
+      "deadline": "2026-11-10",
+      "experience_months": 0,
+      "summary_en": "Type survey answers into a spreadsheet and check them for mistakes.",
+      "summary_am": "የዳሰሳ ጥናት መልሶችን ወደ ተመን ሉህ ያስገቡ እና ስህተቶችን ይፈትሹ።",
+      "requirements_en": "You need accurate typing and basic spreadsheet skills.",
+      "requirements_am": "ትክክለኛ የመተየብ ችሎታ እና መሠረታዊ የተመን ሉህ ክህሎት ያስፈልግዎታል።",
+      "accommodations_en": [
+        "remote work",
+        "extra time in tests"
+      ],
+      "accommodations_am": [
+        "የርቀት ሥራ",
+        "በፈተና ተጨማሪ ጊዜ"
+      ],
+      "keywords_en": [
+        "data entry",
+        "typing",
+        "spreadsheet",
+        "clerk"
+      ],
+      "keywords_am": [
+        "መረጃ",
+        "መተየብ",
+        "ተመን ሉህ"
+      ]
+    },
+    {
+      "id": "social-media-005",
+      "title_en": "Social Media Assistant",
+      "title_am": "የማኅበራዊ ሚዲያ ረዳት",
+      "employer": "Test Coffee Exporters",
+      "location_en": "Bahir Dar",
+      "location_am": "ባሕር ዳር",
+      "employment_type": "PART_TIME",
+      "remote": true,
+      "date_posted": "2026-11-14",
+      "deadline": "2026-12-15",
+      "experience_months": 0,
+      "summary_en": "Plan and post short updates about coffee for the company's social media pages.",
+      "summary_am": "ስለ ቡና አጫጭር መረጃዎችን አቅደው በኩባንያው የማኅበራዊ ሚዲያ ገጾች ላይ ይለጥፉ።",
+      "requirements_en": "You need good writing in Amharic and English. A short portfolio helps but is not required.",
+      "requirements_am": "በአማርኛ እና በእንግሊዝኛ ጥሩ የመጻፍ ችሎታ ያስፈልግዎታል። አጭር የሥራ ናሙና ቢኖር ይጠቅማል፤ ግን ግዴታ አይደለም።",
+      "accommodations_en": [
+        "remote work",
+        "flexible hours",
+        "written interview questions"
+      ],
+      "accommodations_am": [
+        "የርቀት ሥራ",
+        "ተለዋዋጭ የሥራ ሰዓት",
+        "በጽሑፍ የሚቀርቡ የቃለ መጠይቅ ጥያቄዎች"
+      ],
+      "keywords_en": [
+        "social media",
+        "content",
+        "marketing",
+        "writing"
+      ],
+      "keywords_am": [
+        "ማኅበራዊ ሚዲያ",
+        "ይዘት",
+        "ማስታወቂያ"
+      ]
+    }
+  ]
+}
