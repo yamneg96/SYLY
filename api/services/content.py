@@ -18,6 +18,30 @@ log = logging.getLogger("syly")
 _index: Index | None = None
 
 
+def same_page(section_url: str, page_url: str) -> bool:
+    """True when a section's link points at the page (path only; host and #fragment ignored)."""
+    from urllib.parse import urlparse
+
+    return bool(section_url) and urlparse(section_url).path.rstrip("/") == urlparse(page_url).path.rstrip("/")
+
+
+def page_to_section(sec: dict) -> dict:
+    """A page section (FR-AD4) in the bilingual index shape; Amharic page text goes to the _am fields."""
+    am = (sec.get("lang") or "").lower().startswith("am")
+    return {
+        "id": sec.get("id") or "page-section",
+        "url": sec["url"],
+        "type": "page",
+        "source": "page",
+        "title_en": "" if am else sec.get("title", ""),
+        "text_en": "" if am else sec.get("text", ""),
+        "title_am": sec.get("title", "") if am else "",
+        "text_am": sec.get("text", "") if am else "",
+        "keywords_en": [],
+        "keywords_am": [],
+    }
+
+
 def _load_json(path) -> dict:  # noqa: ANN001
     try:
         return json.loads(path.read_text(encoding="utf-8"))

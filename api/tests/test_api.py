@@ -141,3 +141,59 @@ def test_errors_are_words_never_raw(client, monkeypatch):
         monkeypatch.setattr(ask_router, "answer", db_down)
         r = c.post("/api/v1/ask", json={"question": "hello", "language": "en"})
         assert r.status_code == 503 and "database" in r.json()["detail"]
+
+
+def _page_sections():
+    """The real sections of demo/page-reading.html, read the way the widget reads them (h2 split, aside/hidden skipped)."""
+    import re as _re
+    from config import REPO_DIR
+
+    html = (REPO_DIR / "demo/page-reading.html").read_text(encoding="utf-8")
+    main = html[html.index("<main>"): html.index("</main>")]
+    main = _re.sub(r"<div hidden>.*?</div>", "", main, flags=_re.S)
+    out = []
+    for m in _re.finditer(r'<h2( id="([^"]+)")?>(.*?)</h2>(.*?)(?=<h2|$)', main, _re.S):
+        title, text = m.group(3).strip(), " ".join(_re.sub(r"<[^>]+>", " ", m.group(4)).split())
+        url = f"/demo/page-reading.html#{m.group(2)}" if m.group(2) else "/demo/page-reading.html#:~:text=" + title.replace(" ", "%20")
+        out.append({"id": m.group(2) or f"page-section-{len(out) + 1}", "title": title, "text": text, "url": url, "lang": "en", "source": "page"})
+    return out
+
+
+PAGE = _page_sections()
+
+
+def test_ask_with_page_sections_cites_them(client):
+    r = client.post("/api/v1/ask", json={"question": "Why should I not charge my laptop on a bed?", "language": "en",
+                                         "page_url": "http://localhost:8080/demo/page-reading.html", "sections": PAGE})
+    body = r.json()
+    assert len(PAGE) == 4 and not any("must be skipped" in x["title"] for x in PAGE)
+    assert r.status_code == 200 and body["answer"] and "on a bed" in body["answer"]
+    assert body["sources"][0]["url"].startswith("/demo/page-reading.html#:~:text=Avoid%20heat")
+    r = client.post("/api/v1/ask", json={"question": "How should I store a laptop I do not use?", "language": "en",
+                                         "page_url": "http://localhost:8080/demo/page-reading.html", "sections": PAGE})
+    assert r.json()["sources"][0]["url"] == "/demo/page-reading.html#storage"
+    # the stored lesson is not mixed in for another page: a lesson question is not found here
+    r = client.post("/api/v1/ask", json={"question": "What skills will clients value?", "language": "en",
+                                         "page_url": "http://localhost:8080/demo/page-reading.html", "sections": PAGE})
+    assert r.json()["answer"] is None and r.json()["reason"] == "not_found"
+
+
+def test_ask_page_sections_are_truncated_and_sanitised(client):
+    big = [{"id": f"s{i}", "title": "T" * 500, "text": "battery " * 2000, "url": f"/p.html#s{i}", "lang": "en"} for i in range(80)]
+    big.append({"id": "evil", "title": "Evil", "text": "battery " * 20, "url": "javascript:alert(1)", "lang": "en"})
+    from schemas import AskIn
+
+    parsed = AskIn(question="battery?", language="en", sections=big)
+    assert len(parsed.sections) == 50
+    assert all(len(s.text) <= 4000 and len(s.title) <= 300 for s in parsed.sections)
+    r = client.post("/api/v1/ask", json={"question": "battery?", "language": "en", "page_url": "/p.html", "sections": big})
+    assert r.status_code == 200
+    assert all(not s["url"].startswith("javascript") for s in r.json()["sources"])
+    from schemas import PageSectionIn
+
+    assert PageSectionIn(id="x", title="x", text="x", url="javascript:alert(1)").url == ""
+
+
+def test_config_counts_sections_for_the_page(client):
+    assert client.get("/api/v1/config", params={"page_url": "http://localhost:8080/pages/concept-with-navigation.html"}).json()["page_sections"] == 5
+    assert client.get("/api/v1/config", params={"page_url": "https://nydl.example/lesson"}).json()["page_sections"] == 0

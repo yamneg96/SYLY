@@ -86,11 +86,13 @@ def _job_notes(sec: dict, lang: str) -> str:
 def keyword_answer(idx: Index, question: str, sec: dict, lang: str, simple: bool) -> AnswerOut:
     """Provider none: the best section's matching sentences, with its link (FR-A3)."""
     text_lang = "am" if lang == "am" else "en"
+    if sec.get("type") == "page":  # page text exists in one language only (FR-AD4)
+        text_lang = "am" if sec.get("text_am") else "en"
     title = sec.get(f"title_{text_lang}") or sec.get("title_en")
     n = 1 if simple else 3
     body = idx.excerpt(question, sec, text_lang, n)
     audio: list[str] = []
-    if text_lang == "am" and sec.get("type") != "job":
+    if text_lang == "am" and sec.get("type") not in ("job", "page"):
         # Matches files made by api/scripts/gen_audio.py (works offline on the phone).
         audio = [f"sections/{sec['id']}/title.am.mp3"] + [
             f"sections/{sec['id']}/{i}.am.mp3" for i in idx.excerpt_indices(question, sec, "am", n)

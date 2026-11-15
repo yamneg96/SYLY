@@ -90,6 +90,16 @@ paths:
       - assistant
       summary: What the widget needs to know at start
       operationId: get_config_api_v1_config_get
+      parameters:
+      - name: page_url
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Page Url
       responses:
         '200':
           description: Successful Response
@@ -97,6 +107,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConfigOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/escalations:
     post:
       tags:
@@ -1067,6 +1083,15 @@ components:
           type: boolean
           title: Simple
           default: false
+        sections:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/PageSectionIn'
+            type: array
+          - type: 'null'
+          title: Sections
+          description: Optional sections read from the page (FR-AD4). At most 50 are
+            used; never stored.
       type: object
       required:
       - question
@@ -1148,6 +1173,12 @@ components:
           - type: string
           - type: 'null'
           title: Telegram Bot
+        page_sections:
+          type: integer
+          title: Page Sections
+          description: Stored sections for page_url (0 = the widget may read the page,
+            FR-AD4)
+          default: 0
       type: object
       required:
       - ai
@@ -1439,6 +1470,40 @@ components:
       - lang
       - created_at
       title: MessageOut
+    PageSectionIn:
+      properties:
+        id:
+          type: string
+          title: Id
+          description: Heading id, or page-section-N
+          default: ''
+        title:
+          type: string
+          title: Title
+          default: ''
+        text:
+          type: string
+          title: Text
+          description: At most 4000 characters are used
+          default: ''
+        url:
+          type: string
+          title: Url
+          description: 'Same-page link: /path#id or /path#:~:text=...'
+          default: ''
+        lang:
+          type: string
+          title: Lang
+          default: en
+        source:
+          type: string
+          const: page
+          title: Source
+          default: page
+      type: object
+      title: PageSectionIn
+      description: A section the widget read from the page it is mounted on (FR-AD4).
+        Long values are cut, not refused.
     ScreenshotIn:
       properties:
         screenshot:

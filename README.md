@@ -84,6 +84,8 @@ Or generate them on `demo/install.html` (live preview, contrast check for a cust
 | `theme` | `auto` (uses the host's `--bs-primary` only if it passes 4.5:1 with white, else `#002B56`), `light`, `dark` | `auto` |
 | `mode` | `panel` (pill on the side edge opens a full-height side panel) or `inline` (ask box in the page flow) | `panel` |
 | `position` | `end` (right edge, vertically centred; left in Arabic) or `start` (other edge) | `end` |
+| `content-selector` | CSS selector of the lesson on the page, for page reading, e.g. `#lesson` | `main`, `article`, `[role=main]`, then `body` |
+| `read-page` | empty (fallback), `always` (page sections added to the file), `off` | fallback |
 
 Events (all `bubbles: true, composed: true`):
 
@@ -96,6 +98,29 @@ document.addEventListener('db-assistant:language',  e => console.log(e.detail));
 Methods on the element: `open()`, `close()`, `ask(text)`, `openAccommodation({id, title})`, `showJobAlerts(keyword)`, `getText(key, lang?)`.
 
 The panel is a real `<dialog>` opened with `showModal()` (guide section 8); Escape closes it and returns focus to the launcher. Source links scroll to the lesson section **and move focus to its heading**. Styles live in a shadow root; the module adds nothing to the host page except `tabindex="-1"` on a heading it moves focus to.
+
+### How SYLY gets course content
+
+Three sources, in this order (FR-AD4):
+
+1. **A content file**: the `content` attribute points to a bilingual `content.json` (sections with `title_en/am`, `text_en/am`, `keywords_en/am`, `url`). This is what the Savanna pages and the demos use.
+2. **The server**: lessons sent once with `POST /api/v1/content`; `/api/v1/ask` searches them.
+3. **Page reading** (fallback): if there is no content file and the server has no sections for this page (or cannot be reached), the widget reads the lesson already on screen, in the learner's own browser. It reads only the page it is mounted on, never changes it, and re-reads it when the page changes (3 seconds after the last change).
+
+What page reading reads: the element matching `content-selector`, else `main`, `article` or `[role=main]`, else the whole page. It skips `nav`, `header`, `footer`, `aside`, forms, scripts, hidden content and the assistant itself. Each `h2`/`h3` starts a section (at most 50 sections, 4,000 characters each; sections under 40 characters are skipped). Source links use the heading's `id`, or a text fragment (`#:~:text=…`) when the heading has none; activating a link moves focus to that heading.
+
+```html
+<!-- the lesson is inside <div id="lesson"> on this site -->
+<db-assistant lang="en" api="https://syly.example.com/api" content-selector="#lesson"></db-assistant>
+```
+
+Limits:
+- An English page cannot be matched by an Amharic question offline (there is no Amharic text). The learner then gets "I could not find this in the course" and "Talk to a person". Online, after "Allow online answers", the AI receives the English sections and answers in Amharic.
+- Page sections are sent to the server only after the learner allows online answers, and the server never stores them.
+- Very short pages (one or two sections) can fall under the search threshold, which was tuned on full lessons.
+- `read-page="off"` turns it off; `read-page="always"` adds the page to the content file.
+
+Try it: `/demo/page-reading.html` (test content, no content file).
 
 ### Starter patch (guide section 12)
 
@@ -200,7 +225,7 @@ Dates: Ethiopian calendar for Amharic via `Intl.DateTimeFormat('am-ET-u-ca-ethio
 
 ## Offline and slow connection
 
-- `module/db-assistant.js`: 99 KB raw, **29 KB gzipped** (nginx gzip on), no dependencies. Lesson `content.json`: 17 KB raw, 6 KB gzipped. Audio (2.2 MB, 65 small MP3s) loads only when "Listen" is pressed.
+- `module/db-assistant.js`: 109 KB raw, **32 KB gzipped** (nginx gzip on), no dependencies. Lesson `content.json`: 17 KB raw, 6 KB gzipped. Audio (2.2 MB, 65 small MP3s) loads only when "Listen" is pressed.
 - **Slow 3G load time of `demo/blank.html`: to be measured** (Chrome DevTools, Network, Slow 3G).
 - Keyword search runs in the browser; the lesson is cached on the phone after the first load, so answers keep working without a connection.
 - With no connection, questions the phone cannot answer and requests for a person are kept: "Saved on this phone. It will send when you are online." They are sent on the `online` event.
@@ -262,6 +287,7 @@ No feature depends on a paid service: with `PROVIDER=none` everything still work
 | Jobs page, JobPosting JSON-LD, job answers with trust line and deadline, alerts, accommodation request | Done; validator.schema.org check pending |
 | Data export/delete, teacher view API | Done (teacher view: API only, no page) |
 | Install page (no login) | Done; axe clean |
+| Page reading fallback (FR-AD4) | Done on branch `new-feature`; unit, API and browser tests pass; manual screen-reader test pending |
 | TalkBack, NVDA, co-designer, Slow 3G time, clean-laptop install | **Pending manual tests** |
 | Addis AI (TTS fallback, Amharic STT) | Integrated from the official docs; key valid, but the account had **no credit** on 15 Nov, so audio from Addis is not yet verified. Top up and test |
 | Hosted dashboard with login, LTI 1.3 | Not built (hardening sprint; LTI plan above) |
