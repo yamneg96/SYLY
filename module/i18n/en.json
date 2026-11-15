@@ -109,5 +109,11 @@
   "accFailed": "The request could not be sent now. Please try again, or press “Talk to a person”.",
   "accChooseOne": "Please choose at least one kind of support.",
   "accNeedContact": "Please enter where to send the copy, or choose “No copy”.",
-  "accNone": "None"
+  "accNone": "None",
+  "contentUnavailable": "The course text could not be loaded, so I cannot search it right now. Check your connection and try again, or press “Talk to a person”.",
+  "micDenied": "The microphone is blocked. Allow it in the browser's site settings, or type your question.",
+  "shareFailed": "Screen sharing could not start in this browser. You can send a screenshot instead.",
+  "screenshotFailed": "The screenshot could not be sent. Check your connection and try again.",
+  "dataDeleteFailed": "Your conversation was deleted from this phone, but the server could not be reached. Please try “Delete my conversation” again when you are online.",
+  "genericError": "Something went wrong on this page. Please try again. If it keeps happening, press “Talk to a person”."
 }

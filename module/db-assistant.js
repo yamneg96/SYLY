@@ -20,7 +20,8 @@
   if (!window.customElements || window.customElements.get('db-assistant')) return;
 
   /* ---------------------------------------------------------------- config */
-  var SCRIPT_URL = (document.currentScript && document.currentScript.src) || location.href;
+  // document.baseURI, not location.href: inside an srcdoc iframe location.href is "about:srcdoc".
+  var SCRIPT_URL = (document.currentScript && document.currentScript.src) || document.baseURI;
   // Guide section 8: "Use the <dialog> element with showModal()". The panel is
   // therefore always modal. Set to false for the SDS 1.3 variant (show() at
   // 900px and wider, showModal() below).
@@ -147,7 +148,13 @@
       "accFailed": "The request could not be sent now. Please try again, or press “Talk to a person”.",
       "accChooseOne": "Please choose at least one kind of support.",
       "accNeedContact": "Please enter where to send the copy, or choose “No copy”.",
-      "accNone": "None"
+      "accNone": "None",
+      "contentUnavailable": "The course text could not be loaded, so I cannot search it right now. Check your connection and try again, or press “Talk to a person”.",
+      "micDenied": "The microphone is blocked. Allow it in the browser's site settings, or type your question.",
+      "shareFailed": "Screen sharing could not start in this browser. You can send a screenshot instead.",
+      "screenshotFailed": "The screenshot could not be sent. Check your connection and try again.",
+      "dataDeleteFailed": "Your conversation was deleted from this phone, but the server could not be reached. Please try “Delete my conversation” again when you are online.",
+      "genericError": "Something went wrong on this page. Please try again. If it keeps happening, press “Talk to a person”."
     },
     "am": {
       "dir": "ltr",
@@ -260,7 +267,13 @@
       "accFailed": "ጥያቄው አሁን ሊላክ አልቻለም። እባክዎ እንደገና ይሞክሩ፣ ወይም “ከሰው ጋር ይነጋገሩ” የሚለውን ይጫኑ።",
       "accChooseOne": "እባክዎ ቢያንስ አንድ ዓይነት ድጋፍ ይምረጡ።",
       "accNeedContact": "እባክዎ ቅጂው የሚላክበትን ያስገቡ፣ ወይም “ቅጂ አያስፈልግም” የሚለውን ይምረጡ።",
-      "accNone": "የለም"
+      "accNone": "የለም",
+      "contentUnavailable": "የትምህርቱ ጽሑፍ ሊጫን አልቻለም፤ ስለዚህ አሁን መፈለግ አልችልም። ግንኙነትዎን አረጋግጠው እንደገና ይሞክሩ፣ ወይም “ከሰው ጋር ይነጋገሩ” የሚለውን ይጫኑ።",
+      "micDenied": "ማይክሮፎኑ ታግዷል። በብራውዘሩ የድረ-ገጽ ቅንብሮች ውስጥ ይፍቀዱት፣ ወይም ጥያቄዎን ይጻፉ።",
+      "shareFailed": "በዚህ ብራውዘር ስክሪን ማጋራት መጀመር አልተቻለም። በምትኩ የስክሪን ምስል መላክ ይችላሉ።",
+      "screenshotFailed": "የስክሪን ምስሉ ሊላክ አልቻለም። ግንኙነትዎን አረጋግጠው እንደገና ይሞክሩ።",
+      "dataDeleteFailed": "ውይይትዎ ከዚህ ስልክ ተሰርዟል፤ ነገር ግን ሰርቨሩን ማግኘት አልተቻለም። መስመር ላይ ሲሆኑ “ውይይቴን ሰርዝ”ን እንደገና ይሞክሩ።",
+      "genericError": "በዚህ ገጽ ላይ ችግር ተፈጥሯል። እባክዎ እንደገና ይሞክሩ። ችግሩ ከቀጠለ “ከሰው ጋር ይነጋገሩ” የሚለውን ይጫኑ።"
     },
     "ar": {
       "dir": "rtl",
@@ -373,7 +386,13 @@
       "accFailed": "تعذّر إرسال الطلب الآن. حاول مرة أخرى، أو اضغط «تحدّث مع شخص».",
       "accChooseOne": "يرجى اختيار نوع واحد من الدعم على الأقل.",
       "accNeedContact": "يرجى إدخال مكان إرسال النسخة، أو اختيار «بدون نسخة».",
-      "accNone": "لا شيء"
+      "accNone": "لا شيء",
+      "contentUnavailable": "تعذّر تحميل نص الدورة، لذا لا أستطيع البحث فيه الآن. تحقّق من اتصالك وحاول مرة أخرى، أو اضغط «تحدّث مع شخص».",
+      "micDenied": "الميكروفون محظور. اسمح به من إعدادات الموقع في المتصفح، أو اكتب سؤالك.",
+      "shareFailed": "تعذّر بدء مشاركة الشاشة في هذا المتصفح. يمكنك إرسال لقطة شاشة بدلًا من ذلك.",
+      "screenshotFailed": "تعذّر إرسال لقطة الشاشة. تحقّق من اتصالك وحاول مرة أخرى.",
+      "dataDeleteFailed": "حُذفت محادثتك من هذا الهاتف، لكن تعذّر الوصول إلى الخادم. حاول «حذف محادثتي» مرة أخرى عندما تكون متصلًا.",
+      "genericError": "حدث خطأ في هذه الصفحة. يرجى المحاولة مرة أخرى. إذا تكرر ذلك، اضغط «تحدّث مع شخص»."
     }
   };
   /* I18N:END */
@@ -400,15 +419,9 @@
     "next": "<path d=\"M5 12h14\" /><path d=\"m12 5 7 7-7 7\" />",
     "back": "<path d=\"m12 19-7-7 7-7\" /><path d=\"M19 12H5\" />",
     "check": "<path d=\"M20 6 9 17l-5-5\" />",
-    "idea": "<path d=\"M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5\" /><path d=\"M9 18h6\" /><path d=\"M10 22h4\" />",
-    "notFound": "<path d=\"m13.5 8.5-5 5\" /><path d=\"m8.5 8.5 5 5\" /><circle cx=\"11\" cy=\"11\" r=\"8\" /><path d=\"m21 21-4.3-4.3\" />",
     "bot": "<path d=\"M12 8V4H8\" /><rect width=\"16\" height=\"12\" x=\"4\" y=\"8\" rx=\"2\" /><path d=\"M2 14h2\" /><path d=\"M20 14h2\" /><path d=\"M15 13v2\" /><path d=\"M9 13v2\" />",
     "you": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /><circle cx=\"12\" cy=\"7\" r=\"4\" />",
     "tutor": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /><path d=\"M22 10v6\" /><path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />",
-    "wifi": "<path d=\"M12 20h.01\" /><path d=\"M2 8.82a15 15 0 0 1 20 0\" /><path d=\"M5 12.859a10 10 0 0 1 14 0\" /><path d=\"M8.5 16.429a5 5 0 0 1 7 0\" />",
-    "wifiOff": "<path d=\"M12 20h.01\" /><path d=\"M8.5 16.429a5 5 0 0 1 7 0\" /><path d=\"M5 12.859a10 10 0 0 1 5.17-2.69\" /><path d=\"M19 12.859a10 10 0 0 0-2.007-1.523\" /><path d=\"M2 8.82a15 15 0 0 1 4.177-2.643\" /><path d=\"M22 8.82a15 15 0 0 0-11.288-3.764\" /><path d=\"m2 2 20 20\" />",
-    "support": "<path d=\"M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16\" /><path d=\"m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9\" /><path d=\"m2 15 6 6\" /><path d=\"M19.5 8.5c.7-.7 1.5-1.6 1.5-2.7A2.73 2.73 0 0 0 16 4a2.78 2.78 0 0 0-5 1.8c0 1.2.8 2 1.5 2.8L16 12Z\" />",
-    "bell": "<path d=\"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9\" /><path d=\"M10.3 21a1.94 1.94 0 0 0 3.4 0\" />",
     "job": "<path d=\"M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\" /><rect width=\"20\" height=\"14\" x=\"2\" y=\"6\" rx=\"2\" />",
     "ai": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /><path d=\"M20 3v4\" /><path d=\"M22 5h-4\" /><path d=\"M4 17v2\" /><path d=\"M5 18H3\" />",
     "telegram": "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /><path d=\"m21.854 2.147-10.94 10.939\" />",
@@ -417,13 +430,24 @@
   /* ICONS:END */
 
   /* ------------------------------------------------------------------ util */
+  // Wraps every UI handler: an unexpected error is logged for developers and shown to the
+  // learner in words (the element listens for "dba-error" and shows genericError).
+  function safe(fn) {
+    return function (e) {
+      try { return fn.apply(this, arguments); } catch (err) {
+        if (window.console) console.error('[db-assistant]', err);
+        var target = (e && e.currentTarget) || this;
+        if (target && target.dispatchEvent) target.dispatchEvent(new CustomEvent('dba-error', { bubbles: true }));
+      }
+    };
+  }
   function h(tag, attrs, kids) {
     var el = document.createElement(tag);
     if (attrs) Object.keys(attrs).forEach(function (k) {
       var v = attrs[k];
       if (v === null || v === undefined || v === false) return;
       if (k === 'text') el.textContent = v;
-      else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+      else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), safe(v));
       else el.setAttribute(k, v === true ? '' : v);
     });
     (kids || []).forEach(function (c) { if (c) el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
@@ -437,6 +461,7 @@
     return t.firstChild;
   }
   // Decorative emoji: aria-hidden so screen readers do not read "light bulb" in the middle of Amharic.
+  function logoEl() { var t = document.createElement('span'); t.innerHTML = LOGO; return t.firstChild; }
   function emoji(ch) { return h('span', { class: 'emoji', 'aria-hidden': 'true', text: ch }); }
   // Button content = icon + text span (the span carries data-t so language changes keep the icon).
   function iconText(name, attrs, extra) { return [icon(name, extra), h('span', attrs)]; }
@@ -635,6 +660,11 @@
     '.sources h3,.note,.intro p,.consent h3,.form h3,.share p,details.data summary{display:flex;align-items:center;gap:0.375rem;flex-wrap:wrap;}',
     '.head h2{display:flex;align-items:center;gap:0.5rem;}',
     '.head h2 .icon{inline-size:1.5rem;block-size:1.5rem;}',
+    '.logo{inline-size:1.75rem;block-size:1.75rem;flex:none;}',
+    '.lg-a{fill:var(--logo-a,#000000);}.lg-b{fill:var(--logo-b,#FFFFFF);}.lg-bars{fill:none;stroke:var(--logo-a,#000000);stroke-width:12;stroke-linecap:round;}',
+    '.head{--logo-a:var(--c-text);--logo-b:var(--c-bg);}',
+    '.launcher{--logo-a:#FFFFFF;--logo-b:var(--c-btn);}',
+    '.launcher .logo{inline-size:1.75rem;block-size:1.75rem;}',
     '.launcher{position:fixed;inset-inline-end:0;inset-block-start:50%;transform:translateY(-50%);z-index:2147483000;border-radius:999px;border-start-end-radius:0;border-end-end-radius:0;border:2px solid #FFFFFF;border-inline-end:0;background:var(--c-btn);color:var(--c-btn-text);font-weight:600;padding:0.5rem 1rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.35);}',
     '.root.pos-start .launcher{inset-inline-end:auto;inset-inline-start:0;border-radius:999px;border-start-start-radius:0;border-end-start-radius:0;border-inline-end:2px solid #FFFFFF;border-inline-start:0;}',
     '.root.pos-start dialog.panel{inset-inline-end:auto;inset-inline-start:0;border-inline-start:0;border-inline-end:1px solid var(--c-border);}',
@@ -711,7 +741,12 @@
     '.filebtn:focus-within{outline:3px solid var(--c-focus);outline-offset:2px;box-shadow:0 0 0 2px var(--c-text);}'
   ].join('\n');
 
-  var ICON_VOICE = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm4 5v5h1.6V8zm3.2-2v9h1.6V6zm3.2 3v3h1.6V9z"/></svg>';
+  // SYLY voice-bubble logo (traced from .claude/assets/SYLY-voice-icon-bw.png, demo/assets/syly-logo.svg).
+  // Colours come from --logo-a (square, bars) and --logo-b (bubble, dot), so it fits any background.
+  var LOGO = '<svg class="logo" viewBox="0 0 200 200" aria-hidden="true" focusable="false">' +
+    '<rect class="lg-a" width="200" height="200" rx="46"/><rect class="lg-b" x="28" y="52" width="143" height="83" rx="9"/>' +
+    '<path class="lg-b" d="M72 134H104L72 163Z"/><circle class="lg-a" cx="164" cy="40" r="16"/><circle class="lg-b" cx="164" cy="40" r="12"/>' +
+    '<path class="lg-bars" d="M55.5 84V103M77.5 72V115M99.5 62V125M121.5 72V115M143.5 84V103"/></svg>';
 
   /* --------------------------------------------------------------- element */
   class DbAssistant extends HTMLElement {
@@ -814,6 +849,8 @@
       var style = h('style');
       style.textContent = CSS;
       var wrap = this.$root = h('div', { class: 'root' });
+      var me = this;
+      wrap.addEventListener('dba-error', function () { me._status(me._t.genericError); });
       root.appendChild(style);
       root.appendChild(wrap);
 
@@ -886,7 +923,7 @@
 
       // panel mode: launcher + dialog
       this.$launcher = h('button', { type: 'button', class: 'btn launcher', 'aria-haspopup': 'dialog', 'aria-expanded': 'false', 'aria-controls': 'panel', onclick: function () { self.open(); } });
-      this.$launcher.innerHTML = ICON_VOICE;
+      this.$launcher.innerHTML = LOGO;
       this.$launcher.appendChild(h('span', tx('launcher')));
 
       this.$langSel = h('select', { id: 'lang', onchange: function (e) { self.setAttribute('lang', e.target.value); } });
@@ -896,7 +933,7 @@
       } }, iconText('online', tx('onlineAnswers')));
       var head = h('header', { class: 'head' }, [
         h('div', { class: 'head-row' }, [
-          h('h2', { id: 'title' }, [icon('bot'), h('span', tx('title'))]),
+          h('h2', { id: 'title' }, [logoEl(), h('span', tx('title'))]),
           h('button', { type: 'button', class: 'btn', onclick: function () { self.close(); } }, iconText('close', tx('close')))
         ]),
         h('div', { class: 'tools' }, [
@@ -1035,7 +1072,7 @@
     _loadContent() {
       var self = this;
       var src = this.getAttribute('content');
-      var url = src ? new URL(src, location.href).href : (this._apiBase() ? this._apiBase() + '/v1/content' : null);
+      var url = src ? new URL(src, document.baseURI).href : (this._apiBase() ? this._apiBase() + '/v1/content' : null);
       if (!url) return;
       var cacheKey = 'content:' + url;
       var use = function (data) {
@@ -1046,7 +1083,7 @@
       if (cached) use(cached);
       fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
         .then(function (data) { use(data); save(cacheKey, data); })
-        .catch(function () { /* offline: cached copy (if any) stays in use */ });
+        .catch(function () { if (!self._index) self._contentFailed = true; /* else the cached copy stays in use */ });
     }
 
     /* api */
@@ -1122,6 +1159,10 @@
     }
 
     _answerLocal(text, local) {
+      if (!this._index && this._contentFailed) {
+        this._addMessage({ role: 'bot', emoji: '⚠️', text: this._t.contentUnavailable, offerHelp: true });
+        return;
+      }
       if (!local || !local.found) {
         if (!navigator.onLine && this._apiBase()) {
           this._enqueue({ type: 'ask', text: text });
@@ -1185,7 +1226,7 @@
         var ul = h('ul');
         m.sources.forEach(function (s) {
           var a = h('a', { href: s.url }, [h('bdi', { text: s.title || s.url })]);
-          a.addEventListener('click', function (e) { self._followSource(e, a); });
+          a.addEventListener('click', safe(function (e) { self._followSource(e, a); }));
           ul.appendChild(h('li', null, [a]));
         });
         li.appendChild(h('div', { class: 'sources' }, [h('h3', null, [icon('sources'), h('span', { text: this.getText('sources', m.lang) })]), ul]));
@@ -1195,7 +1236,7 @@
       if (m.role !== 'you') {
         var actions = h('div', { class: 'actions' });
         var listen = h('button', { type: 'button', class: 'btn', 'aria-pressed': 'false' }, iconText('listen', { 'data-t': 'listen', text: t.listen }));
-        listen.addEventListener('click', function () { self._listen(m, listen); });
+        listen.addEventListener('click', safe(function () { self._listen(m, listen); }));
         actions.appendChild(listen);
         if (m.offerHelp) actions.appendChild(h('button', { type: 'button', class: 'btn primary', onclick: function () { self._escalate(); } }, iconText('talk', { 'data-t': 'talk', text: t.talk })));
         (m.extra || []).forEach(function (el) { actions.appendChild(el); });
@@ -1212,7 +1253,7 @@
 
     /* links (SDS 1.4, FR-T5): scroll to the host section and move focus to its heading */
     _followSource(e, link) {
-      var url = new URL(link.getAttribute('href'), location.href);
+      var url = new URL(link.getAttribute('href'), document.baseURI);
       if (url.pathname !== location.pathname || !url.hash) return; // other page: normal navigation
       var target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
       if (!target) return;
@@ -1293,7 +1334,7 @@
         tools.push(h('button', { type: 'button', class: 'btn', onclick: function () { self._startShare(); } }, iconText('share', { text: t.shareScreen })));
       }
       var file = h('input', { type: 'file', accept: 'image/*' });
-      file.addEventListener('change', function () { if (file.files && file.files[0]) self._sendScreenshot(file.files[0]); file.value = ''; });
+      file.addEventListener('change', safe(function () { if (file.files && file.files[0]) self._sendScreenshot(file.files[0]); file.value = ''; }));
       tools.push(h('label', { class: 'btn filebtn' }, [icon('screenshot'), h('span', { text: t.sendScreenshot }), file]));
       return tools;
     }
@@ -1317,7 +1358,7 @@
         URL.revokeObjectURL(url);
         self._fetchJson(self._ticketPath('/screenshot'), { method: 'POST', body: JSON.stringify({ screenshot: data }) })
           .then(function () { self._status(t.screenshotSent); })
-          .catch(function () { self._status(t.screenshotTooBig); });
+          .catch(function (err) { self._status(err && err.status === 400 ? t.screenshotTooBig : t.screenshotFailed); });
       };
       img.onerror = function () { self._status(t.screenshotTooBig); };
       img.src = url;
@@ -1341,7 +1382,10 @@
           }, 'image/jpeg', 0.6);
         };
         self._sharing.timer = setInterval(send, 2000);
-      }).catch(function () { /* learner cancelled the browser's picker: nothing to say */ });
+      }).catch(function (err) {
+        // NotAllowedError = the learner cancelled the browser's picker: nothing to say.
+        if (!err || err.name !== 'NotAllowedError') self._status(t.shareFailed);
+      });
     }
     _stopShare() {
       if (!this._sharing) return;
@@ -1367,17 +1411,18 @@
     }
     _deleteData() {
       var self = this, old = this._sessionId;
-      var finish = function () {
+      var finish = function (serverFailed) {
         self._history = [];
         self.$log.textContent = '';
         self.$intro.hidden = false;
         self._ticket = null; clearInterval(self._poll);
         save('queue', []);
         self._sessionId = uid(); save('cid', self._sessionId);
-        self._status(self._t.dataDeleted);
+        self._status(serverFailed === true ? self._t.dataDeleteFailed : self._t.dataDeleted);
       };
       if (!this._apiBase()) { finish(); return; }
-      this._fetchJson('/v1/data/' + encodeURIComponent(old), { method: 'DELETE' }).then(finish).catch(finish);
+      this._fetchJson('/v1/data/' + encodeURIComponent(old), { method: 'DELETE' })
+        .then(function () { finish(false); }, function () { finish(true); });
     }
 
     /* interview support request (FR-J4): one question per step, review, then a person */
@@ -1509,7 +1554,10 @@
         for (var i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
         self.$q.value = base + text;
       };
-      rec.onerror = function () { self._status(self._t.micError); };
+      rec.onerror = function (e) {
+        var denied = e && (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture');
+        self._status(denied ? self._t.micDenied : self._t.micError);
+      };
       rec.onend = function () {
         self._recognizer = null;
         self.$mic.setAttribute('aria-pressed', 'false');
