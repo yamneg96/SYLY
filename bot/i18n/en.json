@@ -1,0 +1,22 @@
+{
+  "start": "Hello. I answer questions about your ALX lesson, only from the course, with a link to the part I used. Write or send a voice note. /help reaches a person. /alerts gets job alerts. /lang changes language.",
+  "chooseLang": "Choose your language:",
+  "langSet": "Language set to English.",
+  "consentAsk": "To answer, I can send your question to an online AI service. Nothing about who you are is sent. Voice notes also need an online service.",
+  "consentYes": "Allow online answers",
+  "consentNo": "Use answers from the course only",
+  "consentSaved": "Saved. You can change this with /consent.",
+  "notFound": "I could not find this in the course. Send /help to reach a person.",
+  "noAdvice": "I cannot give medical, legal or immigration advice. Send /help to reach a person.",
+  "source": "Source",
+  "voiceHeard": "I heard: {text}",
+  "voiceNeedsConsent": "Voice notes need an online speech service. Send /consent to allow it, or type your question.",
+  "voiceFailed": "I could not understand the voice note. Please type your question.",
+  "helpOnline": "A tutor is joining. Their reply will come here. Request number: {id}",
+  "helpLater": "A tutor will answer here. It may take until morning. Request number: {id}",
+  "ticketLinked": "Done. The tutor's reply to request {id} will also come here.",
+  "alertsUsage": "Send /alerts and a word, for example: /alerts accountant Addis Ababa",
+  "alertsOn": "Alerts on for “{keyword}”. Send /stop to stop.",
+  "stopped": "All your job alerts are stopped.",
+  "apiDown": "The service is not reachable right now. Please try again later."
+}
