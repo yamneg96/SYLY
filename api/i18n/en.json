@@ -1,0 +1,18 @@
+{
+  "fromSection": "From the section “{title}”:",
+  "notFound": "I could not find this in the course.",
+  "noAdvice": "I cannot give medical, legal or immigration advice. A person can help you.",
+  "jobTrust": "Check on the employer's own site. Never pay to apply.",
+  "jobDeadline": "Apply by {date}.",
+  "jobDeadlinePassed": "The deadline for this job has passed ({date}).",
+  "smsUsage": "Send ASK and a question, JOBS and a word, ALERT and a word, HELP for a person, or STOP.",
+  "smsNotFound": "Not found in the course. Send HELP to reach a person.",
+  "smsSource": "Lesson part {n}",
+  "smsHelpOpened": "Request {id} opened. A tutor will reply by text.",
+  "smsJobs": "{n} jobs: {list}. Send ALERT and a word for alerts.",
+  "smsNoJobs": "No open jobs match. Send ALERT and a word to be told later.",
+  "smsAlertOn": "Alerts on for {keyword}. Send STOP to stop.",
+  "smsStopped": "You will get no more messages from us.",
+  "alertJob": "New job: {title}, {place}, apply by {date}. {url}",
+  "helperReply": "Tutor reply (request {id}): {text}"
+}

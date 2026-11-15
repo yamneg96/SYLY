@@ -1,0 +1,18 @@
+{
+  "fromSection": "ከ“{title}” ክፍል፦",
+  "notFound": "ይህንን በትምህርቱ ውስጥ ማግኘት አልቻልኩም።",
+  "noAdvice": "የሕክምና፣ የሕግ ወይም የኢሚግሬሽን ምክር መስጠት አልችልም። ሰው ሊረዳዎት ይችላል።",
+  "jobTrust": "በአሠሪው የራሱ ድረ-ገጽ ላይ ያረጋግጡ። ለማመልከት ፈጽሞ ገንዘብ አይክፈሉ።",
+  "jobDeadline": "እስከ {date} ድረስ ያመልክቱ።",
+  "jobDeadlinePassed": "የዚህ ሥራ የማመልከቻ ጊዜ አልፏል ({date})።",
+  "smsUsage": "ASK እና ጥያቄ፣ JOBS እና ቃል፣ ALERT እና ቃል፣ ለሰው HELP፣ ወይም STOP ይላኩ።",
+  "smsNotFound": "በትምህርቱ ውስጥ አልተገኘም። ሰው ለማግኘት HELP ይላኩ።",
+  "smsSource": "የትምህርቱ ክፍል {n}",
+  "smsHelpOpened": "ጥያቄ {id} ተከፍቷል። አስጠኚ በጽሑፍ ይመልሳል።",
+  "smsJobs": "{n} ሥራዎች፦ {list}። ለማሳወቂያ ALERT እና ቃል ይላኩ።",
+  "smsNoJobs": "የሚዛመድ ክፍት ሥራ የለም። በኋላ እንዲነገርዎ ALERT እና ቃል ይላኩ።",
+  "smsAlertOn": "ለ{keyword} ማሳወቂያ በርቷል። ለማቆም STOP ይላኩ።",
+  "smsStopped": "ከእንግዲህ ከእኛ መልእክት አይደርስዎትም።",
+  "alertJob": "አዲስ ሥራ፦ {title}፣ {place}፣ እስከ {date} ያመልክቱ። {url}",
+  "helperReply": "የአስጠኚ መልስ (ጥያቄ {id})፦ {text}"
+}
