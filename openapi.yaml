@@ -1,0 +1,1670 @@
+# Generated from the FastAPI app: python api/scripts/export_openapi.py
+openapi: 3.1.0
+info:
+  title: SYLY db-assistant API
+  description: Course-grounded multilingual assistant, human help, text route and
+    career gateway (Track 3).
+  version: 1.0.0
+paths:
+  /api/v1/health:
+    get:
+      tags:
+      - assistant
+      summary: Health
+      operationId: health_api_v1_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+                title: Response Health Api V1 Health Get
+  /api/v1/ask:
+    post:
+      tags:
+      - assistant
+      summary: Answer a question from the course, with sources
+      operationId: ask_api_v1_ask_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AskIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AskOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/content:
+    get:
+      tags:
+      - assistant
+      summary: The indexed sections (lessons and jobs)
+      operationId: get_content_api_v1_content_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentOut'
+    post:
+      tags:
+      - assistant
+      summary: Host sends its lessons to be indexed
+      operationId: post_content_api_v1_content_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Created'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/config:
+    get:
+      tags:
+      - assistant
+      summary: What the widget needs to know at start
+      operationId: get_config_api_v1_config_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigOut'
+  /api/v1/escalations:
+    post:
+      tags:
+      - human help
+      summary: 'Talk to a person: open a ticket'
+      operationId: create_escalation_api_v1_escalations_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EscalationIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EscalationOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - human help
+      summary: 'Helper page: tickets by status'
+      operationId: list_escalations_api_v1_escalations_get
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          pattern: ^(waiting|active|closed|open|all)$
+          default: waiting
+          title: Status
+      - name: x-helper-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Helper-Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketOut'
+                title: Response List Escalations Api V1 Escalations Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/escalations/{ticket_id}/screenshot:
+    get:
+      tags:
+      - human help
+      summary: 'Helper page: the learner''s screenshot'
+      operationId: get_screenshot_api_v1_escalations__ticket_id__screenshot_get
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Ticket Id
+      - name: x-helper-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Helper-Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Screenshot Api V1 Escalations  Ticket Id  Screenshot
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - human help
+      summary: 'Learner: attach a screenshot (Android fallback)'
+      operationId: post_screenshot_api_v1_escalations__ticket_id__screenshot_post
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Ticket Id
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 64
+          title: Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScreenshotIn'
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/escalations/{ticket_id}:
+    patch:
+      tags:
+      - human help
+      summary: 'Helper: accept or close a ticket'
+      operationId: update_escalation_api_v1_escalations__ticket_id__patch
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Ticket Id
+      - name: x-helper-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Helper-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/escalations/{ticket_id}/messages:
+    get:
+      tags:
+      - human help
+      summary: Messages after an id (polling)
+      operationId: list_messages_api_v1_escalations__ticket_id__messages_get
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Ticket Id
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          title: After
+      - name: token
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Token
+      - name: x-helper-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Helper-Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageOut'
+                title: Response List Messages Api V1 Escalations  Ticket Id  Messages
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - human help
+      summary: Helper or learner message
+      operationId: post_message_api_v1_escalations__ticket_id__messages_post
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Ticket Id
+      - name: token
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Token
+      - name: x-helper-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Helper-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/helper/presence:
+    post:
+      tags:
+      - human help
+      summary: 'Helper page heartbeat: a tutor is online'
+      operationId: presence_api_v1_helper_presence_post
+      parameters:
+      - name: name
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 80
+          default: Tutor
+          title: Name
+      - name: x-helper-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Helper-Key
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/webhooks:
+    post:
+      tags:
+      - human help
+      summary: Register a URL for ticket.opened
+      operationId: register_webhook_api_v1_webhooks_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Created'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/escalations/{ticket_id}/telegram:
+    post:
+      tags:
+      - human help
+      summary: 'Bot: send tutor replies for this ticket to a Telegram chat'
+      operationId: link_telegram_api_v1_escalations__ticket_id__telegram_post
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Ticket Id
+      - name: chat_id
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 40
+          title: Chat Id
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 64
+          title: Token
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/escalations/{ticket_id}/screen:
+    post:
+      tags:
+      - human help
+      summary: 'Learner: latest screen-share frame (JPEG, memory only)'
+      operationId: post_frame_api_v1_escalations__ticket_id__screen_post
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Ticket Id
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 64
+          title: Token
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - human help
+      summary: 'Helper: latest screen-share frame'
+      operationId: get_frame_api_v1_escalations__ticket_id__screen_get
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Ticket Id
+      - name: x-helper-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Helper-Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+            image/jpeg: {}
+        '404':
+          description: Not sharing
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/jobs:
+    get:
+      tags:
+      - career gateway
+      summary: Test jobs, each with its JobPosting JSON-LD
+      operationId: list_jobs_api_v1_jobs_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Jobs Api V1 Jobs Get
+    post:
+      tags:
+      - career gateway
+      summary: Add or update a job; matching alerts are sent
+      operationId: add_job_api_v1_jobs_post
+      parameters:
+      - name: x-helper-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Helper-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Created'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/jobs/{job_id}:
+    get:
+      tags:
+      - career gateway
+      summary: One job with its JobPosting JSON-LD
+      operationId: get_job_api_v1_jobs__job_id__get
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Job Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Job Api V1 Jobs  Job Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/alerts:
+    post:
+      tags:
+      - career gateway
+      summary: Subscribe to job alerts (Telegram or text)
+      operationId: subscribe_api_v1_alerts_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Created'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - career gateway
+      summary: Unsubscribe every alert for an address (STOP)
+      operationId: unsubscribe_all_api_v1_alerts_delete
+      parameters:
+      - name: channel
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Channel
+      - name: address
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Address
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Created'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/alerts/{alert_id}:
+    delete:
+      tags:
+      - career gateway
+      summary: Unsubscribe one alert
+      operationId: unsubscribe_api_v1_alerts__alert_id__delete
+      parameters:
+      - name: alert_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Alert Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/accommodations:
+    post:
+      tags:
+      - career gateway
+      summary: 'Interview support request: goes to a person'
+      operationId: request_accommodation_api_v1_accommodations_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccommodationIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Created'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - career gateway
+      summary: 'Helper only: interview support requests'
+      operationId: list_accommodations_api_v1_accommodations_get
+      parameters:
+      - name: x-helper-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Helper-Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Accommodations Api V1 Accommodations Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sms/outbox:
+    get:
+      tags:
+      - career gateway
+      summary: 'Helper only: text messages waiting for a gateway'
+      operationId: outbox_api_v1_sms_outbox_get
+      parameters:
+      - name: x-helper-key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Helper-Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Outbox Api V1 Sms Outbox Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /sms/inbound:
+    post:
+      tags:
+      - text route
+      summary: 'Text route: reply in at most 160 characters'
+      operationId: inbound_sms_inbound_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/plain:
+              schema:
+                type: string
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/voice/speak:
+    post:
+      tags:
+      - voice
+      summary: 'Text to speech: edge-tts, then Addis AI if a key is set (cached).
+        Sends text online: consent first'
+      operationId: speak_api_v1_voice_speak_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpeakIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            audio/mpeg: {}
+        '503':
+          description: No voice service reachable
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/voice/transcribe:
+    post:
+      tags:
+      - voice
+      summary: 'Optional speech to text: Addis AI for Amharic (wav/mp3/m4a/webm),
+        else Groq Whisper. Sends audio online: consent first'
+      operationId: transcribe_api_v1_voice_transcribe_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_transcribe_api_v1_voice_transcribe_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Transcribe Api V1 Voice Transcribe Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/data/{conversation_id}:
+    get:
+      tags:
+      - data and teacher
+      summary: Everything held for this conversation id
+      operationId: export_api_v1_data__conversation_id__get
+      parameters:
+      - name: conversation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Conversation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Export Api V1 Data  Conversation Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - data and teacher
+      summary: Delete everything held for this conversation id
+      operationId: erase_api_v1_data__conversation_id__delete
+      parameters:
+      - name: conversation_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Conversation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Erase Api V1 Data  Conversation Id  Delete
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/stats/questions:
+    get:
+      tags:
+      - data and teacher
+      summary: 'Teacher view: most asked questions, counts only'
+      operationId: top_questions_api_v1_stats_questions_get
+      parameters:
+      - name: min_count
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 5
+          default: 5
+          title: Min Count
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Top Questions Api V1 Stats Questions Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    AccommodationIn:
+      properties:
+        job_id:
+          type: string
+          maxLength: 100
+          title: Job Id
+        needs:
+          items:
+            type: string
+            enum:
+            - interpreter
+            - extra_time
+            - written_questions
+            - accessible_venue
+            - other
+          type: array
+          minItems: 1
+          title: Needs
+        note:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Note
+        contact_channel:
+          type: string
+          enum:
+          - none
+          - telegram
+          - sms
+          - email
+          title: Contact Channel
+          default: none
+        contact:
+          anyOf:
+          - type: string
+            maxLength: 120
+          - type: 'null'
+          title: Contact
+        language:
+          type: string
+          enum:
+          - am
+          - en
+          - ar
+          title: Language
+          default: am
+      type: object
+      required:
+      - job_id
+      - needs
+      title: AccommodationIn
+    AlertIn:
+      properties:
+        channel:
+          type: string
+          enum:
+          - telegram
+          - sms
+          title: Channel
+        address:
+          type: string
+          maxLength: 40
+          minLength: 3
+          title: Address
+          description: Telegram chat id or phone (09…, 07…, +251…)
+        keyword:
+          type: string
+          maxLength: 100
+          title: Keyword
+          default: ''
+        location:
+          type: string
+          maxLength: 100
+          title: Location
+          default: ''
+        language:
+          type: string
+          enum:
+          - am
+          - en
+          - ar
+          title: Language
+          default: am
+      type: object
+      required:
+      - channel
+      - address
+      title: AlertIn
+    AskIn:
+      properties:
+        question:
+          type: string
+          maxLength: 1000
+          minLength: 1
+          title: Question
+          examples:
+          - AI ምናባዊ ረዳቶችን ይተካል?
+        language:
+          type: string
+          enum:
+          - am
+          - en
+          - ar
+          title: Language
+          default: am
+        page_url:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Page Url
+        conversation_id:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Conversation Id
+        allow_ai:
+          type: boolean
+          title: Allow Ai
+          description: Learner consented to online AI answers (NFR-S2)
+          default: false
+        simple:
+          type: boolean
+          title: Simple
+          default: false
+      type: object
+      required:
+      - question
+      title: AskIn
+    AskOut:
+      properties:
+        answer:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Answer
+          description: null when not found in the course or refused
+        sources:
+          items:
+            $ref: '#/components/schemas/Source'
+          type: array
+          title: Sources
+        provider:
+          type: string
+          title: Provider
+          description: gemini | groq | ollama | none
+        language:
+          type: string
+          title: Language
+        conversation_id:
+          type: string
+          title: Conversation Id
+        reason:
+          anyOf:
+          - type: string
+            enum:
+            - not_found
+            - no_advice
+          - type: 'null'
+          title: Reason
+        audio:
+          items:
+            type: string
+          type: array
+          title: Audio
+          description: Pre-generated audio paths under /module/audio/
+      type: object
+      required:
+      - answer
+      - sources
+      - provider
+      - language
+      - conversation_id
+      title: AskOut
+    Body_transcribe_api_v1_voice_transcribe_post:
+      properties:
+        file:
+          type: string
+          contentMediaType: application/octet-stream
+          title: File
+        language:
+          type: string
+          title: Language
+          default: am
+      type: object
+      required:
+      - file
+      title: Body_transcribe_api_v1_voice_transcribe_post
+    ConfigOut:
+      properties:
+        ai:
+          type: boolean
+          title: Ai
+          description: An AI provider is configured; the widget shows the consent
+            card
+        provider:
+          type: string
+          title: Provider
+        helper_online:
+          type: boolean
+          title: Helper Online
+        telegram_bot:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Telegram Bot
+      type: object
+      required:
+      - ai
+      - provider
+      - helper_online
+      title: ConfigOut
+    ContentIn:
+      properties:
+        sections:
+          items:
+            $ref: '#/components/schemas/SectionIn'
+          type: array
+          minItems: 1
+          title: Sections
+      type: object
+      required:
+      - sections
+      title: ContentIn
+    ContentOut:
+      properties:
+        sections:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Sections
+      type: object
+      required:
+      - sections
+      title: ContentOut
+    ConversationLine:
+      properties:
+        role:
+          type: string
+          enum:
+          - learner
+          - assistant
+          - tutor
+          - helper
+          - system
+          title: Role
+          default: learner
+        text:
+          type: string
+          maxLength: 4000
+          title: Text
+        lang:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lang
+      type: object
+      required:
+      - text
+      title: ConversationLine
+    Created:
+      properties:
+        id:
+          anyOf:
+          - type: integer
+          - type: string
+          title: Id
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+      - id
+      - message
+      title: Created
+    EscalationIn:
+      properties:
+        conversation:
+          items:
+            $ref: '#/components/schemas/ConversationLine'
+          type: array
+          maxItems: 50
+          title: Conversation
+        page_url:
+          anyOf:
+          - type: string
+            maxLength: 1000
+          - type: 'null'
+          title: Page Url
+        section:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Section
+        language:
+          type: string
+          enum:
+          - am
+          - en
+          - ar
+          title: Language
+          default: am
+        conversation_id:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Conversation Id
+        screenshot:
+          anyOf:
+          - type: string
+            maxLength: 3000000
+          - type: 'null'
+          title: Screenshot
+          description: data:image/... URL (Android fallback)
+        channel:
+          type: string
+          enum:
+          - web
+          - telegram
+          - sms
+          title: Channel
+          default: web
+        notify_telegram_chat:
+          anyOf:
+          - type: string
+            maxLength: 40
+          - type: 'null'
+          title: Notify Telegram Chat
+      type: object
+      title: EscalationIn
+    EscalationOut:
+      properties:
+        ticketId:
+          type: integer
+          title: Ticketid
+        helper_online:
+          type: boolean
+          title: Helper Online
+        token:
+          type: string
+          title: Token
+          description: Send as ?token= to read or post this ticket's messages
+        telegram_link:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Telegram Link
+          description: Open to get tutor replies on Telegram
+      type: object
+      required:
+      - ticketId
+      - helper_online
+      - token
+      title: EscalationOut
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    JobIn:
+      properties:
+        id:
+          type: string
+          maxLength: 100
+          minLength: 1
+          pattern: ^[a-z0-9-]+$
+          title: Id
+        title_en:
+          type: string
+          title: Title En
+        title_am:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title Am
+        employer:
+          type: string
+          title: Employer
+        location_en:
+          type: string
+          title: Location En
+        location_am:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location Am
+        employment_type:
+          type: string
+          title: Employment Type
+          default: FULL_TIME
+        remote:
+          type: boolean
+          title: Remote
+          default: false
+        date_posted:
+          type: string
+          title: Date Posted
+        deadline:
+          type: string
+          title: Deadline
+        summary_en:
+          type: string
+          title: Summary En
+        summary_am:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Summary Am
+      additionalProperties: true
+      type: object
+      required:
+      - id
+      - title_en
+      - employer
+      - location_en
+      - date_posted
+      - deadline
+      - summary_en
+      title: JobIn
+    MessageIn:
+      properties:
+        author:
+          type: string
+          enum:
+          - learner
+          - helper
+          - system
+          title: Author
+          description: '"system" with text "screen_request" asks the learner to share
+            (helper only)'
+          default: learner
+        text:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Text
+        name:
+          anyOf:
+          - type: string
+            maxLength: 80
+          - type: 'null'
+          title: Name
+        lang:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lang
+      type: object
+      required:
+      - text
+      title: MessageIn
+    MessageOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        author:
+          type: string
+          title: Author
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        text:
+          type: string
+          title: Text
+        lang:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lang
+        sources:
+          items: {}
+          type: array
+          title: Sources
+          default: []
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - author
+      - name
+      - text
+      - lang
+      - created_at
+      title: MessageOut
+    ScreenshotIn:
+      properties:
+        screenshot:
+          type: string
+          maxLength: 3000000
+          title: Screenshot
+          description: data:image/... URL
+      type: object
+      required:
+      - screenshot
+      title: ScreenshotIn
+    SectionIn:
+      properties:
+        id:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Id
+        url:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Url
+        title_en:
+          type: string
+          title: Title En
+        text_en:
+          type: string
+          title: Text En
+        title_am:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title Am
+        text_am:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Text Am
+        keywords_en:
+          items:
+            type: string
+          type: array
+          title: Keywords En
+          default: []
+        keywords_am:
+          items:
+            type: string
+          type: array
+          title: Keywords Am
+          default: []
+      additionalProperties: true
+      type: object
+      required:
+      - id
+      - url
+      - title_en
+      - text_en
+      title: SectionIn
+    SmsIn:
+      properties:
+        from:
+          type: string
+          maxLength: 20
+          minLength: 3
+          title: From
+          examples:
+          - 0911000000
+        text:
+          type: string
+          maxLength: 480
+          minLength: 1
+          title: Text
+          examples:
+          - JOBS accountant
+      type: object
+      required:
+      - from
+      - text
+      title: SmsIn
+    Source:
+      properties:
+        title:
+          type: string
+          title: Title
+        url:
+          type: string
+          title: Url
+      type: object
+      required:
+      - title
+      - url
+      title: Source
+    SpeakIn:
+      properties:
+        text:
+          type: string
+          maxLength: 3000
+          minLength: 1
+          title: Text
+        language:
+          type: string
+          enum:
+          - am
+          - en
+          - ar
+          title: Language
+          default: am
+      type: object
+      required:
+      - text
+      title: SpeakIn
+    TicketOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        channel:
+          type: string
+          title: Channel
+        status:
+          type: string
+          title: Status
+        language:
+          type: string
+          title: Language
+        page_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Page Url
+        section:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Section
+        has_screenshot:
+          type: boolean
+          title: Has Screenshot
+          default: false
+        helper_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Helper Name
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        waiting_minutes:
+          type: integer
+          title: Waiting Minutes
+          default: 0
+      type: object
+      required:
+      - id
+      - channel
+      - status
+      - language
+      - page_url
+      - section
+      - helper_name
+      - created_at
+      title: TicketOut
+    TicketUpdate:
+      properties:
+        status:
+          type: string
+          enum:
+          - waiting
+          - active
+          - closed
+          title: Status
+        helper_name:
+          anyOf:
+          - type: string
+            maxLength: 80
+          - type: 'null'
+          title: Helper Name
+      type: object
+      required:
+      - status
+      title: TicketUpdate
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    WebhookIn:
+      properties:
+        url:
+          type: string
+          maxLength: 2083
+          minLength: 1
+          format: uri
+          title: Url
+        events:
+          items:
+            type: string
+            const: ticket.opened
+          type: array
+          title: Events
+          default:
+          - ticket.opened
+      type: object
+      required:
+      - url
+      title: WebhookIn
