@@ -1,0 +1,284 @@
+{
+  "notice": "Eval set for the VA lesson (32 in-scope, 11 out-of-scope) (SDS 6). expect = acceptable section ids; [] = out of scope (must answer 'not found'). Amharic questions are a DRAFT and need a native reader check.",
+  "in_scope": [
+    {
+      "q": "Will AI replace virtual assistants?",
+      "lang": "en",
+      "expect": [
+        "artificial-intelligence-and-the-future-of-va-work",
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "How can AI tools help a VA?",
+      "lang": "en",
+      "expect": [
+        "artificial-intelligence-and-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "What tasks can AI do for virtual assistants?",
+      "lang": "en",
+      "expect": [
+        "artificial-intelligence-and-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "Where do human VAs still add value?",
+      "lang": "en",
+      "expect": [
+        "artificial-intelligence-and-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "What is shaping the future of VA work?",
+      "lang": "en",
+      "expect": [
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "Why are remote-first businesses important?",
+      "lang": "en",
+      "expect": [
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "Why do businesses want flexible support?",
+      "lang": "en",
+      "expect": [
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "What skills will clients value?",
+      "lang": "en",
+      "expect": [
+        "what-clients-are-likely-to-value-more-and-more"
+      ]
+    },
+    {
+      "q": "What is AI fluency?",
+      "lang": "en",
+      "expect": [
+        "what-clients-are-likely-to-value-more-and-more"
+      ]
+    },
+    {
+      "q": "Why does specialized expertise matter?",
+      "lang": "en",
+      "expect": [
+        "what-clients-are-likely-to-value-more-and-more",
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "What should an aspiring VA do?",
+      "lang": "en",
+      "expect": [
+        "what-this-means-for-aspiring-virtual-assistants"
+      ]
+    },
+    {
+      "q": "Do I need to master everything immediately?",
+      "lang": "en",
+      "expect": [
+        "what-this-means-for-aspiring-virtual-assistants"
+      ]
+    },
+    {
+      "q": "How do I become a future-ready VA?",
+      "lang": "en",
+      "expect": [
+        "what-this-means-for-aspiring-virtual-assistants"
+      ]
+    },
+    {
+      "q": "Is the future of VA promising?",
+      "lang": "en",
+      "expect": [
+        "so-is-the-future-of-va-promising"
+      ]
+    },
+    {
+      "q": "What roles may a future VA become?",
+      "lang": "en",
+      "expect": [
+        "so-is-the-future-of-va-promising"
+      ]
+    },
+    {
+      "q": "AI ምናባዊ ረዳቶችን ይተካል?",
+      "lang": "am",
+      "expect": [
+        "artificial-intelligence-and-the-future-of-va-work",
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "የAI መሣሪያዎች ምናባዊ ረዳትን እንዴት ይረዳሉ?",
+      "lang": "am",
+      "expect": [
+        "artificial-intelligence-and-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "AI ምን ዓይነት ሥራዎችን ሊሠራ ይችላል?",
+      "lang": "am",
+      "expect": [
+        "artificial-intelligence-and-the-future-of-va-work",
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "የሰው ምናባዊ ረዳቶች አሁንም ለምን ያስፈልጋሉ?",
+      "lang": "am",
+      "expect": [
+        "artificial-intelligence-and-the-future-of-va-work",
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "የምናባዊ ረዳት ሥራን የወደፊት ዕጣ የሚቀርጸው ምንድን ነው?",
+      "lang": "am",
+      "expect": [
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "የርቀት ሥራ ለምን እየጨመረ ነው?",
+      "lang": "am",
+      "expect": [
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "ንግዶች ለምን ተለዋዋጭ ድጋፍ ይፈልጋሉ?",
+      "lang": "am",
+      "expect": [
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "ደንበኞች ምን ዓይነት ክህሎቶችን ያደንቃሉ?",
+      "lang": "am",
+      "expect": [
+        "what-clients-are-likely-to-value-more-and-more"
+      ]
+    },
+    {
+      "q": "የAI ብቃት ምንድን ነው?",
+      "lang": "am",
+      "expect": [
+        "what-clients-are-likely-to-value-more-and-more"
+      ]
+    },
+    {
+      "q": "ልዩ ሙያዊ ብቃት ለምን አስፈላጊ ነው?",
+      "lang": "am",
+      "expect": [
+        "what-clients-are-likely-to-value-more-and-more",
+        "what-is-shaping-the-future-of-va-work"
+      ]
+    },
+    {
+      "q": "ምናባዊ ረዳት መሆን የሚፈልግ ሰው ምን ማድረግ አለበት?",
+      "lang": "am",
+      "expect": [
+        "what-this-means-for-aspiring-virtual-assistants"
+      ]
+    },
+    {
+      "q": "ሁሉንም ነገር ወዲያውኑ መማር አለብኝ?",
+      "lang": "am",
+      "expect": [
+        "what-this-means-for-aspiring-virtual-assistants"
+      ]
+    },
+    {
+      "q": "ለወደፊቱ ዝግጁ ለመሆን ምን ያስፈልገኛል?",
+      "lang": "am",
+      "expect": [
+        "what-this-means-for-aspiring-virtual-assistants"
+      ]
+    },
+    {
+      "q": "የምናባዊ ረዳት ሙያ ተስፋ ሰጪ ነው?",
+      "lang": "am",
+      "expect": [
+        "so-is-the-future-of-va-promising"
+      ]
+    },
+    {
+      "q": "የወደፊቱ ምናባዊ ረዳት ምን ሊሆን ይችላል?",
+      "lang": "am",
+      "expect": [
+        "so-is-the-future-of-va-promising"
+      ]
+    },
+    {
+      "q": "ኤአይ የቨርቹዋል ረዳትን ሥራ ይተካል?",
+      "lang": "am",
+      "expect": [
+        "artificial-intelligence-and-the-future-of-va-work",
+        "what-is-shaping-the-future-of-va-work"
+      ],
+      "from": "Lemi prototype-1 phrasing"
+    },
+    {
+      "q": "የቨርቹዋል ረዳት ሙያ ብሩህ ነው?",
+      "lang": "am",
+      "expect": [
+        "so-is-the-future-of-va-promising"
+      ],
+      "from": "Lemi prototype-1 phrasing"
+    }
+  ],
+  "out_of_scope": [
+    {
+      "q": "How do I reset my Savanna password?",
+      "lang": "en"
+    },
+    {
+      "q": "What is the capital of France?",
+      "lang": "en"
+    },
+    {
+      "q": "How much does the course cost?",
+      "lang": "en"
+    },
+    {
+      "q": "Can you write me a poem about cats?",
+      "lang": "en"
+    },
+    {
+      "q": "How do I pay my tuition fee?",
+      "lang": "en"
+    },
+    {
+      "q": "የይለፍ ቃሌን እንዴት እቀይራለሁ?",
+      "lang": "am"
+    },
+    {
+      "q": "የኢትዮጵያ ዋና ከተማ የት ናት?",
+      "lang": "am"
+    },
+    {
+      "q": "ክፍያውን እንዴት እከፍላለሁ?",
+      "lang": "am"
+    },
+    {
+      "q": "ስለ እግር ኳስ ንገረኝ",
+      "lang": "am"
+    },
+    {
+      "q": "ነገ ዝናብ ይዘንባል?",
+      "lang": "am"
+    },
+    {
+      "q": "ቨርቹዋል ረዳት ደሞዝ ስንት ነው?",
+      "lang": "am"
+    }
+  ]
+}
