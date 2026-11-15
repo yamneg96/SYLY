@@ -1,0 +1,23 @@
+{
+  "launcher": "ጠይቅ",
+  "title": "ሲሊ ረዳት እና አስተማሪ",
+  "close": "ረዳቱን ዝጋ",
+  "languageLabel": "ቋንቋ ይምረጡ",
+  "inputPlaceholder": "ስለዚህ ትምህርት ጥያቄ ይጠይቁ...",
+  "askInputLabel": "የእርስዎ ጥያቄ",
+  "micLabel": "በድምጽ ይናገሩ",
+  "sendLabel": "ጥያቄውን ላክ",
+  "talkToPerson": "ከሰው ጋር ይነጋገሩ",
+  "sources": "ምንጮች",
+  "listen": "አዳምጥ",
+  "online": "መስመር ላይ",
+  "offline": "ከመስመር ውጭ",
+  "queued": "በዚህ ስልክ ላይ ተቀምጧል። መስመር ላይ ሲሆኑ ይላካል።",
+  "notFound": "ይህንን በትምህርቱ ውስጥ ማግኘት አልቻልኩም። ከሰው ጋር መነጋገር ይፈልጋሉ?",
+  "escalatedNotice": "ለአስተማሪ ማሳወቂያ ተልኳል፤ በቅርቡ ያነጋግሩዎታል።",
+  "you": "እርስዎ",
+  "assistant": "ሲሊ አስተማሪ",
+  "simpleMode": "ቀላል ሁነታ",
+  "statusReady": "ጥያቄ ለመቀበል ዝግጁ ነው",
+  "skipToPanel": "ወደ ረዳቱ ይዝለሉ"
+}

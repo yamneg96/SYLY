@@ -1,0 +1,23 @@
+{
+  "launcher": "Ask SYLY",
+  "title": "SYLY Tutor & Assistant",
+  "close": "Close assistant panel",
+  "languageLabel": "Select language",
+  "inputPlaceholder": "Ask a question about this lesson...",
+  "askInputLabel": "Your question",
+  "micLabel": "Voice input (Speech to text)",
+  "sendLabel": "Send your question",
+  "talkToPerson": "Talk to a person",
+  "sources": "Sources",
+  "listen": "Listen",
+  "online": "Online",
+  "offline": "Offline",
+  "queued": "Saved on this phone. It will send when you are online.",
+  "notFound": "I could not find this in the course. Would you like to talk to a person?",
+  "escalatedNotice": "A tutor has been notified. You are in the queue for live assistance.",
+  "you": "You",
+  "assistant": "SYLY Tutor",
+  "simpleMode": "Simple mode",
+  "statusReady": "Ready for questions",
+  "skipToPanel": "Skip to assistant"
+}
