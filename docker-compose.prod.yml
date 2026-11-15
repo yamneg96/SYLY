@@ -1,0 +1,13 @@
+# Production overrides (docs/deployment.md):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# - web listens on 127.0.0.1:8080 only; Caddy (or a Cloudflare tunnel) adds HTTPS in front.
+# - every service restarts after a crash or a server reboot.
+services:
+  web:
+    ports: !override
+      - "127.0.0.1:8080:80"
+    restart: unless-stopped
+  api:
+    restart: unless-stopped
+  bot:
+    restart: unless-stopped

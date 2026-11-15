@@ -211,7 +211,7 @@
     });
     $('accept').addEventListener('click', function () {
       api('/escalations/' + state.current.id, { method: 'PATCH', body: JSON.stringify({ status: 'active', helper_name: state.name || null }) })
-        .then(function () { say(t('accepted', { id: state.current.id })); refresh(); $('reply').focus(); });
+        .then(function () { say(t('accepted', { id: state.current.id })); refresh(); $('reply').focus(); }).catch(function (e) { if (e.message !== '401') say(t('error'), true); });
     });
     $('close-ticket').addEventListener('click', function () {
       var id = state.current.id;
@@ -220,11 +220,11 @@
         state.current = null; $('ticket-view').hidden = true; $('choose').hidden = false;
         refresh();
         $('conv-h').focus();
-      });
+      }).catch(function (e) { if (e.message !== '401') say(t('error'), true); });
     });
     $('ask-screen').addEventListener('click', function () {
       api('/escalations/' + state.current.id + '/messages', { method: 'POST', body: JSON.stringify({ author: 'system', text: 'screen_request' }) })
-        .then(function () { say(t('screenAsked')); poll(); });
+        .then(function () { say(t('screenAsked')); poll(); }).catch(function (e) { if (e.message !== '401') say(t('error'), true); });
     });
     $('reply-form').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -232,7 +232,7 @@
       if (!text || !state.current) return;
       api('/escalations/' + state.current.id + '/messages', { method: 'POST', body: JSON.stringify({ author: 'helper', name: state.name || null, text: text }) })
         .then(function () { $('reply').value = ''; say(t('sent')); poll(); })
-        .catch(function () { say(t('error'), true); });
+        .catch(function (e) { if (e.message !== '401') say(t('error'), true); });
     });
     $('page-lang').addEventListener('change', function (e) {
       SYLYPage.load('helper', e.target.value).then(function () { refresh(); });

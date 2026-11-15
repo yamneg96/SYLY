@@ -50,6 +50,21 @@ Services: `web` (nginx: starter at `/`, module at `/module`, demos at `/demo`, p
 
 Without Docker, module only: `python api/scripts/dev_static.py` (same layout on :8080, no API).
 
+### Deploy on a server
+
+On an Ubuntu server with Docker and a domain pointing to it:
+
+```bash
+cp .env.example .env     # set keys, HELPER_KEY, HOST_ORIGINS (exact origins), PUBLIC_BASE_URL
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+`docker-compose.prod.yml` keeps port 8080 on 127.0.0.1 and restarts services after a crash or reboot. Put an HTTPS reverse proxy in front, for example Caddy with `syly.example.com { reverse_proxy 127.0.0.1:8080 }`. Back up `data/` (the SQLite database and `data/.fernet_key`; without the key, stored contacts cannot be decrypted).
+
+### Errors
+
+Every error is shown in words, in the learner's language: the widget shows a message for content that cannot load, a blocked microphone, failed screen sharing or screenshot, a server that cannot be reached, and any unexpected error. The API answers `{"detail": "…"}` (400, 404, 405, 503, 500, never a stack trace; `/sms/inbound` answers in plain text). The bot replies with a message in the learner's language and logs the error.
+
 ## Install, Level 1
 
 Two lines before `</body>`:
@@ -185,7 +200,7 @@ Dates: Ethiopian calendar for Amharic via `Intl.DateTimeFormat('am-ET-u-ca-ethio
 
 ## Offline and slow connection
 
-- `module/db-assistant.js`: 97 KB raw, **28 KB gzipped** (nginx gzip on), no dependencies. Lesson `content.json`: 17 KB raw, 6 KB gzipped. Audio (2.2 MB, 65 small MP3s) loads only when "Listen" is pressed.
+- `module/db-assistant.js`: 99 KB raw, **29 KB gzipped** (nginx gzip on), no dependencies. Lesson `content.json`: 17 KB raw, 6 KB gzipped. Audio (2.2 MB, 65 small MP3s) loads only when "Listen" is pressed.
 - **Slow 3G load time of `demo/blank.html`: to be measured** (Chrome DevTools, Network, Slow 3G).
 - Keyword search runs in the browser; the lesson is cached on the phone after the first load, so answers keep working without a connection.
 - With no connection, questions the phone cannot answer and requests for a person are kept: "Saved on this phone. It will send when you are online." They are sent on the `online` event.

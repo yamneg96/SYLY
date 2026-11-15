@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -47,6 +47,10 @@ async def ask(body: AskIn, db: Session = Depends(get_db)) -> AskOut:
 
 @router.post("/content", status_code=201, response_model=Created, summary="Host sends its lessons to be indexed")
 def post_content(body: ContentIn, db: Session = Depends(get_db)) -> Created:
+    ids = [s.id for s in body.sections]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        raise HTTPException(400, f"Each section needs its own id. Repeated: {', '.join(dupes[:5])}.")
     n = content.replace_lessons(db, [s.model_dump() for s in body.sections])
     db.commit()
     content.rebuild(db)

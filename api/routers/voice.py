@@ -33,13 +33,18 @@ async def transcribe(file: UploadFile = File(...), language: str = Form("am")) -
         return {"text": text, "language": language, "service": "addis"}
     if not settings.groq_key:
         raise HTTPException(503, "Speech to text is not configured on this server.")
-    async with httpx.AsyncClient(timeout=30) as client:
-        r = await client.post(
-            "https://api.groq.com/openai/v1/audio/transcriptions",
-            headers={"Authorization": f"Bearer {settings.groq_key}"},
-            data={"model": settings.groq_stt_model, "language": language, "response_format": "json"},
-            files={"file": (file.filename or "voice.ogg", audio, file.content_type or "audio/ogg")},
-        )
+    if not audio:
+        raise HTTPException(400, "The voice note is empty. Please record again.")
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            r = await client.post(
+                "https://api.groq.com/openai/v1/audio/transcriptions",
+                headers={"Authorization": f"Bearer {settings.groq_key}"},
+                data={"model": settings.groq_stt_model, "language": language, "response_format": "json"},
+                files={"file": (file.filename or "voice.ogg", audio, file.content_type or "audio/ogg")},
+            )
+    except httpx.HTTPError:
+        raise HTTPException(503, "The speech service cannot be reached right now. Please type your question.") from None
     if r.status_code != 200:
         raise HTTPException(503, "Speech to text failed. Please type your question.")
     return {"text": r.json().get("text", "").strip(), "language": language, "service": "groq"}

@@ -108,3 +108,36 @@ def test_data_export_and_delete(client):
     assert client.get(f"/api/v1/data/{cid}").json()["questions"]
     assert client.delete(f"/api/v1/data/{cid}").json()["deleted_questions"] >= 1
     assert not client.get(f"/api/v1/data/{cid}").json()["questions"]
+
+
+def test_errors_are_words_never_raw(client, monkeypatch):
+    r = client.get("/api/v1/nope")
+    assert r.status_code == 404 and "does not exist" in r.json()["detail"]
+    r = client.delete("/api/v1/ask")
+    assert r.status_code == 405 and "method" in r.json()["detail"].lower()
+    r = client.post("/sms/inbound", json={"text": "hi"})  # missing "from"
+    assert r.status_code == 400 and r.headers["content-type"].startswith("text/plain") and len(r.text) <= 160
+    sec = {"id": "x", "url": "/x#x", "title_en": "X", "text_en": "Y"}
+    r = client.post("/api/v1/content", json={"sections": [sec, sec]})
+    assert r.status_code == 400 and "Repeated: x" in r.json()["detail"]
+
+    from fastapi.testclient import TestClient
+    from sqlalchemy.exc import OperationalError
+
+    import routers.ask as ask_router
+    from main import app
+
+    async def boom(*a, **k):
+        raise RuntimeError("simulated crash")
+
+    monkeypatch.setattr(ask_router, "answer", boom)
+    with TestClient(app, raise_server_exceptions=False) as c:
+        r = c.post("/api/v1/ask", json={"question": "hello", "language": "en"})
+        assert r.status_code == 500 and "Something went wrong" in r.json()["detail"] and "simulated" not in r.text
+
+        async def db_down(*a, **k):
+            raise OperationalError("SELECT 1", {}, Exception("locked"))
+
+        monkeypatch.setattr(ask_router, "answer", db_down)
+        r = c.post("/api/v1/ask", json={"question": "hello", "language": "en"})
+        assert r.status_code == 503 and "database" in r.json()["detail"]
