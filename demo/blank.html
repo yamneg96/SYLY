@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blank host page: SYLY db-assistant</title>
+  <style>
+    body { font-family: system-ui, sans-serif; font-size: 1rem; line-height: 1.5; margin: 0; color: #111111; background: #FFFFFF; }
+    main { max-width: 46rem; margin: 0 auto; padding: 1.5rem 1rem 6rem; }
+    h1 { font-size: 1.75rem; }
+    code { overflow-wrap: anywhere; }
+    a { color: #111111; }
+    :focus-visible { outline: 3px solid #F5A300; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Blank host page</h1>
+    <p>This page has no Bootstrap and no Savanna CSS. It proves the module installs on any site with the same two lines (guide section 3).</p>
+    <p>The panel opens from the <strong>Ask SYLY</strong> button. Source links go to the lesson on the <a href="/pages/concept-with-navigation.html">Savanna concept page</a>.</p>
+
+    <h2>Inline mode</h2>
+    <p>The same element with <code>mode="inline"</code>, placed in the page flow:</p>
+    <db-assistant mode="inline" lang="en" api="/api" content="/demo/data/content.json"></db-assistant>
+
+    <h2>Events the host received</h2>
+    <p>The module talks to the host only through events. This list shows them.</p>
+    <ul id="events"></ul>
+  </main>
+
+  <script src="/module/db-assistant.js" defer></script>
+  <db-assistant lang="am" api="/api" content="/demo/data/content.json"></db-assistant>
+
+  <script>
+    ['db-assistant:question', 'db-assistant:escalated', 'db-assistant:language'].forEach(function (name) {
+      document.addEventListener(name, function (e) {
+        var li = document.createElement('li');
+        li.textContent = name + ' ' + JSON.stringify(e.detail);
+        document.getElementById('events').appendChild(li);
+      });
+    });
+  </script>
+</body>
+</html>
