@@ -4,140 +4,229 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Install SYLY db-assistant</title>
+  <link rel="icon" type="image/png" href="/demo/assets/syly-logo.png">
+  <link rel="apple-touch-icon" href="/demo/assets/syly-logo.png">
+  <meta name="description" content="Add an accessible, multilingual course assistant to your site with two lines of code.">
   <style>
     :root {
-      --text: #111111; --muted: #4A4A4A; --border: #767676; --line: #D6DCE4;
-      --bg: #F4F6F9; --card: #FFFFFF; --soft: #EEF3F9;
-      --navy: #002B56; --navy-2: #0B3D6E; --focus: #F5A300;
-      --code-bg: #0F1B2D; --code-text: #F2F4F8;
-      --radius: 1rem; --shadow: 0 1px 2px rgba(0, 20, 50, 0.06), 0 0.5rem 1.5rem rgba(0, 20, 50, 0.06);
+      --ink: #0B1220; --text: #111111; --muted: #4A5568; --line: #DDE3EC; --border: #767676;
+      --canvas: #F5F7FB; --card: #FFFFFF; --soft: #EEF3FA;
+      --navy: #002B56; --navy-2: #0B3D6E; --deep: #061A33; --amber: #F5A300; --focus: #F5A300;
+      --ok: #0A7A3D; --bad: #B00020;
+      --code-bg: #0B1220; --code-text: #E2E8F0; --tok-tag: #7DD3FC; --tok-attr: #FCD34D; --tok-val: #86EFAC; --tok-punc: #CBD5E1;
+      --r-lg: 1.25rem; --r-md: 0.875rem; --r-sm: 0.625rem;
+      --shadow-1: 0 1px 2px rgba(6, 26, 51, 0.06), 0 0.25rem 0.75rem rgba(6, 26, 51, 0.06);
+      --shadow-2: 0 0.5rem 1.5rem rgba(6, 26, 51, 0.10), 0 1.5rem 3rem rgba(6, 26, 51, 0.10);
     }
     * { box-sizing: border-box; }
     html { -webkit-text-size-adjust: 100%; }
-    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans Ethiopic", "Noto Sans Arabic", sans-serif; font-size: 1rem; line-height: 1.55; color: var(--text); background: var(--bg); }
-    [lang|="am"] { line-height: 1.75; }
-    code, pre { font-family: ui-monospace, "Cascadia Code", Consolas, "Liberation Mono", monospace; }
+    body { margin: 0; background: var(--canvas); color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans Ethiopic", "Noto Sans Arabic", sans-serif; font-size: 1rem; line-height: 1.6; }
+    [lang|="am"] { line-height: 1.75; letter-spacing: normal !important; }
+    code, pre, kbd { font-family: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    a { color: inherit; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px #111111; border-radius: 0.25rem; }
+    .i { width: 1.25rem; height: 1.25rem; vertical-align: -0.2em; flex: none; }
+    .emoji { margin-inline-end: 0.5rem; font-style: normal; }
+    .wrap { max-width: 76rem; margin: 0 auto; padding: 0 1rem; }
 
-    .skip { position: absolute; inset-inline-start: 0.5rem; top: -10rem; z-index: 10; padding: 0.75rem 1rem; border-radius: 0.5rem; background: var(--focus); color: #111111; font-weight: 700; }
-    .skip:focus { top: 0.5rem; }
-    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px #111111; }
+    /* skip link */
+    .skip { position: absolute; inset-inline-start: 0.75rem; top: -10rem; z-index: 50; padding: 0.75rem 1rem; border-radius: var(--r-sm); background: var(--amber); color: #111111; font-weight: 700; text-decoration: none; }
+    .skip:focus { top: 0.75rem; }
 
     /* top bar */
-    .topbar { background: var(--navy); color: #FFFFFF; }
-    .topbar-inner { max-width: 72rem; margin: 0 auto; padding: 0.75rem 1rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; }
-    .brand { display: flex; align-items: center; gap: 0.625rem; font-weight: 700; font-size: 1.125rem; letter-spacing: 0.01em; }
-    .brand-mark { display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 0.625rem; background: #FFFFFF; color: var(--navy); font-size: 0.875rem; font-weight: 800; }
-    .brand small { font-weight: 500; opacity: 0.9; font-size: 0.9375rem; }
-    .lang-pick { display: flex; align-items: center; gap: 0.625rem; }
-    .lang-pick label { font-weight: 600; }
-    .lang-pick select { border-color: #FFFFFF; }
+    .topbar { position: sticky; top: 0; z-index: 20; background: rgba(6, 26, 51, 0.94); backdrop-filter: saturate(160%) blur(10px); color: #FFFFFF; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+    .topbar .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; min-height: 4rem; padding-block: 0.5rem; }
+    .brand { display: inline-flex; align-items: center; gap: 0.625rem; font-weight: 800; font-size: 1.0625rem; color: #FFFFFF; text-decoration: none; }
+    .brand-mark { display: inline-block; width: 2.25rem; height: 2.25rem; flex: none; --logo-a: #FFFFFF; --logo-b: var(--deep); }
+    .brand-mark svg { display: block; width: 100%; height: 100%; }
+    .mock-head .logo { width: 2rem; height: 2rem; --logo-a: #000000; --logo-b: #FFFFFF; }
+    .brand small { font-weight: 500; color: #C9D6E8; font-size: 0.875rem; }
+    .topnav { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-inline-start: auto; }
+    .topnav a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 0.75rem; border-radius: var(--r-sm); color: #E6EEF8; text-decoration: none; font-weight: 600; font-size: 0.9375rem; }
+    .topnav a:hover { background: rgba(255, 255, 255, 0.1); color: #FFFFFF; }
+    .lang-pick { display: inline-flex; align-items: center; gap: 0.5rem; }
+    .lang-pick label { font-weight: 600; font-size: 0.9375rem; display: inline-flex; gap: 0.375rem; align-items: center; }
+    .lang-pick select { min-height: 2.75rem; padding: 0.25rem 0.625rem; border-radius: var(--r-sm); border: 2px solid #FFFFFF; background: #FFFFFF; color: #111111; font: inherit; }
 
     /* hero */
-    .hero { background: linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%); color: #FFFFFF; }
-    .hero-inner { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 4.5rem; }
-    .hero h1 { font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem); line-height: 1.2; margin: 0 0 0.75rem; max-width: 40rem; }
-    .hero p { margin: 0; font-size: 1.125rem; max-width: 42rem; color: #FFFFFF; }
-    .hero .pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.25rem 0 0; padding: 0; list-style: none; }
-    .hero .pills li { border: 1px solid rgba(255, 255, 255, 0.55); border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.9375rem; }
+    .hero { position: relative; overflow: hidden; color: #FFFFFF; background:
+      radial-gradient(40rem 22rem at 85% 10%, rgba(91, 164, 255, 0.28), transparent 60%),
+      radial-gradient(30rem 20rem at 10% 90%, rgba(245, 163, 0, 0.16), transparent 60%),
+      linear-gradient(180deg, var(--deep) 0%, #0A2547 100%); }
+    .hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.35;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+      background-size: 2.5rem 2.5rem; -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%); mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%); }
+    .hero .wrap { position: relative; z-index: 1; display: grid; gap: 2.5rem; padding-top: 3.5rem; padding-bottom: 6rem; grid-template-columns: minmax(0, 1fr); align-items: center; }
+    @media (min-width: 62rem) { .hero .wrap { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); padding-top: 4.5rem; padding-bottom: 7rem; } }
+    .eyebrow { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem; padding: 0.375rem 0.875rem; border-radius: 999px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #E6EEF8; font-size: 0.875rem; font-weight: 600; }
+    .eyebrow .i { color: var(--amber); width: 1rem; height: 1rem; }
+    .hero h1 { margin: 0 0 1rem; font-size: clamp(2rem, 1.2rem + 3.2vw, 3.5rem); line-height: 1.1; font-weight: 800; }
+    .hero h1:lang(en) { letter-spacing: -0.02em; }
+    .hero .lead { margin: 0; max-width: 38rem; font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); color: #DCE6F2; }
+    .cta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 2rem 0 0; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 3rem; padding: 0.625rem 1.25rem; border-radius: var(--r-sm); font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; border: 2px solid transparent; }
+    .btn-amber { background: var(--amber); color: #111111; }
+    .btn-amber:hover { background: #FFB72A; }
+    .btn-ghost { background: transparent; color: #FFFFFF; border-color: rgba(255, 255, 255, 0.6); }
+    .btn-ghost:hover { background: rgba(255, 255, 255, 0.1); border-color: #FFFFFF; }
+    .trust { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin: 2rem 0 0; padding: 0; list-style: none; color: #DCE6F2; font-size: 0.9375rem; }
+    .trust li { display: inline-flex; align-items: center; gap: 0.5rem; }
+    .trust .i { color: #86EFAC; width: 1.125rem; height: 1.125rem; }
 
-    /* layout */
-    .content { max-width: 72rem; margin: -3rem auto 0; padding: 0 1rem 3rem; }
-    .layout { display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr); }
-    @media (min-width: 60rem) {
-      .layout { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: start; }
-      .side { position: sticky; top: 1rem; }
-    }
-    .side { display: grid; gap: 1.25rem; min-width: 0; }
+    /* hero product mock (decorative, aria-hidden) */
+    .mock { position: relative; border-radius: var(--r-lg); background: #FFFFFF; color: #111111; box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.35); overflow: hidden; max-width: 28rem; justify-self: center; width: 100%; }
+    .mock-head { display: flex; align-items: center; gap: 0.625rem; padding: 0.875rem 1rem; border-bottom: 1px solid var(--line); font-weight: 800; }
+    .mock-head .dot { width: 2rem; height: 2rem; border-radius: 0.625rem; display: inline-grid; place-items: center; background: var(--soft); color: var(--navy); }
+    .mock-body { display: grid; gap: 0.75rem; padding: 1rem; background: #FBFCFE; }
+    .bubble { border-radius: 1rem; padding: 0.75rem 0.875rem; display: grid; gap: 0.4rem; }
+    .bubble.you { background: var(--navy); justify-self: end; width: 70%; }
+    .bubble.bot { background: #F1F4F9; width: 88%; }
+    .bar { display: block; height: 0.55rem; border-radius: 999px; background: #D5DDE8; }
+    .bubble.you .bar { background: rgba(255, 255, 255, 0.55); }
+    .src { display: inline-flex; align-items: center; gap: 0.375rem; justify-self: start; margin-top: 0.25rem; padding: 0.25rem 0.625rem; border-radius: 999px; background: #E3ECF8; color: var(--navy); }
+    .src .bar { width: 6rem; background: #9DB4D3; }
+    .mock-foot { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; padding: 0.875rem 1rem 1rem; border-top: 1px solid var(--line); }
+    .mock-input { height: 2.75rem; border-radius: var(--r-sm); border: 2px solid #C7D0DC; }
+    .mock-send { width: 2.75rem; height: 2.75rem; border-radius: var(--r-sm); background: var(--navy); color: #FFFFFF; display: inline-grid; place-items: center; }
+    .mock-talk { grid-column: 1 / -1; height: 2.75rem; border-radius: var(--r-sm); border: 2px solid #C7D0DC; display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: var(--navy); }
+    .mock-talk .bar { width: 7rem; }
 
-    section { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem; margin: 0; min-width: 0; }
-    .wide { margin-top: 1.25rem; }
-    h2 { display: flex; align-items: center; gap: 0.625rem; font-size: 1.25rem; line-height: 1.3; margin: 0 0 0.75rem; }
-    .step { counter-increment: step; }
-    .layout { counter-reset: step; }
-    .step > h2::before { content: counter(step); display: inline-grid; place-items: center; flex: none; width: 2rem; height: 2rem; border-radius: 50%; background: var(--navy); color: #FFFFFF; font-size: 1rem; font-weight: 700; }
-    section > p { margin: 0 0 0.75rem; }
+    /* sections */
+    .section { padding: 4rem 0; }
+    .section-head { max-width: 46rem; margin: 0 0 2rem; }
+    .kicker { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 0 0.5rem; color: var(--navy); font-weight: 800; font-size: 0.875rem; }
+    .kicker:lang(en) { text-transform: uppercase; letter-spacing: 0.08em; }
+    h2 { margin: 0 0 0.5rem; font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.125rem); line-height: 1.2; color: var(--ink); }
+    h2:lang(en) { letter-spacing: -0.01em; }
+    h3 { margin: 0; font-size: 1.125rem; line-height: 1.35; color: var(--ink); }
+    .sub { margin: 0; color: var(--muted); font-size: 1.0625rem; }
 
-    /* form */
-    fieldset { border: 0; margin: 0 0 1.25rem; padding: 0; min-width: 0; }
-    legend, label.block { display: block; font-weight: 600; margin: 0 0 0.5rem; padding: 0; }
-    .choices { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); }
-    .choice { display: flex; align-items: center; gap: 0.75rem; min-height: 2.75rem; padding: 0.5rem 0.75rem; border: 2px solid var(--border); border-radius: 0.75rem; background: var(--card); cursor: pointer; }
-    .choice:hover { background: var(--soft); }
-    .choice:has(input:checked) { border-color: var(--navy); background: var(--soft); box-shadow: inset 0 0 0 1px var(--navy); font-weight: 600; }
-    .choice input { width: 1.375rem; height: 1.375rem; margin: 0; flex: none; accent-color: var(--navy); }
-    input[type="text"], input[type="url"], select { font: inherit; width: 100%; min-height: 2.75rem; padding: 0.5rem 0.75rem; border: 2px solid var(--border); border-radius: 0.625rem; color: var(--text); background: #FFFFFF; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-1); padding: 1.5rem; min-width: 0; }
+    .card-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin: 0 0 1.25rem; }
+    .card-head h2 { display: inline-flex; align-items: center; gap: 0.75rem; font-size: 1.375rem; margin: 0; }
+    .tag { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.75rem; border-radius: 999px; background: var(--soft); color: var(--navy); font-size: 0.8125rem; font-weight: 800; }
+    .icon-badge { display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; background: var(--soft); color: var(--navy); flex: none; }
+
+    /* configurator */
+    .builder { margin-top: -4rem; position: relative; z-index: 2; padding-top: 0; }
+    .grid-2 { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
+    @media (min-width: 64rem) { .grid-2 { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); } .sticky { position: sticky; top: 5.5rem; } }
+    fieldset { border: 0; margin: 0 0 1.5rem; padding: 0; min-width: 0; }
+    legend, .lbl { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 0 0.625rem; padding: 0; font-weight: 700; color: var(--ink); }
+    legend .i, .lbl .i { color: var(--navy); }
+    .tiles { display: grid; gap: 0.625rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+    .tile { position: relative; display: flex; align-items: flex-start; gap: 0.75rem; min-height: 3.5rem; padding: 0.875rem 2.25rem 0.875rem 0.875rem; border: 2px solid var(--border); border-radius: var(--r-md); background: var(--card); cursor: pointer; line-height: 1.4; }
+    .tile:hover { border-color: var(--navy); background: #FAFCFF; }
+    .tile input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+    .tile .ti { display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 0.625rem; background: var(--soft); color: var(--navy); flex: none; }
+    .tile .tt { padding-top: 0.25rem; }
+    .tile .tick { position: absolute; inset-block-start: 0.625rem; inset-inline-end: 0.625rem; width: 1.125rem; height: 1.125rem; border-radius: 50%; border: 2px solid var(--border); background: #FFFFFF; }
+    .tile:has(input:checked) { border-color: var(--navy); background: #F3F7FD; box-shadow: inset 0 0 0 1px var(--navy); }
+    .tile:has(input:checked) .ti { background: var(--navy); color: #FFFFFF; }
+    .tile:has(input:checked) .tick { border-color: var(--navy); background: radial-gradient(circle, #FFFFFF 0 30%, var(--navy) 33%); }
+    .tile:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px #111111; }
+    .field { margin: 0 0 1.25rem; }
+    input[type="text"], input[type="url"], select { width: 100%; min-height: 3rem; padding: 0.5rem 0.875rem; border: 2px solid var(--border); border-radius: var(--r-sm); background: #FFFFFF; color: var(--text); font: inherit; }
     select { width: auto; max-width: 100%; }
-    .field { margin-bottom: 1.25rem; }
-    #colour-wrap { margin: 0.75rem 0 0; }
-    .hint { color: var(--muted); font-size: 0.9375rem; margin: 0.375rem 0 0; }
-    .warn { font-weight: 600; margin: 0.5rem 0 0; }
+    input:hover, select:hover { border-color: var(--navy); }
+    .hint { margin: 0.375rem 0 0; color: var(--muted); font-size: 0.9375rem; }
+    .colour-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+    .colour-row input { flex: 1 1 10rem; width: auto; }
+    .swatch { width: 3rem; height: 3rem; border-radius: var(--r-sm); border: 2px solid var(--border); background: #002B56; color: #FFFFFF; display: inline-grid; place-items: center; font-weight: 800; flex: none; }
+    #colour-wrap { margin: 0.875rem 0 0; padding: 1rem; border-radius: var(--r-md); background: var(--soft); }
+    .warn { margin: 0.625rem 0 0; font-weight: 700; }
     .warn:empty { display: none; }
-    .warn.bad { color: #B00020; }
-    .note { margin: 0; border-inline-start: 0.375rem solid var(--navy); border-radius: 0.5rem; background: var(--soft); padding: 0.75rem 1rem; }
+    .warn.good { color: var(--ok); }
+    .warn.bad { color: var(--bad); }
+    .note { display: flex; gap: 0.75rem; align-items: flex-start; margin: 0.5rem 0 0; padding: 1rem; border-radius: var(--r-md); background: var(--soft); border-inline-start: 0.375rem solid var(--navy); }
+    .note .i { color: var(--navy); margin-top: 0.15rem; }
 
-    /* code */
-    .code-wrap { position: relative; }
-    pre { margin: 0; background: var(--code-bg); color: var(--code-text); border-radius: 0.75rem; padding: 1rem; overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.9375rem; line-height: 1.6; }
-    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 0.75rem; }
-    .actions p { margin: 0; font-weight: 600; }
-    button { font: inherit; min-height: 2.75rem; padding: 0.5rem 1.25rem; border-radius: 0.625rem; border: 2px solid var(--navy); background: var(--navy); color: #FFFFFF; font-weight: 600; cursor: pointer; }
-    button:hover { background: var(--navy-2); }
+    /* code card */
+    .codecard { background: var(--code-bg); color: var(--code-text); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-2); }
+    .codebar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.75rem 0.875rem 0.75rem 1.25rem; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+    .codebar h2 { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0; color: #FFFFFF; font-size: 1.125rem; }
+    .codebar h2 .i { color: var(--amber); }
+    .codecard pre { margin: 0; padding: 1.25rem; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.9375rem; line-height: 1.75; }
+    .tk-tag { color: var(--tok-tag); } .tk-attr { color: var(--tok-attr); } .tk-val { color: var(--tok-val); } .tk-p { color: var(--tok-punc); }
+    #copy { background: var(--amber); color: #111111; min-height: 2.75rem; padding: 0.5rem 1rem; }
+    #copy:hover { background: #FFB72A; }
+    #copy[data-state="done"] { background: #86EFAC; }
+    .codefoot { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: space-between; padding: 0.875rem 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.12); color: #CBD5E1; font-size: 0.9375rem; }
+    .codefoot p { margin: 0; }
+    #copy-status { font-weight: 700; color: #86EFAC; }
+    #copy-status:empty { display: none; }
 
     /* preview */
-    #preview { min-height: 10rem; padding: 1rem; border: 2px dashed var(--border); border-radius: 0.75rem;
-      background-color: #FFFFFF;
-      background-image: radial-gradient(#D6DCE4 1px, transparent 1px); background-size: 1rem 1rem; }
+    .browser { border-radius: var(--r-lg); overflow: hidden; background: #FFFFFF; border: 1px solid var(--line); box-shadow: var(--shadow-2); }
+    .chrome { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.875rem; background: #EEF2F7; border-bottom: 1px solid var(--line); }
+    .dots { display: inline-flex; gap: 0.375rem; }
+    .dots i { width: 0.75rem; height: 0.75rem; border-radius: 50%; background: #C7D0DC; display: block; }
+    .urlbar { flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.5rem; height: 2rem; padding: 0 0.75rem; border-radius: 999px; background: #FFFFFF; border: 1px solid var(--line); color: var(--muted); font-size: 0.875rem; overflow: hidden; white-space: nowrap; }
+    .urlbar .i { width: 0.9rem; height: 0.9rem; color: var(--ok); }
+    #preview iframe { display: block; width: 100%; height: 40rem; max-height: 85vh; border: 0; }
 
-    /* events + more */
-    .events { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: 0.5rem; }
-    .events li { padding: 0.625rem 0.75rem; border: 1px solid var(--line); border-radius: 0.625rem; background: var(--soft); }
-    .events code { font-weight: 700; color: var(--navy); margin-inline-end: 0.375rem; overflow-wrap: anywhere; }
-    .links { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.75rem; }
-    .links a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0.5rem 1rem; border: 2px solid var(--border); border-radius: 0.625rem; background: var(--card); color: var(--text); font-weight: 600; text-decoration: none; }
-    .links a::after { content: "\2192"; margin-inline-start: 0.5rem; }
-    [dir="rtl"] .links a::after { content: "\2190"; }
-    .links a:hover { border-color: var(--navy); background: var(--soft); text-decoration: underline; }
-    a { color: var(--text); }
+    /* steps + features */
+    .steps, .feats { display: grid; gap: 1.25rem; padding: 0; margin: 0; list-style: none; }
+    .steps { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); counter-reset: s; }
+    .feats { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+    .step { counter-increment: s; }
+    .step .num { display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--navy); color: #FFFFFF; font-weight: 800; margin-bottom: 1rem; }
+    .step .num::before { content: counter(s); }
+    .step p, .feat p { margin: 0.5rem 0 0; color: var(--muted); }
+    .feat .icon-badge { margin-bottom: 1rem; }
+    .feat:hover, .step:hover { border-color: #B9C6D8; box-shadow: var(--shadow-2); }
 
-    /* icons (Lucide, ISC, demo/icons.svg) and decorative emoji */
-    .i { width: 1.25rem; height: 1.25rem; flex: none; vertical-align: -0.2em; }
-    h2 .i { width: 1.375rem; height: 1.375rem; color: var(--navy); }
-    .site-foot h2 .i { color: #FFD27A; }
-    legend .i, label.block .i { margin-inline-end: 0.375rem; color: var(--navy); }
-    .emoji { margin-inline-end: 0.5rem; font-style: normal; }
-    button { display: inline-flex; align-items: center; gap: 0.5rem; }
-    .links a .i, .site-foot li a .i { margin-inline-end: 0.5rem; }
-    [dir="rtl"] .i.flip { transform: scaleX(-1); }
+    /* events + links */
+    .events { list-style: none; margin: 0 0 1.25rem; padding: 0; display: grid; gap: 0.625rem; }
+    .events li { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: baseline; padding: 0.75rem 1rem; border: 1px solid var(--line); border-radius: var(--r-md); background: #FAFCFF; }
+    .events code { font-weight: 700; color: var(--navy); overflow-wrap: anywhere; }
+    .snippet { margin: 0; background: var(--code-bg); color: var(--code-text); border-radius: var(--r-md); padding: 1rem 1.125rem; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.875rem; line-height: 1.7; }
+    .links { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+    .links a { display: flex; align-items: center; gap: 0.75rem; min-height: 3.5rem; padding: 0.75rem 1rem; border: 2px solid var(--line); border-radius: var(--r-md); background: var(--card); color: var(--text); font-weight: 700; text-decoration: none; }
+    .links a:hover { border-color: var(--navy); text-decoration: underline; }
+    .links a .i { color: var(--navy); }
+    .links a .ext { margin-inline-start: auto; color: var(--muted); width: 1rem; height: 1rem; }
 
     /* footer */
-    .site-foot { background: var(--navy); color: #FFFFFF; margin-top: 0; }
+    .site-foot { background: var(--deep); color: #FFFFFF; }
     .site-foot a { color: #FFFFFF; text-underline-offset: 0.2em; }
-    .site-foot a:hover { text-decoration-thickness: 2px; }
-    .foot-inner { max-width: 72rem; margin: 0 auto; padding: 3rem 1rem 2rem; }
+    .foot-inner { padding-top: 3.5rem; padding-bottom: 2rem; }
     .foot-grid { display: grid; gap: 2rem; grid-template-columns: minmax(0, 1fr); }
     @media (min-width: 48rem) { .foot-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); } }
-    .foot-brand p { margin: 0.75rem 0 0; max-width: 26rem; color: #DCE6F2; }
-    .site-foot h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 0.75rem; color: #FFD27A; }
+    .foot-brand p { margin: 0.75rem 0 0; max-width: 26rem; color: #C9D6E8; }
+    .site-foot h2 { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; margin: 0 0 0.75rem; color: #FFD27A; }
+    .site-foot h2:lang(en) { text-transform: uppercase; letter-spacing: 0.06em; }
     .site-foot ul { list-style: none; margin: 0; padding: 0; }
     .site-foot li a { display: inline-flex; align-items: center; min-height: 2.75rem; }
-    .foot-bottom { margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.35); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; font-size: 0.9375rem; color: #DCE6F2; }
-    .foot-bottom p { margin: 0; }
-    .to-top { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0.375rem 1rem; border: 2px solid #FFFFFF; border-radius: 0.625rem; font-weight: 600; text-decoration: none; }
-    .to-top::before { content: "\2191"; margin-inline-end: 0.5rem; }
+    .foot-bottom { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.18); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 1.5rem; font-size: 0.9375rem; color: #C9D6E8; }
+    .foot-bottom p { margin: 0.125rem 0; }
+    .to-top { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; padding: 0.375rem 1rem; border: 2px solid #FFFFFF; border-radius: var(--r-sm); font-weight: 700; text-decoration: none; }
 
     @media (prefers-reduced-motion: no-preference) {
       html { scroll-behavior: smooth; }
-      .choice, button, .links a { transition: background-color 0.15s, border-color 0.15s; }
+      .btn, .tile, .links a, .feat, .step, #copy { transition: background-color 0.15s, border-color 0.15s, box-shadow 0.2s, transform 0.2s; }
+      .feat:hover, .step:hover { transform: translateY(-2px); }
     }
+    @media (max-width: 47.99rem) { .topnav { display: none; } .section { padding: 3rem 0; } .card { padding: 1.125rem; } .builder { margin-top: -3rem; } }
   </style>
 </head>
 <body>
   <a class="skip" href="#main" data-t="skip">Skip to main content</a>
+
   <header class="topbar" id="top">
-    <div class="topbar-inner">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">SY</span><span>SYLY <small>db-assistant</small></span></div>
+    <div class="wrap">
+      <a class="brand" href="#main">
+        <span class="brand-mark" aria-hidden="true"><svg focusable="false" viewBox="0 0 200 200"><use href="/demo/icons.svg#i-logo"/></svg></span>
+        <span>SYLY <small>db-assistant</small></span>
+      </a>
+      <nav class="topnav" aria-label="Page">
+        <a href="#builder" data-t="configTag">Configure</a>
+        <a href="#steps-h" data-t="stepsHeading">Steps</a>
+        <a href="#feat-h" data-t="featuresHeading">Features</a>
+        <a href="#more-h" data-t="moreHeading">More</a>
+      </nav>
       <div class="lang-pick">
-        <label for="page-lang"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-languages"/></svg> <span data-t="pageLang">Page language</span></label>
+        <label for="page-lang"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-languages"/></svg><span data-t="pageLang">Page language</span></label>
         <select id="page-lang">
           <option value="en" lang="en">English</option>
           <option value="am" lang="am">አማርኛ</option>
@@ -145,118 +234,202 @@
       </div>
     </div>
   </header>
-  <main id="main">
-  <div class="hero">
-    <div class="hero-inner">
-      <h1><span class="emoji" aria-hidden="true">🧩</span><span data-t="heading">Add the SYLY assistant to your site</span></h1>
-      <p data-t="intro"></p>
-      <ul class="pills" aria-hidden="true">
-        <li lang="am">አማርኛ</li><li lang="en">🌍 English</li><li lang="ar" dir="rtl">العربية</li><li>♿ WCAG 2.2 AA</li><li>📶 Offline</li><li>🔊 Listen</li>
-      </ul>
-    </div>
-  </div>
-  <div class="content">
-    <div class="layout">
-      <section class="step" aria-labelledby="opt-h">
-        <h2 id="opt-h"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-palette"/></svg><span data-t="optionsHeading">Options</span></h2>
-        <form id="opts" novalidate>
-          <div class="field">
-            <label class="block" for="o-lang"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-languages"/></svg><span data-t="langLabel">Assistant language</span></label>
-            <select id="o-lang">
-              <option value="am" lang="am">አማርኛ (am)</option>
-              <option value="en" lang="en">English (en)</option>
-              <option value="ar" lang="ar">العربية (ar)</option>
-            </select>
-          </div>
-          <fieldset>
-            <legend><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-palette"/></svg><span data-t="themeLabel">Colours</span></legend>
-            <div class="choices">
-              <label class="choice"><input type="radio" name="theme" value="auto" checked><span data-t="theme_auto"></span></label>
-              <label class="choice"><input type="radio" name="theme" value="light"><span data-t="theme_light"></span></label>
-              <label class="choice"><input type="radio" name="theme" value="dark"><span data-t="theme_dark"></span></label>
-              <label class="choice"><input type="radio" name="theme" value="custom"><span data-t="theme_custom"></span></label>
-            </div>
-            <div class="field" id="colour-wrap" hidden>
-              <label class="block" for="o-colour" data-t="colourLabel">Button colour</label>
-              <input type="text" id="o-colour" value="#002B56" autocomplete="off" spellcheck="false" aria-describedby="colour-msg">
-              <p id="colour-msg" class="warn" role="status"></p>
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-layout"/></svg><span data-t="modeLabel">Layout</span></legend>
-            <div class="choices">
-              <label class="choice"><input type="radio" name="mode" value="panel" checked><span data-t="mode_panel"></span></label>
-              <label class="choice"><input type="radio" name="mode" value="inline"><span data-t="mode_inline"></span></label>
-            </div>
-          </fieldset>
-          <fieldset id="position-set">
-            <legend><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-position"/></svg><span data-t="positionLabel">Side of the page</span></legend>
-            <div class="choices">
-              <label class="choice"><input type="radio" name="position" value="end" checked><span data-t="position_end"></span></label>
-              <label class="choice"><input type="radio" name="position" value="start"><span data-t="position_start"></span></label>
-            </div>
-          </fieldset>
-          <div class="field">
-            <label class="block" for="o-api"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-globe"/></svg><span data-t="apiLabel">API URL</span></label>
-            <input type="url" id="o-api" value="/api" aria-describedby="api-hint" autocomplete="off">
-            <p id="api-hint" class="hint" data-t="apiHint"></p>
-          </div>
-          <div class="field">
-            <label class="block" for="o-content"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-book"/></svg><span data-t="contentLabel">Content URL</span></label>
-            <input type="url" id="o-content" value="/demo/data/content.json" autocomplete="off">
-          </div>
-          <p class="note"><span class="emoji" aria-hidden="true">🔐</span><span data-t="providerNote"></span></p>
-        </form>
-      </section>
 
-      <div class="side">
-        <section class="step" aria-labelledby="code-h">
-          <h2 id="code-h"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-code"/></svg><span data-t="codeHeading">Your code</span></h2>
-          <p data-t="codeHint"></p>
-          <div class="code-wrap"><pre><code id="code"></code></pre></div>
-          <div class="actions">
-            <button type="button" id="copy"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-copy"/></svg><span data-t="copy">Copy code</span></button>
-            <p id="copy-status" role="status"></p>
+  <main id="main" tabindex="-1">
+    <section class="hero" aria-labelledby="hero-h">
+      <div class="wrap">
+        <div>
+          <p class="eyebrow"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-sparkles"/></svg><span data-t="heroEyebrow">For developers</span></p>
+          <h1 id="hero-h" data-t="heading">Add the SYLY assistant to your site</h1>
+          <p class="lead" data-t="intro"></p>
+          <div class="cta">
+            <a class="btn btn-amber" href="#code-h"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-code"/></svg><span data-t="heroCtaCode">Get the code</span></a>
+            <a class="btn btn-ghost" href="/pages/concept-with-navigation.html"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-eye"/></svg><span data-t="heroCtaDemo">See it on a lesson</span></a>
           </div>
-        </section>
-
-        <section class="step" aria-labelledby="prev-h">
-          <h2 id="prev-h"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-eye"/></svg><span data-t="previewHeading">Live preview</span></h2>
-          <p data-t="previewHint"></p>
-          <div id="preview"></div>
-        </section>
+          <ul class="trust">
+            <li><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-languages"/></svg><span data-t="trust_languages">Amharic, English, Arabic</span></li>
+            <li><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-a11y"/></svg><span data-t="trust_a11y">WCAG 2.2 AA</span></li>
+            <li><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-offline"/></svg><span data-t="trust_offline">Works offline</span></li>
+            <li><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-zap"/></svg><span data-t="trust_size">25 KB gzipped</span></li>
+            <li><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-shield"/></svg><span data-t="trust_nologin">No account, no login</span></li>
+          </ul>
+        </div>
+        <div class="mock" aria-hidden="true">
+          <div class="mock-head"><svg class="logo" focusable="false" viewBox="0 0 200 200"><use href="/demo/icons.svg#i-logo"/></svg>SYLY</div>
+          <div class="mock-body">
+            <div class="bubble you"><span class="bar" style="width:85%"></span><span class="bar" style="width:55%"></span></div>
+            <div class="bubble bot">
+              <span class="bar" style="width:95%"></span><span class="bar" style="width:88%"></span><span class="bar" style="width:70%"></span>
+              <span class="src"><svg class="i" focusable="false" style="width:.9rem;height:.9rem"><use href="/demo/icons.svg#i-book"/></svg><span class="bar"></span></span>
+            </div>
+            <div class="bubble bot" style="width:60%"><span class="bar" style="width:90%"></span></div>
+          </div>
+          <div class="mock-foot">
+            <div class="mock-input"></div>
+            <span class="mock-send"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-arrowRight"/></svg></span>
+            <div class="mock-talk"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-talk"/></svg><span class="bar"></span></div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <section class="wide" aria-labelledby="ev-h">
-      <h2 id="ev-h"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-bell"/></svg><span data-t="eventsHeading">Events</span></h2>
-      <p data-t="eventsIntro"></p>
-      <ul class="events">
-        <li><code>db-assistant:question</code> <span data-t="event_question"></span></li>
-        <li><code>db-assistant:escalated</code> <span data-t="event_escalated"></span></li>
-        <li><code>db-assistant:language</code> <span data-t="event_language"></span></li>
-      </ul>
-      <pre><code>document.addEventListener('db-assistant:question', (e) =&gt; console.log(e.detail));   // {text, language}
+    <section class="section builder" id="builder" aria-labelledby="opt-h">
+      <div class="wrap">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <h2 id="opt-h"><span class="icon-badge" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-palette"/></svg></span><span data-t="optionsHeading">Options</span></h2>
+              <span class="tag" data-t="configTag">Configure</span>
+            </div>
+            <form id="opts" novalidate>
+              <div class="field">
+                <label class="lbl" for="o-lang"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-languages"/></svg><span data-t="langLabel">Assistant language</span></label>
+                <select id="o-lang">
+                  <option value="am" lang="am">አማርኛ (am)</option>
+                  <option value="en" lang="en">English (en)</option>
+                  <option value="ar" lang="ar">العربية (ar)</option>
+                </select>
+              </div>
+              <fieldset>
+                <legend><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-palette"/></svg><span data-t="themeLabel">Colours</span></legend>
+                <div class="tiles">
+                  <label class="tile"><input type="radio" name="theme" value="auto" checked><span class="ti" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-sparkles"/></svg></span><span class="tt" data-t="theme_auto"></span><span class="tick" aria-hidden="true"></span></label>
+                  <label class="tile"><input type="radio" name="theme" value="light"><span class="ti" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-sun"/></svg></span><span class="tt" data-t="theme_light"></span><span class="tick" aria-hidden="true"></span></label>
+                  <label class="tile"><input type="radio" name="theme" value="dark"><span class="ti" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-moon"/></svg></span><span class="tt" data-t="theme_dark"></span><span class="tick" aria-hidden="true"></span></label>
+                  <label class="tile"><input type="radio" name="theme" value="custom"><span class="ti" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-droplet"/></svg></span><span class="tt" data-t="theme_custom"></span><span class="tick" aria-hidden="true"></span></label>
+                </div>
+                <div id="colour-wrap" hidden>
+                  <label class="lbl" for="o-colour"><span data-t="colourLabel">Button colour</span></label>
+                  <div class="colour-row">
+                    <span class="swatch" id="swatch" aria-hidden="true">Aa</span>
+                    <input type="text" id="o-colour" value="#002B56" autocomplete="off" spellcheck="false" aria-describedby="colour-msg">
+                  </div>
+                  <p id="colour-msg" class="warn" role="status"></p>
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-layout"/></svg><span data-t="modeLabel">Layout</span></legend>
+                <div class="tiles">
+                  <label class="tile"><input type="radio" name="mode" value="panel" checked><span class="ti" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-panel"/></svg></span><span class="tt" data-t="mode_panel"></span><span class="tick" aria-hidden="true"></span></label>
+                  <label class="tile"><input type="radio" name="mode" value="inline"><span class="ti" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-inline"/></svg></span><span class="tt" data-t="mode_inline"></span><span class="tick" aria-hidden="true"></span></label>
+                </div>
+              </fieldset>
+              <fieldset id="position-set">
+                <legend><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-position"/></svg><span data-t="positionLabel">Side of the page</span></legend>
+                <div class="tiles">
+                  <label class="tile"><input type="radio" name="position" value="end" checked><span class="ti" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-toEnd"/></svg></span><span class="tt" data-t="position_end"></span><span class="tick" aria-hidden="true"></span></label>
+                  <label class="tile"><input type="radio" name="position" value="start"><span class="ti" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-toStart"/></svg></span><span class="tt" data-t="position_start"></span><span class="tick" aria-hidden="true"></span></label>
+                </div>
+              </fieldset>
+              <div class="field">
+                <label class="lbl" for="o-api"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-server"/></svg><span data-t="apiLabel">API URL</span></label>
+                <input type="url" id="o-api" value="/api" aria-describedby="api-hint" autocomplete="off">
+                <p id="api-hint" class="hint" data-t="apiHint"></p>
+              </div>
+              <div class="field">
+                <label class="lbl" for="o-content"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-book"/></svg><span data-t="contentLabel">Content URL</span></label>
+                <input type="url" id="o-content" value="/demo/data/content.json" autocomplete="off">
+              </div>
+              <p class="note"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-shield"/></svg><span data-t="providerNote"></span></p>
+            </form>
+          </div>
+
+          <div class="sticky">
+            <div class="codecard">
+              <div class="codebar">
+                <h2 id="code-h" tabindex="-1"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-code"/></svg><span data-t="codeHeading">Your code</span></h2>
+                <button type="button" id="copy" class="btn"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-copy"/></svg><span data-t="copy">Copy code</span></button>
+              </div>
+              <pre><code id="code"></code></pre>
+              <div class="codefoot">
+                <p data-t="codeHint"></p>
+                <p id="copy-status" role="status"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:1.5rem">
+          <div class="card-head">
+            <h2 id="prev-h"><span class="icon-badge" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-eye"/></svg></span><span data-t="previewHeading">Live preview</span></h2>
+            <span class="tag" data-t="previewTag">Preview</span>
+          </div>
+          <p class="sub" data-t="previewHint" style="margin-bottom:1rem"></p>
+          <div class="browser">
+            <div class="chrome" aria-hidden="true">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="urlbar"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-shield"/></svg><span data-t="previewUrl">your-site.example/lesson</span></span>
+            </div>
+            <div id="preview"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="steps-h" style="background:#FFFFFF;border-block:1px solid var(--line)">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="kicker"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-rocket"/></svg><span data-t="footTry">Try it</span></p>
+          <h2 id="steps-h" data-t="stepsHeading">Live in three steps</h2>
+        </div>
+        <ol class="steps">
+          <li class="card step"><span class="num" aria-hidden="true"></span><h3 data-t="step1Title">Paste two lines</h3><p data-t="step1Text"></p></li>
+          <li class="card step"><span class="num" aria-hidden="true"></span><h3 data-t="step2Title">Send your lessons</h3><p data-t="step2Text"></p></li>
+          <li class="card step"><span class="num" aria-hidden="true"></span><h3 data-t="step3Title">Listen to events</h3><p data-t="step3Text"></p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="feat-h">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="feat-h" data-t="featuresHeading">What your learners get</h2>
+          <p class="sub" data-t="footTagline"></p>
+        </div>
+        <ul class="feats">
+          <li class="card feat"><span class="icon-badge" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-book"/></svg></span><h3 data-t="f1Title"></h3><p data-t="f1Text"></p></li>
+          <li class="card feat"><span class="icon-badge" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-talk"/></svg></span><h3 data-t="f2Title"></h3><p data-t="f2Text"></p></li>
+          <li class="card feat"><span class="icon-badge" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-listen"/></svg></span><h3 data-t="f3Title"></h3><p data-t="f3Text"></p></li>
+          <li class="card feat"><span class="icon-badge" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-offline"/></svg></span><h3 data-t="f4Title"></h3><p data-t="f4Text"></p></li>
+          <li class="card feat"><span class="icon-badge" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-a11y"/></svg></span><h3 data-t="f5Title"></h3><p data-t="f5Text"></p></li>
+          <li class="card feat"><span class="icon-badge" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-server"/></svg></span><h3 data-t="f6Title"></h3><p data-t="f6Text"></p></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" aria-label="Events and links" style="padding-top:0">
+      <div class="wrap">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h2 id="ev-h"><span class="icon-badge" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-bell"/></svg></span><span data-t="eventsHeading">Events</span></h2></div>
+            <p class="sub" data-t="eventsIntro" style="margin-bottom:1rem"></p>
+            <ul class="events">
+              <li><code>db-assistant:question</code> <span data-t="event_question"></span></li>
+              <li><code>db-assistant:escalated</code> <span data-t="event_escalated"></span></li>
+              <li><code>db-assistant:language</code> <span data-t="event_language"></span></li>
+            </ul>
+            <pre class="snippet"><code>document.addEventListener('db-assistant:question', (e) =&gt; console.log(e.detail));   // {text, language}
 document.addEventListener('db-assistant:escalated', (e) =&gt; console.log(e.detail));  // {ticketId}
 document.querySelector('db-assistant').open();  // open it from your own "Help" link</code></pre>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 id="more-h"><span class="icon-badge" aria-hidden="true"><svg class="i" focusable="false"><use href="/demo/icons.svg#i-terminal"/></svg></span><span data-t="moreHeading">More</span></h2></div>
+            <ul class="links">
+              <li><a href="https://github.com/yamneg96/SYLY#readme"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-book"/></svg><span data-t="linkReadme">README</span><svg class="i ext" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-external"/></svg></a></li>
+              <li><a href="/docs"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-terminal"/></svg><span data-t="linkDocs">/docs</span></a></li>
+              <li><a href="https://github.com/yamneg96/SYLY/blob/main/openapi.yaml"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-code"/></svg><span data-t="linkOpenapi">openapi.yaml</span><svg class="i ext" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-external"/></svg></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </section>
-
-    <section class="wide" aria-labelledby="more-h">
-      <h2 id="more-h"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-book"/></svg><span data-t="moreHeading">More</span></h2>
-      <ul class="links">
-        <li><a href="https://github.com/yamneg96/SYLY#readme"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-book"/></svg><span data-t="linkReadme">README</span></a></li>
-        <li><a href="/docs"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-terminal"/></svg><span data-t="linkDocs">/docs</span></a></li>
-        <li><a href="https://github.com/yamneg96/SYLY/blob/main/openapi.yaml"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-code"/></svg><span data-t="linkOpenapi">openapi.yaml</span></a></li>
-      </ul>
-    </section>
-  </div>
   </main>
 
   <footer class="site-foot">
-    <div class="foot-inner">
+    <div class="wrap foot-inner">
       <div class="foot-grid">
         <div class="foot-brand">
-          <div class="brand"><span class="brand-mark" aria-hidden="true">SY</span><span>SYLY <small>db-assistant</small></span></div>
+          <span class="brand"><span class="brand-mark" aria-hidden="true"><svg focusable="false" viewBox="0 0 200 200"><use href="/demo/icons.svg#i-logo"/></svg></span><span>SYLY <small>db-assistant</small></span></span>
           <p><span class="emoji" aria-hidden="true">💬</span><span data-t="footTagline"></span></p>
         </div>
         <nav aria-labelledby="foot-try">
@@ -284,80 +457,12 @@ document.querySelector('db-assistant').open();  // open it from your own "Help" 
           <p data-t="footEvent"></p>
           <p><span class="emoji" aria-hidden="true">♿</span><span data-t="footA11y"></span></p>
         </div>
-        <a class="to-top" href="#top" data-t="footTop">Back to top</a>
+        <a class="to-top" href="#top"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-arrowUp"/></svg><span data-t="footTop">Back to top</span></a>
       </div>
     </div>
   </footer>
 
   <script src="/demo/i18n/page-i18n.js"></script>
-  <script src="/module/db-assistant.js" defer></script>
-  <script>
-  (function () {
-    'use strict';
-    var $ = function (id) { return document.getElementById(id); };
-    var form = $('opts'), t = SYLYPage.t, lastColourOk = true;
-    var SRC = location.origin + '/module/db-assistant.js';
-
-    function lum(hex) {
-      var c = [1, 3, 5].map(function (i) { var v = parseInt(hex.substr(i, 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
-      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-    }
-    function radio(name) { return form.querySelector('input[name="' + name + '"]:checked').value; }
-    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
-
-    function colour() {
-      var msg = $('colour-msg'), v = $('o-colour').value.trim();
-      $('colour-wrap').hidden = radio('theme') !== 'custom';
-      if (radio('theme') !== 'custom') { lastColourOk = true; return null; }
-      if (!/^#[0-9a-fA-F]{6}$/.test(v)) {
-        msg.textContent = t('colourInvalid'); msg.className = 'warn bad'; $('o-colour').setAttribute('aria-invalid', 'true'); lastColourOk = false; return null;
-      }
-      var ratio = (1.05 / (lum(v) + 0.05)).toFixed(2);
-      var good = ratio >= 4.5;
-      msg.textContent = t(good ? 'colourOk' : 'colourBad', { ratio: ratio });
-      msg.className = 'warn' + (good ? '' : ' bad');
-      $('o-colour').setAttribute('aria-invalid', good ? 'false' : 'true');
-      lastColourOk = good;
-      return good ? v.toUpperCase() : null;
-    }
-
-    function attrs() {
-      var a = { lang: $('o-lang').value }, theme = radio('theme'), c = colour();
-      if ($('o-api').value.trim()) a.api = $('o-api').value.trim();
-      if ($('o-content').value.trim()) a.content = $('o-content').value.trim();
-      if (theme !== 'auto' && theme !== 'custom') a.theme = theme;
-      if (radio('mode') === 'inline') a.mode = 'inline';
-      else if (radio('position') === 'start') a.position = 'start';
-      $('position-set').hidden = radio('mode') === 'inline';
-      // A custom colour is passed as the --bs-primary the module already reads, and only if it is readable.
-      if (c) a.style = '--bs-primary: ' + c;
-      return a;
-    }
-
-    function render() {
-      var a = attrs();
-      var tag = '<db-assistant' + Object.keys(a).map(function (k) { return ' ' + k + '="' + esc(a[k]) + '"'; }).join('') + '></db-assistant>';
-      $('code').textContent = '<script src="' + SRC + '" defer><\/script>\n' + tag;
-      // Live preview: a real element, rebuilt because mode is read once at start.
-      var box = $('preview');
-      box.textContent = '';
-      var el = document.createElement('db-assistant');
-      Object.keys(a).forEach(function (k) { el.setAttribute(k, a[k]); });
-      box.appendChild(el);
-    }
-
-    form.addEventListener('input', render);
-    form.addEventListener('change', render);
-    $('copy').addEventListener('click', function () {
-      var text = $('code').textContent, status = $('copy-status');
-      status.textContent = '';
-      (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject())
-        .then(function () { status.textContent = t('copied'); })
-        .catch(function () { status.textContent = t('copyFailed'); });
-    });
-    $('page-lang').addEventListener('change', function (e) { SYLYPage.load('install', e.target.value).then(render); });
-    SYLYPage.load('install', 'en').then(function () { customElements.whenDefined('db-assistant').then(render); });
-  })();
-  </script>
+  <script src="/demo/install.js"></script>
 </body>
 </html>

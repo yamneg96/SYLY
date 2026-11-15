@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="SYLY">
+  <!-- SYLY voice-bubble logo (black-and-white master), traced from SYLY-voice-icon-bw.png -->
+  <rect width="200" height="200" rx="46" fill="#000000"/>
+  <rect x="28" y="52" width="143" height="83" rx="9" fill="#FFFFFF"/>
+  <path d="M72 134 H104 L72 163 Z" fill="#FFFFFF"/>
+  <circle cx="164" cy="40" r="16" fill="#000000"/>
+  <circle cx="164" cy="40" r="12" fill="#FFFFFF"/>
+  <g stroke="#000000" stroke-width="12" stroke-linecap="round">
+    <path d="M55.5 84 V103"/><path d="M77.5 72 V115"/><path d="M99.5 62 V125"/><path d="M121.5 72 V115"/><path d="M143.5 84 V103"/>
+  </g>
+</svg>
