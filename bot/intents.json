@@ -1,0 +1,245 @@
+{
+  "_note": "Phrases per intent and language (bot-voice-commands.md §3.1). Typed or spoken; only short messages (5 words or fewer, 40 characters or fewer) can be commands. am phrases: team review pending. Languages marked draft need a native reader check.",
+  "_draft": {
+    "en": false,
+    "am": false
+  },
+  "start": {
+    "en": [
+      "start",
+      "begin",
+      "hello",
+      "hi",
+      "get started"
+    ],
+    "am": [
+      "ጀምር",
+      "መጀመር",
+      "እንጀምር",
+      "ሰላም",
+      "ጀምሩ",
+      "start"
+    ]
+  },
+  "help": {
+    "en": [
+      "help",
+      "help me",
+      "commands",
+      "menu",
+      "what can you do"
+    ],
+    "am": [
+      "እርዳታ",
+      "እርዳኝ",
+      "ትዕዛዞች",
+      "ምን ታደርጋለህ",
+      "ምናሌ",
+      "help"
+    ]
+  },
+  "lang": {
+    "en": [
+      "language",
+      "change language",
+      "languages"
+    ],
+    "am": [
+      "ቋንቋ",
+      "ቋንቋ ቀይር",
+      "ቋንቋ መቀየር",
+      "language"
+    ]
+  },
+  "lesson": {
+    "en": [
+      "lesson",
+      "the lesson",
+      "lesson parts",
+      "course",
+      "sections"
+    ],
+    "am": [
+      "ትምህርት",
+      "ትምህርቱ",
+      "የትምህርት ክፍሎች",
+      "ክፍሎች",
+      "lesson"
+    ]
+  },
+  "ask": {
+    "en": [
+      "ask",
+      "question",
+      "i have a question",
+      "ask a question"
+    ],
+    "am": [
+      "ጠይቅ",
+      "ጥያቄ",
+      "ጥያቄ አለኝ",
+      "መጠየቅ እፈልጋለሁ",
+      "ask"
+    ]
+  },
+  "simple": {
+    "en": [
+      "simple",
+      "simple answers",
+      "simpler",
+      "plain language"
+    ],
+    "am": [
+      "ቀላል",
+      "ቀላል ቋንቋ",
+      "ቀለል አድርግ",
+      "ቀላል መልስ",
+      "simple"
+    ]
+  },
+  "person": {
+    "en": [
+      "person",
+      "talk to a person",
+      "human",
+      "tutor",
+      "real person",
+      "teacher"
+    ],
+    "am": [
+      "ከሰው ጋር አገናኘኝ",
+      "ሰው",
+      "ሰው እፈልጋለሁ",
+      "አስጠኚ",
+      "ከሰው ጋር ይነጋገሩ",
+      "ከሰው ጋር መነጋገር እፈልጋለሁ",
+      "person"
+    ]
+  },
+  "status": {
+    "en": [
+      "status",
+      "my request",
+      "any reply",
+      "where is my request"
+    ],
+    "am": [
+      "ሁኔታ",
+      "ጥያቄዬ",
+      "መልስ መጣ",
+      "ጥያቄዬ የት ደረሰ",
+      "status"
+    ]
+  },
+  "jobs": {
+    "en": [
+      "jobs",
+      "job",
+      "find a job",
+      "work",
+      "vacancies"
+    ],
+    "am": [
+      "ስራ",
+      "ስራዎች",
+      "ሥራ",
+      "ሥራዎች",
+      "የሥራ ማስታወቂያ",
+      "jobs"
+    ]
+  },
+  "myalerts": {
+    "en": [
+      "my alerts",
+      "alerts",
+      "my job alerts"
+    ],
+    "am": [
+      "ማሳወቂያዎቼ",
+      "ማሳወቂያዎች",
+      "የሥራ ማሳወቂያዎቼ",
+      "my alerts"
+    ]
+  },
+  "stop": {
+    "en": [
+      "stop",
+      "stop alerts",
+      "unsubscribe"
+    ],
+    "am": [
+      "አቁም",
+      "ማሳወቂያ አቁም",
+      "አቁሙ",
+      "stop"
+    ]
+  },
+  "accommodate": {
+    "en": [
+      "interview support",
+      "accommodation",
+      "accommodate",
+      "support for my interview"
+    ],
+    "am": [
+      "የቃለ መጠይቅ ድጋፍ",
+      "ድጋፍ እፈልጋለሁ",
+      "ለቃለ መጠይቅ ድጋፍ",
+      "accommodate"
+    ]
+  },
+  "voice": {
+    "en": [
+      "voice",
+      "voice replies",
+      "voice on",
+      "voice off"
+    ],
+    "am": [
+      "ድምፅ",
+      "ድምጽ",
+      "የድምፅ መልስ",
+      "voice"
+    ]
+  },
+  "mydata": {
+    "en": [
+      "my data",
+      "mydata",
+      "what do you store",
+      "my information"
+    ],
+    "am": [
+      "መረጃዬ",
+      "የእኔ መረጃ",
+      "የተቀመጠ መረጃዬ",
+      "my data"
+    ]
+  },
+  "delete": {
+    "en": [
+      "delete",
+      "delete my data",
+      "erase my data",
+      "forget me"
+    ],
+    "am": [
+      "ሰርዝ",
+      "መረጃዬን ሰርዝ",
+      "ሁሉንም ሰርዝ",
+      "delete"
+    ]
+  },
+  "settings": {
+    "en": [
+      "settings",
+      "options",
+      "preferences"
+    ],
+    "am": [
+      "ቅንብሮች",
+      "ቅንብር",
+      "settings"
+    ]
+  }
+}
