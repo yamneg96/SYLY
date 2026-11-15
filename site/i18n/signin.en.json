@@ -1,0 +1,20 @@
+{
+  "pageTitle": "Developer sign in: SYLY",
+  "h1": "Developer sign in",
+  "lead": "For people who add SYLY to a website. Learners never need to sign in.",
+  "why": "You sign in with your Google account. We ask only for your Google account id, e-mail address and name (openid, email, profile). We keep them to show your sites. See Privacy.",
+  "btnH": "Sign in with Google",
+  "btnHelp": "The next control is Google's own button. If you cannot reach it with the keyboard or your screen reader, use the button after it, which opens Google's quick sign-in prompt instead.",
+  "promptBtn": "Open Google's quick sign-in prompt",
+  "promptHelp": "If nothing appears, your browser may have hidden the prompt. Reload the page and try again.",
+  "skipBtn": "Skip the Google button",
+  "after": "After you sign in you go to your dashboard.",
+  "notConfigured": "Sign-in is not configured on this server. Every other page works. The team lead can set it up: see Google sign-in setup in the README.",
+  "checking": "Checking whether you are already signed in…",
+  "working": "Signing you in…",
+  "gisFail": "Google's sign-in could not be loaded. Check your connection and reload the page.",
+  "failed": "Sign-in did not work: {why}",
+  "already": "You are already signed in.",
+  "toDash": "Go to your dashboard",
+  "back": "Back to Home"
+}

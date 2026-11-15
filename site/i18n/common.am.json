@@ -1,0 +1,19 @@
+{
+  "skip": "ወደ ዋናው ይዘት ይዝለሉ",
+  "navLabel": "ዋና",
+  "navHome": "መነሻ",
+  "navDocs": "መመሪያ",
+  "navInstall": "ጫን",
+  "navSignin": "የገንቢ መግቢያ",
+  "pageLang": "የገጽ ቋንቋ",
+  "footDocs": "መመሪያ",
+  "footInstall": "የመጫኛ ገጽ",
+  "footPrivacy": "ግላዊነት",
+  "footAccess": "የተደራሽነት መግለጫ",
+  "footRepo": "የምንጭ ኮድ",
+  "footStarter": "የመነሻ ገጾች",
+  "footTeam": "ቡድን SYLY፦ ለሚ፣ ሳሮን፣ ያቤጽ፣ ያምላክ። Digital Bridge Accessibility Hackathon፣ ALX፣ ትራክ 3።",
+  "footLicence": "ፈቃድ፦ ሊረጋገጥ ነው (TBD)። የሙከራ ውሂብ ብቻ፤ እውነተኛ የግል መረጃ አያስገቡ።",
+  "footDraft": "በዚህ ድረ ገጽ ላይ ያለው አማርኛ ረቂቅ ነው፤ በአማርኛ ተናጋሪ ማንበብ ያስፈልገዋል።",
+  "_draft": "Amharic DRAFT – needs native reader check"
+}

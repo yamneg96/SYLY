@@ -1,0 +1,18 @@
+{
+  "skip": "Skip to main content",
+  "navLabel": "Main",
+  "navHome": "Home",
+  "navDocs": "Docs",
+  "navInstall": "Install",
+  "navSignin": "Developer sign in",
+  "pageLang": "Page language",
+  "footDocs": "Documentation",
+  "footInstall": "Install page",
+  "footPrivacy": "Privacy",
+  "footAccess": "Accessibility statement",
+  "footRepo": "Source code",
+  "footStarter": "Starter pages",
+  "footTeam": "Team SYLY: Lemi, Saron, Yabets, Yamlak. Digital Bridge Accessibility Hackathon, ALX, Track 3.",
+  "footLicence": "Licence: to be confirmed (TBD). Test data only; do not enter real personal information.",
+  "footDraft": "Amharic text on this site is a draft and needs a native reader check."
+}
