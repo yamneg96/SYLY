@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SYLY helper page</title>
+  <style>
+    :root { --text: #111111; --muted: #4A4A4A; --border: #767676; --bg: #FFFFFF; --bg2: #F2F2F2; --btn: #002B56; --focus: #F5A300; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, "Noto Sans Ethiopic", sans-serif; font-size: 1rem; line-height: 1.5; color: var(--text); background: var(--bg); }
+    [lang|="am"] { line-height: 1.7; }
+    header, main { max-width: 72rem; margin: 0 auto; padding: 1rem; }
+    h1 { font-size: 1.75rem; margin: 0 0 0.5rem; }
+    h2 { font-size: 1.25rem; margin: 0 0 0.75rem; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    @media (min-width: 60rem) { .grid { grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); } }
+    section { border: 2px solid var(--border); border-radius: 0.75rem; padding: 1rem; }
+    label { display: block; font-weight: 600; margin: 0.5rem 0 0.25rem; }
+    input, textarea, select { font: inherit; width: 100%; min-height: 2.75rem; padding: 0.5rem 0.75rem; border: 2px solid var(--border); border-radius: 0.5rem; color: var(--text); background: var(--bg); }
+    select { width: auto; }
+    button { font: inherit; min-height: 2.75rem; padding: 0.5rem 1rem; border-radius: 0.5rem; border: 2px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; }
+    button.primary { background: var(--btn); border-color: var(--btn); color: #FFFFFF; font-weight: 600; }
+    button[aria-current="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+    button[aria-current="true"]::before { content: "▶ "; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--text); }
+    ul.tickets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+    ul.tickets button { width: 100%; text-align: start; }
+    .meta { color: var(--muted); font-size: 0.9375rem; margin: 0.25rem 0; overflow-wrap: anywhere; }
+    ol.log { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+    ol.log li { background: var(--bg2); border-radius: 0.75rem; padding: 0.5rem 0.75rem; overflow-wrap: anywhere; }
+    ol.log li.helper { border-inline-start: 0.375rem solid var(--text); }
+    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+    img { max-width: 100%; height: auto; border: 1px solid var(--border); }
+    .status { font-weight: 600; min-height: 1.5rem; }
+    .error { color: #B00020; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 data-t="heading">Helper page</h1>
+    <p data-t="intro"></p>
+    <label for="page-lang" data-t="language">Page language</label>
+    <select id="page-lang">
+      <option value="en" lang="en">English</option>
+      <option value="am" lang="am">አማርኛ</option>
+    </select>
+  </header>
+  <main>
+    <p id="status" class="status" role="status"></p>
+    <div class="grid">
+      <div>
+        <section aria-labelledby="you-h">
+          <h2 id="you-h" data-t="you">About you</h2>
+          <form id="start-form">
+            <label for="helper-name" data-t="nameLabel">Your first name</label>
+            <input id="helper-name" autocomplete="given-name" required>
+            <label for="helper-key" data-t="keyLabel">Helper key</label>
+            <input id="helper-key" type="password" autocomplete="off">
+            <div class="row"><button class="primary" type="submit" data-t="start">Start helping</button></div>
+          </form>
+        </section>
+        <section aria-labelledby="waiting-h" style="margin-top:1rem">
+          <h2 id="waiting-h" data-t="waitingHeading">Waiting learners</h2>
+          <p id="waiting-empty" data-t="noneWaiting"></p>
+          <ul id="tickets" class="tickets"></ul>
+        </section>
+      </div>
+      <div>
+        <section aria-labelledby="conv-h">
+          <h2 id="conv-h" tabindex="-1" data-t="conversationHeading">Conversation</h2>
+          <p id="choose" data-t="chooseTicket"></p>
+          <div id="ticket-view" hidden>
+            <p id="ticket-meta" class="meta"></p>
+            <div class="row">
+              <button type="button" id="accept" data-t="accept">Accept</button>
+              <button type="button" id="ask-screen" data-t="askScreen">Ask to see screen</button>
+              <button type="button" id="close-ticket" data-t="closeTicket">Close request</button>
+            </div>
+            <div role="log" aria-live="polite" aria-labelledby="conv-h"><ol id="log" class="log"></ol></div>
+            <form id="reply-form">
+              <label for="reply" data-t="replyLabel">Your reply</label>
+              <textarea id="reply" rows="3" required></textarea>
+              <div class="row"><button class="primary" type="submit" data-t="send">Send reply</button></div>
+            </form>
+            <div id="screen-box" hidden>
+              <h3 data-t="screenHeading">Learner's screen</h3>
+              <img id="screen" alt="">
+            </div>
+            <div id="shot-box" hidden><img id="shot" alt=""></div>
+          </div>
+        </section>
+        <section aria-labelledby="acc-h" style="margin-top:1rem">
+          <h2 id="acc-h" data-t="accHeading">Interview support requests</h2>
+          <p data-t="accIntro"></p>
+          <ul id="acc-list"></ul>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="/demo/i18n/page-i18n.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var API = '/api/v1', t = SYLYPage.t, $ = function (id) { return document.getElementById(id); };
+    var state = { name: '', key: '', current: null, after: 0, known: {}, shownWaiting: -1 };
+    var LANGS = { am: 'አማርኛ / Amharic', en: 'English', ar: 'العربية / Arabic' };
+    try { state.name = sessionStorage.getItem('helper-name') || ''; state.key = sessionStorage.getItem('helper-key') || ''; } catch (e) {}
+    $('helper-name').value = state.name;
+
+    function say(msg, isError) { var s = $('status'); s.textContent = msg; s.className = 'status' + (isError ? ' error' : ''); }
+    function api(path, opts) {
+      opts = opts || {};
+      opts.headers = Object.assign({ 'Content-Type': 'application/json' }, state.key ? { 'X-Helper-Key': state.key } : {}, opts.headers || {});
+      return fetch(API + path, opts).then(function (r) {
+        if (r.status === 401) { say(t('unauthorised'), true); throw new Error('401'); }
+        if (!r.ok) throw new Error(r.status);
+        return r.status === 204 ? null : r.json();
+      });
+    }
+
+    function heartbeat() { if (state.name) api('/helper/presence?name=' + encodeURIComponent(state.name), { method: 'POST' }).catch(function () {}); }
+
+    function renderTickets(list) {
+      var ul = $('tickets');
+      ul.textContent = '';
+      $('waiting-empty').hidden = list.length > 0;
+      list.forEach(function (tk) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = t('ticketLine', { id: tk.id, lang: LANGS[tk.language] || tk.language, channel: tk.channel, min: tk.waiting_minutes }) + (tk.status === 'active' ? ' ' + t('statusActive') : '');
+        if (state.current && state.current.id === tk.id) b.setAttribute('aria-current', 'true');
+        b.addEventListener('click', function () { open(tk); });
+        var li = document.createElement('li');
+        li.appendChild(b);
+        if (tk.section) { var p = document.createElement('p'); p.className = 'meta'; p.textContent = t('section', { section: tk.section }); li.appendChild(p); }
+        ul.appendChild(li);
+      });
+      var waiting = list.filter(function (x) { return x.status === 'waiting'; }).length;
+      if (state.shownWaiting >= 0 && waiting > state.shownWaiting) say(t('newWaiting', { n: waiting }));
+      state.shownWaiting = waiting;
+    }
+    function refresh() {
+      api('/escalations?status=open').then(renderTickets).catch(function (e) { if (e.message !== '401') say(t('error'), true); });
+      api('/accommodations').then(renderAcc).catch(function () {});
+    }
+
+    function renderAcc(list) {
+      var ul = $('acc-list');
+      ul.textContent = '';
+      if (!list.length) { var li0 = document.createElement('li'); li0.textContent = t('accNone'); ul.appendChild(li0); return; }
+      list.forEach(function (a) {
+        var li = document.createElement('li');
+        li.textContent = t('accLine', { id: a.id, job: a.job_id, needs: a.needs.join(', '), channel: a.contact_channel, contact: a.contact ? ' (' + a.contact + ')' : '', note: a.note || '-' });
+        ul.appendChild(li);
+      });
+    }
+
+    function addLine(m) {
+      var li = document.createElement('li');
+      li.className = m.author;
+      li.setAttribute('dir', 'auto');
+      if (m.lang) li.lang = m.lang;
+      var who = document.createElement('strong');
+      who.textContent = (m.author === 'helper' && m.name ? m.name : t('author_' + m.author)) + ': ';
+      li.appendChild(who);
+      var text = m.author === 'system' ? t('system_' + m.text) : m.text;
+      li.appendChild(document.createTextNode(text));
+      $('log').appendChild(li);
+    }
+    function poll() {
+      var tk = state.current;
+      if (!tk) return;
+      api('/escalations/' + tk.id + '/messages?after=' + state.after).then(function (list) {
+        list.forEach(function (m) { state.after = Math.max(state.after, m.id); addLine(m); if (m.text === 'screenshot_attached') loadShot(); });
+      }).catch(function () {});
+      var img = $('screen');
+      fetch(API + '/escalations/' + tk.id + '/screen?ts=' + Date.now(), { headers: state.key ? { 'X-Helper-Key': state.key } : {} })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
+        .then(function (b) { $('screen-box').hidden = false; if (img.src) URL.revokeObjectURL(img.src); img.src = URL.createObjectURL(b); img.alt = t('screenAlt', { id: tk.id }); })
+        .catch(function () { $('screen-box').hidden = true; });
+    }
+    function loadShot() {
+      var tk = state.current;
+      api('/escalations/' + tk.id + '/screenshot').then(function (r) {
+        if (r && r.screenshot) { $('shot').src = r.screenshot; $('shot').alt = t('screenshotAlt', { id: tk.id }); $('shot-box').hidden = false; }
+      }).catch(function () {});
+    }
+    function open(tk) {
+      state.current = tk; state.after = 0;
+      $('log').textContent = '';
+      $('choose').hidden = true;
+      $('ticket-view').hidden = false;
+      $('shot-box').hidden = true; $('screen-box').hidden = true;
+      $('ticket-meta').textContent = t('ticketLine', { id: tk.id, lang: LANGS[tk.language] || tk.language, channel: tk.channel, min: tk.waiting_minutes }) + (tk.page_url ? ' · ' + t('page', { page: tk.page_url }) : '');
+      if (tk.has_screenshot) loadShot();
+      poll();
+      refresh();
+      $('conv-h').focus();
+    }
+
+    $('start-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      state.name = $('helper-name').value.trim();
+      state.key = $('helper-key').value;
+      if (!state.name) { $('helper-name').focus(); return; }
+      try { sessionStorage.setItem('helper-name', state.name); sessionStorage.setItem('helper-key', state.key); } catch (err) {}
+      heartbeat();
+      refresh();
+      say(t('online', { name: state.name }));
+    });
+    $('accept').addEventListener('click', function () {
+      api('/escalations/' + state.current.id, { method: 'PATCH', body: JSON.stringify({ status: 'active', helper_name: state.name || null }) })
+        .then(function () { say(t('accepted', { id: state.current.id })); refresh(); $('reply').focus(); });
+    });
+    $('close-ticket').addEventListener('click', function () {
+      var id = state.current.id;
+      api('/escalations/' + id, { method: 'PATCH', body: JSON.stringify({ status: 'closed' }) }).then(function () {
+        say(t('closed', { id: id }));
+        state.current = null; $('ticket-view').hidden = true; $('choose').hidden = false;
+        refresh();
+        $('conv-h').focus();
+      });
+    });
+    $('ask-screen').addEventListener('click', function () {
+      api('/escalations/' + state.current.id + '/messages', { method: 'POST', body: JSON.stringify({ author: 'system', text: 'screen_request' }) })
+        .then(function () { say(t('screenAsked')); poll(); });
+    });
+    $('reply-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var text = $('reply').value.trim();
+      if (!text || !state.current) return;
+      api('/escalations/' + state.current.id + '/messages', { method: 'POST', body: JSON.stringify({ author: 'helper', name: state.name || null, text: text }) })
+        .then(function () { $('reply').value = ''; say(t('sent')); poll(); })
+        .catch(function () { say(t('error'), true); });
+    });
+    $('page-lang').addEventListener('change', function (e) {
+      SYLYPage.load('helper', e.target.value).then(function () { refresh(); });
+    });
+
+    SYLYPage.load('helper', 'en').then(function () {
+      refresh();
+      if (state.name) { heartbeat(); say(t('online', { name: state.name })); }
+      setInterval(refresh, 5000);
+      setInterval(poll, 2500);
+      setInterval(heartbeat, 30000);
+    });
+  })();
+  </script>
+</body>
+</html>
