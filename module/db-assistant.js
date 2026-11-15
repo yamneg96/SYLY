@@ -51,7 +51,8 @@
       offline: 'Offline',
       queued: 'Saved on this phone. It will send when you are online.',
       notFound: 'I could not find this in the course. Would you like to talk to a person?',
-      escalatedNotice: 'A tutor has been notified. You are in the queue for live assistance.',
+      escalatedNotice: 'A tutor will answer here. It may take until morning.',
+      typing: 'SYLY is typing...',
       you: 'You',
       assistant: 'SYLY Tutor',
       simpleMode: 'Simple mode',
@@ -74,7 +75,8 @@
       offline: 'ከመስመር ውጭ',
       queued: 'በዚህ ስልክ ላይ ተቀምጧል። መስመር ላይ ሲሆኑ ይላካል።',
       notFound: 'ይህንን በትምህርቱ ውስጥ ማግኘት አልቻልኩም። ከሰው ጋር መነጋገር ይፈልጋሉ?',
-      escalatedNotice: 'ለአስተማሪ ማሳወቂያ ተልኳል፤ በቅርቡ ያነጋግሩዎታል።',
+      escalatedNotice: 'አስተማሪ እዚህ ይመልሳል። እስከ ነገ ጥዋት ድረስ ሊወስድ ይችላል።',
+      typing: 'ሲሊ በመጻፍ ላይ ነው...',
       you: 'እርስዎ',
       assistant: 'ሲሊ አስተማሪ',
       simpleMode: 'ቀላል ሁነታ',
@@ -97,7 +99,8 @@
       offline: 'غير متصل',
       queued: 'تم الحفظ على هذا الهاتف. سيتم الإرسال فور اتصالك بالإنترنت.',
       notFound: 'لم أتمكن من العثور على هذا في الدرس. هل ترغب في التحدث إلى معلم؟',
-      escalatedNotice: 'تم إخطار المعلم وطلب المساعدة المباشرة.',
+      escalatedNotice: 'سيجيب المعلم هنا. قد يستغرق الأمر حتى الصباح.',
+      typing: 'سيلي يكتب الآن...',
       you: 'أنت',
       assistant: 'معلم سيلي',
       simpleMode: 'الوضع البسيط',
@@ -538,12 +541,24 @@
     }
 
     /**
+     * Resolves API URL with base attribute fallback
+     */
+    resolveApiUrl(endpoint) {
+      const base = (this.api || '').trim().replace(/\/+$/, '');
+      let path = endpoint.replace(/^\/+/, '');
+      if (base.endsWith('/api') && path.startsWith('api/')) {
+        path = path.slice(4);
+      }
+      return base ? `${base}/${path}` : `/${path}`;
+    }
+
+    /**
      * Submits a question, dispatches event, and queries offline or online retrieval
      */
     async ask(questionText) {
       const t = this.getTranslations();
 
-      // Append user message
+      // 1. Append user message to <ol role="log">
       this.addMessage({
         sender: 'user',
         senderLabel: t.you,
@@ -558,45 +573,43 @@
         composed: true
       }));
 
-      this.setStatus(t.statusReady);
+      // 2. Show temporary "loading" indicator in <p role="status">
+      this.setStatus(t.typing || 'SYLY is typing...');
 
-      // Retrieval strategy
-      if (this.api) {
-        try {
-          const res = await fetch(`${this.api}/v1/ask`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: questionText, language: this.lang })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.answer) {
-              this.addMessage({
-                sender: 'assistant',
-                senderLabel: t.assistant,
-                text: data.answer,
-                sources: data.sources || [],
-                lang: this.lang
-              });
-              return;
-            }
-          }
-        } catch (err) {
-          console.warn('[db-assistant] Online API call failed, falling back to local search.');
+      const askUrl = this.resolveApiUrl('/api/v1/ask');
+      let answerText = null;
+      let sources = [];
+      let apiSuccess = false;
+
+      // 3. Make POST request to [api_attribute]/api/v1/ask
+      try {
+        const res = await fetch(askUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: questionText, language: this.lang })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          apiSuccess = true;
+          answerText = data.text !== undefined ? data.text : data.answer;
+          sources = data.sources || [];
         }
+      } catch (err) {
+        console.warn('[db-assistant] POST /api/v1/ask failed, falling back to local search:', err);
       }
 
-      // Offline bilingual retrieval
-      const localResult = this.searchLocalContent(questionText);
-      if (localResult) {
+      this.setStatus(t.statusReady || 'Ready for questions');
+
+      // 4. Render returned text and append sources
+      if (apiSuccess && answerText) {
         this.addMessage({
           sender: 'assistant',
           senderLabel: t.assistant,
-          text: localResult.text,
-          sources: localResult.sources,
+          text: answerText,
+          sources: sources,
           lang: this.lang
         });
-      } else {
+      } else if (apiSuccess && !answerText) {
         this.addMessage({
           sender: 'assistant',
           senderLabel: t.assistant,
@@ -605,6 +618,27 @@
           isNotFound: true,
           lang: this.lang
         });
+      } else {
+        // Offline bilingual retrieval fallback
+        const localResult = this.searchLocalContent(questionText);
+        if (localResult) {
+          this.addMessage({
+            sender: 'assistant',
+            senderLabel: t.assistant,
+            text: localResult.text,
+            sources: localResult.sources,
+            lang: this.lang
+          });
+        } else {
+          this.addMessage({
+            sender: 'assistant',
+            senderLabel: t.assistant,
+            text: t.notFound,
+            sources: [],
+            isNotFound: true,
+            lang: this.lang
+          });
+        }
       }
     }
 
@@ -672,60 +706,116 @@
       };
     }
 
-    handleEscalate() {
+    /**
+     * Escalation Wiring (/api/v1/escalations)
+     * Submits conversation history and notifies tutor queue.
+     */
+    async handleEscalate() {
       const t = this.getTranslations();
-      const ticketId = 'ticket-' + Date.now().toString(36);
+      const escalationUrl = this.resolveApiUrl('/api/v1/escalations');
+      let ticketId = 'ticket-' + Date.now().toString(36);
 
+      // 1. POST to [api_attribute]/api/v1/escalations with conversation history
+      try {
+        const payload = {
+          conversation: this.messages.map(m => ({
+            role: m.sender === 'user' ? 'user' : 'assistant',
+            text: m.text,
+            lang: m.lang || this.lang,
+            sources: m.sources || []
+          })),
+          page_url: window.location.href,
+          section: window.location.hash || ''
+        };
+
+        const res = await fetch(escalationUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ticketId || data.id) {
+            ticketId = data.ticketId || data.id;
+          }
+        }
+      } catch (err) {
+        console.warn('[db-assistant] POST /api/v1/escalations failed:', err);
+      }
+
+      // 2. Append system message to chat log: "A tutor will answer here. It may take until morning."
+      const notice = t.escalatedNotice || "A tutor will answer here. It may take until morning.";
+      this.addMessage({
+        sender: 'assistant',
+        senderLabel: t.assistant,
+        text: notice,
+        lang: this.lang
+      });
+
+      // 3. Dispatch custom event db-assistant:escalated with detail: { ticketId }
       this.dispatchEvent(new CustomEvent('db-assistant:escalated', {
         detail: { ticketId },
         bubbles: true,
         composed: true
       }));
-
-      this.addMessage({
-        sender: 'assistant',
-        senderLabel: t.assistant,
-        text: t.escalatedNotice,
-        lang: this.lang
-      });
     }
 
     /**
-     * Citation navigation handler (SDS §1.4)
-     * Directs focus across Shadow DOM boundary to the host heading
+     * Shadow DOM Citation Link Routing (WCAG 2.2 AA Focus Management)
+     * Handles clicks on links inside Shadow DOM to move focus to host page headings.
      */
     handleSourceClick(event) {
       const link = event.target.closest('a');
       if (!link) return;
 
-      const url = new URL(link.href, window.location.href);
-      if (url.pathname !== window.location.pathname || !url.hash) {
-        return; // External page link
+      const href = link.getAttribute('href') || '';
+      let hash = '';
+      if (href.startsWith('#')) {
+        hash = href;
+      } else {
+        try {
+          const url = new URL(link.href, window.location.href);
+          if (url.pathname === window.location.pathname && url.hash) {
+            hash = url.hash;
+          }
+        } catch (_) {}
       }
 
-      const targetId = decodeURIComponent(url.hash.slice(1));
+      // If link does not point to a local hash on current page, allow default navigation
+      if (!hash) return;
+
+      const targetId = decodeURIComponent(hash.slice(1));
       const targetElement = document.getElementById(targetId);
       if (!targetElement) return;
 
+      // 2. Prevent default anchor jump
       event.preventDefault();
 
-      // If panel is in modal mode, close it to restore inert host document
+      // 4. Important Modal Logic:
+      // If panel is currently in modal mode (showModal()), close it first
+      // so the host page ceases to be inert and screen readers can interact.
       if (this.mode === 'panel' && this.isModal) {
         this.close({ returnFocus: false });
       }
 
+      // 5. Add tabindex="-1" to target element if not present
       if (!targetElement.hasAttribute('tabindex')) {
         targetElement.setAttribute('tabindex', '-1');
       }
 
+      // 6. Scroll into view (respecting prefers-reduced-motion)
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       targetElement.scrollIntoView({
         behavior: reduceMotion ? 'auto' : 'smooth',
         block: 'start'
       });
 
+      // 7. Snap screen reader focus to the heading
       targetElement.focus({ preventScroll: true });
-      window.history.replaceState(null, '', url.hash);
+
+      // 8. Update browser URL hash via history.replaceState
+      window.history.replaceState(null, '', hash);
     }
 
     addMessage(msg) {
