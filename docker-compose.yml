@@ -1,0 +1,47 @@
+# SYLY <db-assistant>: one command, zero manual setup (NFR-K1).
+# web  : nginx serving the Savanna starter at /, the module at /module, demos at /demo
+#        and proxying /api, /sms and /docs to the api service.
+# api  : FastAPI + SQLite file in ./data (no database container).
+# bot  : Telegram long polling; exits quietly when no bot token is set.
+services:
+  web:
+    image: nginx:alpine
+    ports: ["8080:80"]
+    # Same URLs as the guide's example (/, /module, /demo). Separate mounts +
+    # nginx alias, because nested mounts inside a read-only mount fail on
+    # Docker Desktop ("make mountpoint ... read-only file system").
+    volumes:
+      - ./savanna:/srv/savanna:ro
+      - ./module:/srv/module:ro
+      - ./demo:/srv/demo:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on: [api]
+
+  api:
+    build: ./api
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATA_DIR: /app/data
+      SEED_CONTENT: /app/seed/content.json
+      SEED_JOBS: /app/seed/jobs.json
+    volumes:
+      - ./data:/app/data
+      - ./demo/data:/app/seed:ro
+      - ./module/audio:/app/audio
+    expose: ["8000"]
+
+  bot:
+    build: ./bot
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      API_URL: http://api:8000
+      BOT_STATE: /app/state/chats.json
+    volumes:
+      - ./data/bot:/app/state
+    depends_on: [api]
+    # Exits 0 when no token is set (no restart); otherwise retries until Telegram is reachable.
+    restart: on-failure

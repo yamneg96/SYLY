@@ -1,0 +1,25 @@
+docs/
+.claude/
+Design/
+post/
+
+# secrets and runtime data (NFR-K1, NFR-S1)
+.env
+.env.*
+!.env.example
+.claude/secrets/
+/data/
+*.db
+.fernet_key
+
+# python / node
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+node_modules/
+
+# editors (from Lemi's prototype-1)
+.idea/
+.vscode/
