@@ -26,12 +26,14 @@ try:
     from .models import Conversation, Message, Ticket, Accommodation
     from .services.retrieval import retrieve
     from .routers.escalations import router as escalations_router
+    from .routers.ask import router as ask_router
 except ImportError:
     from config import init_security
     from db import engine, Base, get_db
     from models import Conversation, Message, Ticket, Accommodation
     from services.retrieval import retrieve
     from routers.escalations import router as escalations_router
+    from routers.ask import router as ask_router
 
 app = FastAPI(
     title="SYLY Assistant API",
@@ -81,22 +83,6 @@ def load_content_sections() -> List[Dict[str, Any]]:
     return SECTIONS_CACHE
 
 
-# Pydantic Schemas
-class AskRequest(BaseModel):
-    question: str
-    language: Optional[str] = "en"
-    page_url: Optional[str] = None
-    conversation_id: Optional[str] = None
-
-
-class AskResponse(BaseModel):
-    text: Optional[str] = None
-    answer: Optional[str] = None
-    sources: List[Dict[str, Any]] = []
-    provider: str = "none"
-    conversation_id: Optional[str] = None
-
-
 @app.on_event("startup")
 def on_startup():
     """Bootstraps encryption security key, database tables, and content index."""
@@ -116,80 +102,8 @@ def health_check():
     }
 
 
-@app.post("/api/v1/ask", response_model=AskResponse)
-def ask_question(req: AskRequest, db: Session = Depends(get_db)):
-    """
-    Answers user questions using bilingual retrieval.
-    Falls back gracefully to null answer when question is out-of-scope.
-    """
-    sections = load_content_sections()
-    result = retrieve(query=req.question, sections=sections, threshold=0.35)
-
-    if not result:
-        return AskResponse(
-            text=None,
-            answer=None,
-            sources=[],
-            provider="none",
-            conversation_id=req.conversation_id
-        )
-
-    best_sec, score = result
-    is_am = (req.language == "am")
-    title = best_sec.get("title_am" if is_am else "title_en") or best_sec.get("title_en", "")
-    body = best_sec.get("text_am" if is_am else "text_en") or best_sec.get("text_en", "")
-
-    # Extract first 2-3 sentences as concise summary
-    delimiters = r'(?<=[.?!።])\s+'
-    import re
-    sentences = re.split(delimiters, body.strip())
-    summary = " ".join(sentences[:3])
-    formatted_answer = f"**{title}**\n\n{summary}"
-
-    sources = [{
-        "title": title,
-        "url": best_sec.get("url") or f"#{best_sec['id']}"
-    }]
-
-    # Log interaction to SQLite database if conversation exists or start one
-    conv_id = req.conversation_id
-    if not conv_id:
-        new_conv = Conversation(language=req.language or "en", consent=True)
-        db.add(new_conv)
-        db.commit()
-        db.refresh(new_conv)
-        conv_id = new_conv.id
-
-    msg_user = Message(
-        conversation_id=conv_id,
-        role="user",
-        text=req.question,
-        lang=req.language or "en",
-        provider="none",
-        sources=[]
-    )
-    msg_assistant = Message(
-        conversation_id=conv_id,
-        role="assistant",
-        text=formatted_answer,
-        lang=req.language or "en",
-        provider="none",
-        sources=sources
-    )
-    db.add(msg_user)
-    db.add(msg_assistant)
-    db.commit()
-
-    return AskResponse(
-        text=formatted_answer,
-        answer=formatted_answer,
-        sources=sources,
-        provider="none",
-        conversation_id=conv_id
-    )
-
-
 # Mount routers
+app.include_router(ask_router, prefix="/api/v1")
 app.include_router(escalations_router, prefix="/api/v1")
 
 

@@ -8,10 +8,11 @@ Handles:
 """
 
 from __future__ import annotations
+import os
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -19,13 +20,16 @@ from sqlalchemy.orm import Session
 try:
     from ..db import get_db
     from ..models import Conversation, Message, Ticket
+    from ..services.webhook import fire_ticket_webhook
 except (ImportError, ValueError):
     try:
         from api.db import get_db
         from api.models import Conversation, Message, Ticket
+        from api.services.webhook import fire_ticket_webhook
     except ImportError:
         from db import get_db
         from models import Conversation, Message, Ticket
+        from services.webhook import fire_ticket_webhook
 
 router = APIRouter(prefix="/escalations", tags=["escalations"])
 
@@ -56,11 +60,13 @@ class TicketOut(BaseModel):
 @router.post("", response_model=EscalationResponse, status_code=status.HTTP_201_CREATED)
 def create_escalation(
     payload: EscalationCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     """
     Creates a new escalation ticket when a learner requests human assistance.
-    Persists transcript if provided and sets ticket status to 'waiting'.
+    Persists transcript if provided, sets ticket status to 'waiting',
+    and dispatches an asynchronous webhook notification.
     """
     # 3. Generate a new UUID4 for the ticket_id
     ticket_id = str(uuid.uuid4())
@@ -106,8 +112,10 @@ def create_escalation(
     db.commit()
     db.refresh(ticket)
 
-    # 6. Important: Leave a comment like # TODO: Fire webhook background task here right before the return statement.
-    # TODO: Fire webhook background task here
+    # Fire webhook background task
+    webhook_url = os.getenv("WEBHOOK_URL", "")
+    if webhook_url:
+        background_tasks.add_task(fire_ticket_webhook, ticket_id, full_url, webhook_url)
 
     # 5. Return an HTTP 201 Created response with the JSON payload: { "ticketId": "the-uuid-string" }
     return EscalationResponse(ticketId=ticket_id)
