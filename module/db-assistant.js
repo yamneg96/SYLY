@@ -461,6 +461,15 @@
     return t.firstChild;
   }
   // Decorative emoji: aria-hidden so screen readers do not read "light bulb" in the middle of Amharic.
+  // A section link like "/pages/x.html#y" belongs to the site that served the content (or the API),
+  // not to the page that embeds the widget. Same-site links stay relative so focus handling works.
+  function absUrl(u, base) {
+    if (!u || !base) return u;
+    try {
+      var abs = new URL(u, base);
+      return abs.origin === location.origin ? abs.pathname + abs.search + abs.hash : abs.href;
+    } catch (e) { return u; }
+  }
   function logoEl() { var t = document.createElement('span'); t.innerHTML = LOGO; return t.firstChild; }
   function emoji(ch) { return h('span', { class: 'emoji', 'aria-hidden': 'true', text: ch }); }
   // Button content = icon + text span (the span carries data-t so language changes keep the icon).
@@ -1078,6 +1087,7 @@
       var use = function (data) {
         var list = Array.isArray(data) ? data : (data && (data.sections || data.items)) || [];
         self._index = new Index(list.filter(function (s) { return s && s.url; }));
+        self._contentBase = url; // section links are relative to the content file, not to the host page
       };
       var cached = load(cacheKey, null);
       if (cached) use(cached);
@@ -1087,6 +1097,7 @@
     }
 
     /* api */
+    _apiOrigin() { var b = this._apiBase(); try { return b ? new URL(b, document.baseURI).href : document.baseURI; } catch (e) { return document.baseURI; } }
     _apiBase() { var a = (this.getAttribute('api') || '').trim(); return a ? a.replace(/\/+$/, '') : ''; }
     _fetchJson(path, opts) {
       var ctl = window.AbortController ? new AbortController() : null;
@@ -1147,6 +1158,7 @@
           var sources = (res && res.sources || []).filter(function (s) { return s && s.url; });
           if (res && res.reason === 'no_advice') { self._addMessage({ role: 'bot', text: self._t.noAdvice, offerHelp: true }); return; }
           if (!res || !res.answer || !sources.length) { self._notFound(); return; } // FR-T5: no source, no answer
+          sources = sources.map(function (src) { return { title: src.title, url: absUrl(src.url, self._apiOrigin()) }; });
           self._addMessage({ role: 'bot', text: res.answer, lang: res.language || self._lang, sources: sources,
             note: res.provider && res.provider !== 'none' ? self._t.answeredAi : self._t.answeredLocal, ai: res.provider && res.provider !== 'none', audio: res.audio || [] });
         }).catch(function () {
@@ -1185,7 +1197,7 @@
       this._addMessage({
         role: 'bot', lang: lang,
         text: fmt(this.getText('fromSection', lang), { title: title }) + '\n' + body + this._jobNotes(s, lang),
-        sources: [{ title: title, url: s.url }],
+        sources: [{ title: title, url: absUrl(s.url, this._contentBase) }],
         note: this.getText('answeredLocal', lang),
         audio: audio,
         section: s.id
