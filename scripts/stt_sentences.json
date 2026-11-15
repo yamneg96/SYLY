@@ -1,5 +1,45 @@
 {
   "_note": "Five test sentences per language for scripts/stt_check.py (commands and lesson questions). Beta languages are drafts: needs native reader check.",
-  "am": ["AI ምናባዊ ረዳቶችን ይተካል?", "ከሰው ጋር አገናኘኝ", "የትምህርቱን ክፍሎች አሳየኝ", "ደንበኞች ምን ዓይነት ክህሎቶችን ያደንቃሉ?", "መረጃዬን ሰርዝ"],
-  "en": ["Will AI replace virtual assistants?", "Talk to a person", "Show me the lesson", "What skills will clients value?", "Delete my data"]
+  "am": [
+    "AI ምናባዊ ረዳቶችን ይተካል?",
+    "ከሰው ጋር አገናኘኝ",
+    "የትምህርቱን ክፍሎች አሳየኝ",
+    "ደንበኞች ምን ዓይነት ክህሎቶችን ያደንቃሉ?",
+    "መረጃዬን ሰርዝ"
+  ],
+  "en": [
+    "Will AI replace virtual assistants?",
+    "Talk to a person",
+    "Show me the lesson",
+    "What skills will clients value?",
+    "Delete my data"
+  ],
+  "so": [
+    "AI ma beddeli doonaa caawiyayaasha dhijitaalka?",
+    "La hadal qof",
+    "I tus casharka",
+    "Xirfadahee ayay macaamiishu qiimeeyaan?",
+    "Tirtir xogtayda"
+  ],
+  "ar": [
+    "هل سيحل الذكاء الاصطناعي محل المساعدين الافتراضيين؟",
+    "تحدث مع شخص",
+    "أرني الدرس",
+    "ما المهارات التي يقدرها العملاء؟",
+    "احذف بياناتي"
+  ],
+  "om": [
+    "AI gargaartota virtual ni bakka bu'aa?",
+    "Nama waliin dubbadhu",
+    "Barnoota natti agarsiisi",
+    "Maamiltoonni dandeettii akkamii jaalatu?",
+    "Daataa koo haqi"
+  ],
+  "ti": [
+    "AI ንምናባውያን ሓገዝቲ ክትክእ ድያ?",
+    "ምስ ሰብ ተዛረብ",
+    "ነቲ ትምህርቲ ኣርእየኒ",
+    "ዓማዊል እንታይ ክእለታት የኽብሩ?",
+    "ሓበሬታይ ደምስስ"
+  ]
 }

@@ -136,8 +136,8 @@ def main() -> int:
         en = json.loads((ROOT / folder / "en.json").read_text(encoding="utf-8"))
         files = sorted(p.stem for p in (ROOT / folder).glob("*.json") if p.stem != "en")
         keys = {lang: set(json.loads((ROOT / folder / f"{lang}.json").read_text(encoding="utf-8"))) for lang in files}
-        ok = keys.get("am") == set(en) and all(k <= set(en) for k in keys.values())
-        check(f"{folder}: am has every en key, no language has extra keys ({', '.join(files)})", ok)
+        ok = all(k == set(en) for k in keys.values())
+        check(f"{folder}: every language has every en key ({', '.join(files)})", ok)
     from services.retrieval import split_sentences
 
     missing = [f"{s['id']}/{i}" for s in content["sections"] for i, _ in enumerate(split_sentences(s["text_am"]))
