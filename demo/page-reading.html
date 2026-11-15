@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page reading test: laptop battery care</title>
+  <link rel="icon" type="image/png" href="/demo/assets/syly-logo.png">
+  <style>
+    body { margin: 0; font-family: system-ui, "Noto Sans Ethiopic", sans-serif; font-size: 1rem; line-height: 1.6; color: #111111; background: #FFFFFF; }
+    header, main, aside, footer { max-width: 46rem; margin: 0 auto; padding: 1rem; }
+    header { border-bottom: 1px solid #767676; }
+    h1 { font-size: 1.75rem; margin: 0.5rem 0 1rem; }
+    h2 { font-size: 1.25rem; margin: 2rem 0 0.5rem; }
+    .note { padding: 0.75rem 1rem; background: #F2F2F2; border-inline-start: 0.375rem solid #111111; }
+    aside { border: 2px dashed #767676; border-radius: 0.5rem; }
+    a { color: #111111; }
+    :focus-visible { outline: 3px solid #F5A300; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <header>
+    <p><strong>SYLY demo</strong> · <a href="/demo/blank.html">Blank page</a> · <a href="/demo/install.html">Install page</a></p>
+  </header>
+
+  <main>
+    <h1>Keeping your laptop battery healthy</h1>
+    <p class="note">Test content written for the SYLY page-reading demo (FR-AD4). This page has no <code>content</code> file: the assistant reads this lesson from the page itself.</p>
+    <p>A laptop battery wears out slowly every time it is charged and emptied. A few simple habits can keep it useful for longer, which saves money and reduces electronic waste.</p>
+
+    <h2 id="charge-level">Keep the charge between 20 and 80 percent</h2>
+    <p>Lithium-ion batteries age fastest when they sit at a full charge or are drained completely. For daily use, try to keep the battery between 20 and 80 percent. Many laptops have a setting that stops charging at 80 percent; turn it on if you usually work plugged in.</p>
+
+    <h2>Avoid heat while charging</h2>
+    <p>Heat is the biggest enemy of a battery. Do not charge the laptop on a bed, a pillow or in direct sunlight, because the air vents get blocked and the battery gets hot. Use the laptop on a hard, flat surface so that air can flow underneath it.</p>
+
+    <h2 id="storage">Storing a laptop you do not use</h2>
+    <p>If you will not use the laptop for several weeks, charge the battery to about half, switch the laptop off completely and keep it in a cool, dry place. Check it every few months and charge it back to half if it has dropped.</p>
+
+    <div hidden>
+      <h2>Hidden section (must be skipped)</h2>
+      <p>This block is hidden. The assistant must never answer from it: if you ask about purple elephants and get an answer, the skip rule is broken.</p>
+    </div>
+
+    <h2>When to replace the battery</h2>
+    <p>Replace the battery when the laptop lasts much less than half of its original time on a full charge, when the battery case swells, or when the laptop shuts down suddenly with charge left. A swollen battery is a safety risk: stop using it and take it to a repair shop.</p>
+  </main>
+
+  <aside aria-label="Advertisement">
+    <h2>Sponsored: buy our charger (must be skipped)</h2>
+    <p>This sidebar is an advertisement inside an aside element. The assistant must not read it or cite it as part of the lesson.</p>
+  </aside>
+
+  <footer>
+    <p>SYLY page-reading test page. Test content only.</p>
+  </footer>
+
+  <script src="/module/db-assistant.js" defer></script>
+  <db-assistant lang="en" api="/api"></db-assistant>
+</body>
+</html>

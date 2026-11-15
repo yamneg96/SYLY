@@ -13,6 +13,7 @@ const PAGES = (process.env.PAGES || [
   '/pages/jobs.html',
   '/demo/helper.html',
   '/demo/install.html',
+  '/demo/page-reading.html',
 ].join(',')).split(',');
 
 // Whole page by default (our pages must be clean). Starter pages carry known starter defects
