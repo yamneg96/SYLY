@@ -94,6 +94,7 @@ class Ticket(Base):
         index=True
     )
     page_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    section: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     status: Mapped[str] = mapped_column(String(30), default="waiting", nullable=False)  # "waiting", "open", "resolved"
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
 

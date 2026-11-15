@@ -25,11 +25,13 @@ try:
     from .db import engine, Base, get_db
     from .models import Conversation, Message, Ticket, Accommodation
     from .services.retrieval import retrieve
+    from .routers.escalations import router as escalations_router
 except ImportError:
     from config import init_security
     from db import engine, Base, get_db
     from models import Conversation, Message, Ticket, Accommodation
     from services.retrieval import retrieve
+    from routers.escalations import router as escalations_router
 
 app = FastAPI(
     title="SYLY Assistant API",
@@ -93,18 +95,6 @@ class AskResponse(BaseModel):
     sources: List[Dict[str, Any]] = []
     provider: str = "none"
     conversation_id: Optional[str] = None
-
-
-class EscalationRequest(BaseModel):
-    conversation: Optional[List[Dict[str, Any]]] = None
-    page_url: Optional[str] = None
-    section: Optional[str] = None
-    screenshot: Optional[str] = None
-
-
-class EscalationResponse(BaseModel):
-    ticketId: str
-    status: str = "waiting"
 
 
 @app.on_event("startup")
@@ -199,21 +189,8 @@ def ask_question(req: AskRequest, db: Session = Depends(get_db)):
     )
 
 
-@app.post("/api/v1/escalations", response_model=EscalationResponse, status_code=201)
-def create_escalation(req: EscalationRequest, db: Session = Depends(get_db)):
-    """Creates a human tutor escalation ticket."""
-    ticket = Ticket(
-        page_url=req.page_url,
-        status="waiting"
-    )
-    db.add(ticket)
-    db.commit()
-    db.refresh(ticket)
-
-    return EscalationResponse(
-        ticketId=ticket.id,
-        status=ticket.status
-    )
+# Mount routers
+app.include_router(escalations_router, prefix="/api/v1")
 
 
 if __name__ == "__main__":
