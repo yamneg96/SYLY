@@ -254,6 +254,93 @@ Beta means: the interface text and phrases are machine-assisted drafts (**needs 
 
 **Add a language:** add its phrases to `bot/intents.json` (with `"_draft": {"xx": true}` until a native reader checks them), copy `bot/i18n/en.json` to `bot/i18n/xx.json` and translate every value, add `xx` to `LANGS` in `bot/bot.py` and to `ORDER` in `api/services/stt/router.py` with the engines that support it, add a voice to `VOICES` in `api/services/tts.py` if there is one, then run `python -m pytest bot api` and `python scripts/stt_check.py xx` with a few self-recorded clips.
 
+## Developer portal
+
+A small website for the people who add SYLY to their sites. It lives in `site/` and is served at `/` by the same nginx; the learner pages (`/pages/...`, `/demo/...`, `/module/...`) are unchanged, and the Savanna starter's own index is at `/starter`. It uses test data only and everything in it is optional: with no `GOOGLE_CLIENT_ID`, sign-in and the dashboard say "Sign-in is not configured on this server" and every other page works. `docker compose up` needs no new setting.
+
+| Page | What it is |
+| --- | --- |
+| `/` | Home: what SYLY is, who it is for, the three levels, how it works, a live demo (our own `<db-assistant mode="inline">` answering about SYLY from `site/data/content.json`), team and licence |
+| `/docs.html` | Install (server, CDN, npm), attributes, events, REST API, content sources, Telegram bot, bring your own bot, accessibility, privacy. Our own assistant is on this page and reads it (`read-page="always"`) |
+| `/privacy.html` | What is stored for learners and for developers, how to delete |
+| `/signin.html` | Sign in with Google (developers only, never learners) |
+| `/dashboard.html` | Your sites: create, edit, delete, get the install code, download or delete your data |
+| `/demo/install.html` | The configurator with a live preview (unchanged, now linked from Home) |
+
+All page text is in `site/i18n/<page>.<lang>.json` (English and Amharic; the Amharic is a **draft, needs a native reader check**). A page language picker is in the header.
+
+### Sites and site keys
+
+A developer signs in, adds a **site** (name, allowed origins, default language, layout, theme, one optional primary colour with the 4.5:1 check against white, content source, a Telegram bot's public username), and gets a public key `pk_…` plus the code to paste:
+
+```html
+<script src="https://your-host/module/db-assistant.js" defer></script>
+<db-assistant site="pk_0123456789abcdef01234567" api="https://your-host/api"></db-assistant>
+```
+
+- With `site`, the widget first fetches `GET /api/v1/sites/{key}/config` (public, cacheable, nothing private) and applies it. **Attributes written on the tag always win.** If the fetch fails, it uses the attributes and the defaults and keeps working.
+- Every API call from that widget carries `X-Site-Key`. A request with a key is accepted only from the site's **allowed origins** (in addition to `HOST_ORIGINS`); an unknown key or another origin gets a 403 in words.
+- Settings that are stored but not applied yet: "voice replies on by default" (the web assistant has no automatic voice).
+- The dashboard does not show usage counts yet (optional in the spec; not built).
+
+### Google sign-in setup (for the team lead)
+
+1. In Google Cloud Console, create an **OAuth client ID** of type *Web application* (APIs & Services → Credentials). The consent screen needs only the default scopes (`openid`, `email`, `profile`).
+2. Add the **stable HTTPS address** of the deployed site and `http://localhost:8080` under *Authorized JavaScript origins*.
+3. Put the client ID in `.env` as `GOOGLE_CLIENT_ID`, then `docker compose up -d api`.
+
+**A quick-tunnel address (`trycloudflare.com`) changes every restart, so Google sign-in needs the stable deployed address (deployment option B or C in `docs/deployment.md`).** The client ID is public (the sign-in page needs it); there is no client secret in this flow.
+
+How it works: Google Identity Services gives the page an ID token; the page sends it to `POST /api/v1/auth/google`; the server checks signature, audience, issuer, expiry and a verified e-mail with the official `google-auth` library, creates or updates the account (`google_sub`, e-mail, name), and sets one cookie: **HttpOnly, SameSite=Lax, Secure when the request is HTTPS, signed with `SESSION_SECRET`, 7 days**. `SESSION_SECRET` is generated once into `data/.session_secret` if you leave it empty; set it yourself on a host with no persistent disk. Every state-changing call (`POST`, `PATCH`, `DELETE`) must carry `X-Requested-With: syly`. A site belongs to one account: another account gets 404.
+
+**Accessibility of the sign-in page:** the Google button is Google's own iframe. The page gives a plain-text explanation, a link that skips the button, and an ordinary button ("Open Google's quick sign-in prompt") as a keyboard and screen-reader route. **Manual test with NVDA and the keyboard is pending**; if the Google button cannot be reached by keyboard, that is a third-party limitation and is recorded in `CONFORMANCE.md` with the workaround.
+
+### Database: SQLite by default, Neon Postgres when you set `DATABASE_URL`
+
+Tables are created and updated by **Alembic** migrations (`api/migrations/`), run automatically when the API starts (`python api/migrate.py` does it by hand). An older database made before migrations existed is adopted in place, with its data (tested). With `DATABASE_URL` empty the API uses `data/syly.db` as before. For a hosted database, for example [Neon](https://neon.tech):
+
+```
+DATABASE_URL=postgresql://USER:PASSWORD@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require
+```
+
+`postgres://` and `postgresql://` URLs are accepted (psycopg 3 is the driver). Neon pauses idle databases, so connections are tested before use. To change a table: edit `api/models.py`, run `alembic revision -m "what changed"` in `api/`, write the change in the new file in `api/migrations/versions/`, and run the tests (one test fails if models and migrations disagree). **Not yet tested against a real Neon database**: the migrations are tested on SQLite, and every table and index is checked to compile for the Postgres dialect.
+
+## Bring your own Telegram bot
+
+The host runs our stack with **their own** Telegram bot. SYLY never receives the token and stores none.
+
+1. Open @BotFather in Telegram, send `/newbot`, choose a name and a username that ends in `bot`.
+2. Copy the token.
+3. Put it in **your** server's `.env` as `TELEGRAM_BOT_TOKEN`.
+4. `docker compose up -d bot`.
+5. Optional: `/setuserpic` and `/setdescription` with BotFather, to show your logo and a description.
+6. The commands and phrases register themselves when the bot starts.
+
+**Never paste your bot token into a website or a chat. Keep it only in your server's `.env`.** The dashboard has an optional field for the bot's public username (for example `@MyCollegeHelpBot`), which is not secret and only shows the right link in your generated code. There is no token field anywhere.
+
+## CDN and npm
+
+**CDN (jsDelivr, from the public GitHub repository, pinned to a tag):**
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/yamneg96/SYLY@v1.0.0/module/db-assistant.js" defer></script>
+<db-assistant lang="en" api="https://your-host/api" content="https://your-host/content.json"></db-assistant>
+```
+
+The module loads `i18n/*.json` next to its own script address and falls back to the copies inlined in the file, so it works from the CDN. **`api` and `content` must be full `https://` addresses** when the script comes from a CDN. The tag `v1.0.0` must exist on GitHub first (`git tag v1.0.0` then `git push origin v1.0.0`; the team lead pushes it).
+
+**npm:** the package is `syly-db-assistant` (the name was free on 15 Nov; `npm view syly-db-assistant` answered 404). Its folder is `module/`; it ships only `db-assistant.js`, `i18n/`, `audio/`, `README.md` and `LICENSE`, has no dependencies, and is **not published yet**. Use after publishing:
+
+```bash
+npm i syly-db-assistant
+```
+
+```js
+import 'syly-db-assistant/db-assistant.js';   // import on the client only; the component needs a browser
+```
+
+or `<script src="/node_modules/syly-db-assistant/db-assistant.js" defer></script>`. Publishing needs the team lead's npm account: from `module/`, run `npm pack --dry-run` to see the files (72 files, 1.9 MB with the audio), then `npm publish`.
+
 ## Languages
 
 All interface text is in JSON: `module/i18n/{en,am,ar}.json` (widget; inlined in `db-assistant.js` so one script tag works anywhere), `api/i18n/*.json` (text route, alerts, job notes), `bot/i18n/*.json` (Telegram), `demo/i18n/*.json` (helper and install pages). Tests check that every language has every key. To add a language to the widget: add `module/i18n/<code>.json` with the same keys and use `lang="<code>"` (it is fetched next to the script); run `npm --prefix module run i18n` to refresh the inlined copies after editing en/am/ar.
@@ -331,13 +418,21 @@ No feature depends on a paid service: with `PROVIDER=none` everything still work
 | Page reading fallback (FR-AD4) | Done on branch `new-feature`; unit, API and browser tests pass; manual screen-reader test pending |
 | TalkBack, NVDA, co-designer, Slow 3G time, clean-laptop install | **Pending manual tests** |
 | Addis AI (TTS fallback, Amharic STT) | Integrated from the official docs; key valid, but the account had **no credit** on 15 Nov, so audio from Addis is not yet verified. Top up and test |
-| Hosted dashboard with login, LTI 1.3 | Not built (hardening sprint; LTI plan above) |
+| Developer portal: Home, Docs, Privacy (A) | Done on `main`; axe en and am, skip link and 320 px checked by script; manual screen-reader test pending; Amharic draft |
+| Bring your own Telegram bot (B) | Done (guide on Install, Docs, README and in the dashboard); no token is stored anywhere |
+| CDN and npm (C) | CDN: documented, **needs the git tag `v1.0.0` pushed**. npm: package `syly-db-assistant` ready (`npm pack` checked), **not published** (needs the team lead's npm account) |
+| Google sign-in (D) | Built and tested with a mocked verifier; **not tried with a real `GOOGLE_CLIENT_ID`** (needs a Google OAuth client and a stable HTTPS address) |
+| Dashboard (E) | Built: sites, settings, site keys, install code, account export/delete; checked in a browser with a seeded session. Usage counts not built. "Voice on by default" is stored but not applied. Manual NVDA test pending |
+| Database: Alembic migrations, Neon (`DATABASE_URL`) | Migrations tested on SQLite (including adopting an older database); Postgres DDL compiles; **not tested against a real Neon database** |
+| LTI 1.3 | Not built (hardening sprint; LTI plan above) |
 
 ## Development
 
 ```bash
 python scripts/verify_prototype.py                 # one-command demo check: PASS/FAIL per area (37 checks)
 python -m pytest bot                               # bot commands, phrases, voice flow, /delete (fake Telegram)
+node module/scripts/site-check.mjs                # portal pages: axe en+am, skip link, 320 px, home demo, dashboard (SESSION_COOKIE seeds a signed-in run)
+python api/migrate.py                              # run the database migrations by hand (the API also does it at start-up)
 python scripts/stt_check.py --make-clips am en     # synthetic speech clips (edge-tts) into data/stt-clips
 python scripts/stt_check.py am en                  # speech-to-text engine and word accuracy per clip
 npm --prefix module test                           # i18n parity, search eval, contrast
@@ -361,6 +456,8 @@ npm --prefix module run icons                      # re-copy Lucide icons into t
 | cryptography | `api/` | Apache-2.0 or BSD-3 |
 | edge-tts | `api/` (voice) | LGPL-3.0 **[online service terms unverified]** |
 | aiogram, aiohttp-socks | `bot/` | MIT / Apache-2.0 |
+| Alembic, google-auth, requests | `api/` (migrations, Google sign-in) | MIT / Apache-2.0 / Apache-2.0 |
+| psycopg 3 (binary) | `api/` (Postgres driver, only used with `DATABASE_URL`) | LGPL-3.0 |
 | ffmpeg (Debian package in the API image) | voice note conversion | LGPL-2.1+ (GPL parts not used) **[unverified build flags]** |
 | Meta MMS weights (optional, off) | `api/services/stt/mms_local.py` | CC-BY-NC 4.0, non-commercial |
 | nginx:alpine, python:3.12-slim | Docker images | BSD-2 / PSF and Debian licences |

@@ -29,9 +29,25 @@ Scope: the module (launcher, panel, inline mode, consent card, accommodation for
 | 3.3.1 Error identification | Supports (automated) | Accommodation form errors in words with `role="alert"` and `aria-invalid` |
 | 3.3.2 Labels or instructions | Supports (automated) | Visible labels and hints on every field |
 | 3.3.7 Redundant entry | Supports | The ticket carries the conversation, page and section; nothing asked twice |
-| 3.3.8 Accessible authentication | Supports | No login for learners |
+| 3.3.8 Accessible authentication | Supports | No login for learners. Developer sign-in is Google's own: see "Developer portal pages" below |
 | 4.1.2 Name, role, value | Supports (automated) | Real `<button>`, `<select>`, `<textarea>`, `<dialog>`; axe: 0 violations on every page checked |
 | 4.1.3 Status messages | Supports (automated) | `role="status"` line; answers and tutor replies announced by `role="log"`. Pending manual test |
+
+## Developer portal pages (added 15 Nov 2026)
+
+Pages for developers, not learners: `/` (Home), `/docs.html`, `/privacy.html`, `/signin.html`, `/dashboard.html` (signed out, and signed in with a seeded session). Checked by `module/scripts/site-check.mjs`: axe (WCAG 2.2 AA and best-practice tags) in English and Amharic, the skip link as the first Tab stop, 320 px reflow, the dashboard's forms, error messages, confirm dialog and Copy button. The same rules as the module: real elements, visible focus #F5A300, 44 px targets, `lang`, rem sizes, no time-outs (the session lasts 7 days).
+
+| Page | Automated | Manual (screen reader, keyboard, 200% zoom) |
+| --- | --- | --- |
+| Home (with our own `<db-assistant>` inline) | axe clean, skip link, 320 px | pending manual test |
+| Docs (with our own assistant, page reading) | axe clean, skip link, 320 px | pending manual test |
+| Privacy | axe clean, skip link, 320 px | pending manual test |
+| Developer sign in | axe clean, skip link, 320 px | pending manual test |
+| Dashboard: signed out, list, form, form with errors, code, confirm dialog | axe clean in each state, focus moves to the new heading, errors in words next to the field with `aria-invalid`, Escape cancels the dialog | pending manual test |
+
+**Third-party limitation: the Google sign-in button (WCAG 4.1.2, 2.1.1).** "Sign in with Google" is Google's own iframe; we cannot change its internals and it has not been tested with NVDA or the keyboard by a person. What we provide: a plain-text explanation above it, a link that skips it, and an ordinary button ("Open Google's quick sign-in prompt") that calls Google's prompt as a second route. If the Google button cannot be reached by keyboard, the workaround is that prompt button; if Google's prompt is also blocked by the browser, the developer cannot sign in until the team adds another method. **pending manual test**. Learners are never asked to sign in (3.3.8 stays "Supports" for learners).
+
+The Amharic text on these pages is a **draft: needs a native reader check**.
 
 ## Who tested
 
