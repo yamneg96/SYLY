@@ -28,6 +28,8 @@ try:
     from .routers.escalations import router as escalations_router
     from .routers.ask import router as ask_router
     from .routers.voice import router as voice_router
+    from .routers.sms import router as sms_router
+    from .routers.accommodations import router as accommodations_router
 except ImportError:
     from config import init_security
     from db import engine, Base, get_db
@@ -36,6 +38,8 @@ except ImportError:
     from routers.escalations import router as escalations_router
     from routers.ask import router as ask_router
     from routers.voice import router as voice_router
+    from routers.sms import router as sms_router
+    from routers.accommodations import router as accommodations_router
 
 app = FastAPI(
     title="SYLY Assistant API",
@@ -108,6 +112,8 @@ def health_check():
 app.include_router(ask_router, prefix="/api/v1")
 app.include_router(escalations_router, prefix="/api/v1")
 app.include_router(voice_router, prefix="/api/v1")
+app.include_router(accommodations_router, prefix="/api/v1")
+app.include_router(sms_router)
 
 
 if __name__ == "__main__":

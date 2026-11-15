@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inclusive Jobs &amp; Opportunities - Savanna / SYLY</title>
+  <meta name="description" content="Accessible, remote Virtual Assistant and technology jobs in Ethiopia with structured interview accommodations and schema.org JobPosting integration.">
+
+  <!-- Host Theme Variables (Compliant WCAG 2.2 AA Contrast) -->
+  <style>
+    :root {
+      --bs-primary: #002B56;
+      --bs-primary-hover: #001A35;
+      --color-bg: #F8FAFC;
+      --color-surface: #FFFFFF;
+      --color-text-main: #1A202C;
+      --color-text-muted: #4A5568;
+      --color-border: #CBD5E1;
+      --color-focus: #0056B3;
+      --color-success: #15803D;
+      --font-stack: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    /* Accessibility Skip Link */
+    .skip-link {
+      position: absolute;
+      top: -9999px;
+      left: 1rem;
+      background: #002B56;
+      color: #FFFFFF;
+      padding: 0.75rem 1.25rem;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: 0 0 0.5rem 0.5rem;
+      z-index: 10000;
+      border: 2px solid #FFFFFF;
+    }
+
+    .skip-link:focus {
+      top: 0;
+      outline: 3px solid #FFBF47;
+      outline-offset: 2px;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-stack);
+      background-color: var(--color-bg);
+      color: var(--color-text-main);
+      line-height: 1.6;
+    }
+
+    header {
+      background-color: var(--color-surface);
+      border-bottom: 2px solid var(--color-border);
+      padding: 1.5rem 2rem;
+    }
+
+    .header-container {
+      max-width: 72rem;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--bs-primary);
+      text-decoration: none;
+    }
+
+    .brand-subtitle {
+      font-size: 0.95rem;
+      color: var(--color-text-muted);
+    }
+
+    main {
+      max-width: 72rem;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .hero-section {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--bs-primary);
+      margin-top: 0;
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      color: var(--bs-primary);
+      margin-top: 0;
+      margin-bottom: 0.75rem;
+    }
+
+    .jobs-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .job-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 0.75rem;
+      padding: 1.75rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .job-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--bs-primary);
+      margin: 0;
+    }
+
+    .badge-remote {
+      background: #E0F2FE;
+      color: #0369A1;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .job-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      font-size: 0.95rem;
+      color: var(--color-text-muted);
+    }
+
+    .job-meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .accommodations-box {
+      background: #F0FDF4;
+      border-left: 4px solid var(--color-success);
+      padding: 1rem 1.25rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+    }
+
+    .accommodations-title {
+      font-weight: 700;
+      color: #166534;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .accommodations-list {
+      margin: 0;
+      padding-left: 1.25rem;
+      color: #14532D;
+      font-size: 0.9rem;
+    }
+
+    .job-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.65rem 1.25rem;
+      min-height: 44px;
+      min-width: 44px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.15s ease-in-out;
+      border: 2px solid transparent;
+    }
+
+    .btn:focus-visible {
+      outline: 3px solid var(--color-focus);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      background-color: var(--bs-primary);
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--bs-primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: #FFFFFF;
+      color: var(--bs-primary);
+      border-color: var(--bs-primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: #F1F5F9;
+    }
+
+    /* Accommodation Request Modal Dialog */
+    dialog#accommodation-dialog {
+      border: 2px solid var(--bs-primary);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      max-width: 36rem;
+      width: 90vw;
+      background: var(--color-surface);
+      color: var(--color-text-main);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .form-group input, .form-group textarea {
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--color-border);
+      border-radius: 0.375rem;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    .form-group input:focus, .form-group textarea:focus {
+      outline: 3px solid var(--color-focus);
+      border-color: var(--color-focus);
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    footer {
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      margin-top: 4rem;
+    }
+  </style>
+
+  <!-- Task 3: schema.org/JobPosting JSON-LD dynamic injection snippet -->
+  <script>
+    (function() {
+      async function injectJobPostingsSchema() {
+        try {
+          const response = await fetch('/demo/data/jobs.json');
+          if (!response.ok) {
+            console.error('Failed to load jobs.json:', response.status);
+            return;
+          }
+          const jobs = await response.json();
+
+          jobs.forEach(job => {
+            const scriptEl = document.createElement('script');
+            scriptEl.type = 'application/ld+json';
+
+            const schemaData = {
+              "@context": "https://schema.org/",
+              "@type": "JobPosting",
+              "title": job.title,
+              "description": job.description,
+              "identifier": {
+                "@type": "PropertyValue",
+                "name": (job.hiringOrganization && job.hiringOrganization.name) || "SYLY / GeezJobs",
+                "value": job.id
+              },
+              "datePosted": job.datePosted || new Date().toISOString().split('T')[0],
+              "validThrough": job.validThrough || "2026-12-31",
+              "employmentType": job.employmentType || "FULL_TIME",
+              "hiringOrganization": {
+                "@type": "Organization",
+                "name": (typeof job.hiringOrganization === 'string' ? job.hiringOrganization : (job.hiringOrganization && job.hiringOrganization.name)) || "Digital Bridge Ethiopia",
+                "sameAs": (job.hiringOrganization && job.hiringOrganization.sameAs) || "https://digitalbridge.et"
+              },
+              "jobLocation": {
+                "@type": "Place",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": (job.jobLocation && job.jobLocation.addressLocality) || "Addis Ababa",
+                  "addressRegion": (job.jobLocation && job.jobLocation.addressRegion) || "Addis Ababa",
+                  "addressCountry": (job.jobLocation && job.jobLocation.addressCountry) || "ET"
+                }
+              },
+              "jobLocationType": job.jobLocationType || "TELECOMMUTE",
+              "applicantLocationRequirements": {
+                "@type": "Country",
+                "name": "Ethiopia"
+              },
+              "baseSalary": job.baseSalary ? {
+                "@type": "MonetaryAmount",
+                "currency": job.baseSalary.currency || "ETB",
+                "value": {
+                  "@type": "QuantitativeValue",
+                  "value": job.baseSalary.value || 15000,
+                  "unitText": job.baseSalary.unitText || "MONTH"
+                }
+              } : undefined,
+              "jobBenefits": job.accommodations || job.jobBenefits || []
+            };
+
+            scriptEl.textContent = JSON.stringify(schemaData, null, 2);
+            document.head.appendChild(scriptEl);
+          });
+          console.log(`[Schema.org] Successfully injected ${jobs.length} JobPosting JSON-LD blocks into document.head`);
+        } catch (error) {
+          console.error('[Schema.org] Error injecting JobPosting schema:', error);
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectJobPostingsSchema);
+      } else {
+        injectJobPostingsSchema();
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- Skip navigation link for keyboard & screen reader accessibility -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header role="banner">
+    <div class="header-container">
+      <div>
+        <a href="/savanna/pages/jobs.html" class="brand-title">Savanna Career Portal</a>
+        <div class="brand-subtitle">Powered by Digital Bridge Ethiopia &amp; SYLY Assistant</div>
+      </div>
+      <nav aria-label="Portal Navigation">
+        <a href="#jobs-container" class="btn btn-secondary">Browse Openings</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" role="main">
+    <section class="hero-section" aria-labelledby="hero-heading">
+      <h1 id="hero-heading">Accessible &amp; Remote Job Opportunities in Ethiopia</h1>
+      <p>
+        Every job listed here offers <strong>verified accessibility accommodations</strong>
+        including screen reader compatibility (NVDA/JAWS/TalkBack), sign language interpreters for interviews,
+        flexible prayer and healthcare breaks, and remote internet stipends.
+      </p>
+      <p>
+        Search engines and automated job aggregators can discover these postings through embedded
+        <code>schema.org/JobPosting</code> structured data with accommodations cataloged in <code>jobBenefits</code>.
+      </p>
+    </section>
+
+    <section aria-labelledby="openings-heading">
+      <h2 id="openings-heading">Current Openings</h2>
+      <div id="jobs-container" class="jobs-grid" role="region" aria-live="polite">
+        <p id="loading-msg">Loading verified job postings...</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Interactive Interview Accommodation Dialog -->
+  <dialog id="accommodation-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
+    <form id="accommodation-form" method="dialog">
+      <h2 id="dialog-title" style="margin-top:0;">Request Interview Accommodation</h2>
+      <p id="dialog-desc" style="color:var(--color-text-muted); font-size:0.95rem;">
+        Your accessibility needs are protected under Ethiopian privacy standards.
+        Contact details are stored using end-to-end Fernet encryption.
+      </p>
+
+      <input type="hidden" id="acc-job-id" name="job_id" value="">
+
+      <div class="form-group">
+        <label for="acc-job-title-display">Selected Position</label>
+        <input type="text" id="acc-job-title-display" readonly style="background:#F1F5F9; font-weight:600;">
+      </div>
+
+      <fieldset class="form-group" style="border:none; padding:0; margin:0 0 1rem 0;">
+        <legend style="font-weight:600; font-size:0.95rem; margin-bottom:0.25rem;">Required Accommodations (Select all that apply)</legend>
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" name="needs" value="Screen reader compatible assessment (NVDA/JAWS)">
+            Screen reader compatible assessment (NVDA/JAWS)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" name="needs" value="Sign language interpretation for interview">
+            Sign language interpretation for interview
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" name="needs" value="Text-first asynchronous interview option">
+            Text-first asynchronous interview option
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" name="needs" value="Extended time allowance on skills assessment">
+            Extended time allowance on skills assessment
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="form-group">
+        <label for="acc-contact">Contact Phone or Telegram Handle (Strictly Encrypted)</label>
+        <input type="text" id="acc-contact" name="contact" required placeholder="+251 9... or @username">
+      </div>
+
+      <div class="form-group">
+        <label for="acc-note">Additional Note (Optional)</label>
+        <textarea id="acc-note" name="note" rows="3" placeholder="Tell our inclusion coordinator about any specialized assistive tools you use..."></textarea>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem;">
+        <button type="button" id="btn-cancel-dialog" class="btn btn-secondary">Cancel</button>
+        <button type="submit" id="btn-submit-dialog" class="btn btn-primary">Submit Accommodation Request</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer role="contentinfo">
+    <p>&copy; 2026 Savanna / Digital Bridge Ethiopia. Inclusive Employment Initiative.</p>
+  </footer>
+
+  <!-- Mount SYLY Assistant Web Component with dual panel/modal layout -->
+  <db-assistant mode="panel" api="http://localhost:8000"></db-assistant>
+  <script type="module" src="/module/db-assistant.js"></script>
+  <script type="module" src="/savanna/patch/skip-to-assistant.js"></script>
+
+  <!-- Interactive Client-side rendering and Accommodation Form Handler -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('jobs-container');
+      const dialog = document.getElementById('accommodation-dialog');
+      const cancelBtn = document.getElementById('btn-cancel-dialog');
+      const accForm = document.getElementById('accommodation-form');
+      const jobIdInput = document.getElementById('acc-job-id');
+      const jobTitleDisplay = document.getElementById('acc-job-title-display');
+
+      let lastFocusedElement = null;
+
+      cancelBtn.addEventListener('click', () => {
+        dialog.close();
+        if (lastFocusedElement) lastFocusedElement.focus();
+      });
+
+      try {
+        const res = await fetch('/demo/data/jobs.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const jobs = await res.json();
+
+        container.innerHTML = '';
+        jobs.forEach(job => {
+          const card = document.createElement('article');
+          card.className = 'job-card';
+          card.setAttribute('aria-labelledby', `title-${job.id}`);
+
+          const salaryDisplay = job.baseSalary ? `${job.baseSalary.value.toLocaleString()} ${job.baseSalary.currency} / month` : 'Competitive';
+
+          const accommodationsHtml = (job.accommodations || []).map(acc => `<li>${acc}</li>`).join('');
+
+          card.innerHTML = `
+            <div class="job-header">
+              <div>
+                <h3 id="title-${job.id}" class="job-title">${job.title}</h3>
+                <div style="font-weight:600; color:var(--color-text-muted); margin-top:0.25rem;">
+                  ${job.hiringOrganization?.name || 'Savanna Partner'} &bull; ${job.jobLocation?.addressLocality || 'Addis Ababa'}
+                </div>
+              </div>
+              <span class="badge-remote">${job.employmentType || 'FULL TIME'} &bull; REMOTE</span>
+            </div>
+
+            <p style="margin:0; color:var(--color-text-main);">${job.description}</p>
+
+            <div class="job-meta">
+              <span class="job-meta-item"><strong>Compensation:</strong> ${salaryDisplay}</span>
+              <span class="job-meta-item"><strong>Deadline:</strong> ${job.validThrough || 'Open'}</span>
+            </div>
+
+            <div class="accommodations-box">
+              <div class="accommodations-title">Verified Accommodations Offered:</div>
+              <ul class="accommodations-list">
+                ${accommodationsHtml}
+              </ul>
+            </div>
+
+            <div class="job-actions">
+              <button type="button" class="btn btn-primary btn-apply" data-job-id="${job.id}" data-job-title="${job.title}">
+                Apply with Accommodation
+              </button>
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+
+        // Wire accommodation buttons
+        container.querySelectorAll('.btn-apply').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            lastFocusedElement = e.currentTarget;
+            const jId = btn.getAttribute('data-job-id');
+            const jTitle = btn.getAttribute('data-job-title');
+            jobIdInput.value = jId;
+            jobTitleDisplay.value = jTitle;
+            dialog.showModal();
+          });
+        });
+
+      } catch (err) {
+        console.error('Failed to load jobs list:', err);
+        container.innerHTML = '<p role="alert" style="color:#B91C1C;">Unable to load job listings at this time. Please try refreshing.</p>';
+      }
+
+      // Handle accommodation submission
+      accForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const selectedNeeds = Array.from(accForm.querySelectorAll('input[name="needs"]:checked')).map(cb => cb.value);
+        const contactVal = document.getElementById('acc-contact').value;
+        const noteVal = document.getElementById('acc-note').value;
+        const jId = jobIdInput.value;
+
+        try {
+          const resp = await fetch('http://localhost:8000/api/v1/accommodations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              job_id: jId,
+              needs: selectedNeeds,
+              contact: contactVal,
+              note: noteVal
+            })
+          });
+
+          if (resp.ok) {
+            alert('Your interview accommodation request has been securely submitted! Our inclusion coordinator will reach out.');
+            dialog.close();
+            accForm.reset();
+            if (lastFocusedElement) lastFocusedElement.focus();
+          } else {
+            alert('Error submitting accommodation request. Please try again.');
+          }
+        } catch (err) {
+          console.error('Error submitting accommodation:', err);
+          alert('Network error submitting request. Please ensure local API server is running.');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

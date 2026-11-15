@@ -1,0 +1,157 @@
+[
+  {
+    "id": "job-va-101",
+    "title": "Virtual Executive Assistant",
+    "title_am": "ዋና ቨርቹዋል ረዳት",
+    "description": "Provide remote administrative and calendar management support for international tech leaders. Coordinate meetings, draft email correspondence, manage document workflows, and coordinate project schedules using digital collaboration tools.",
+    "description_am": "ለዓለም አቀፍ የቴክኖሎጂ መሪዎች የርቀት አስተዳደራዊ እና የቀን መቁጠሪያ ድጋፍ መስጠት። ስብሰባዎችን ማስተባበር፣ የኢሜይል ረቂቆችን ማዘጋጀት፣ እና ዲጂታል መሣሪያዎችን በመጠቀም ፕሮጀክቶችን መከታተል።",
+    "employmentType": "FULL_TIME",
+    "datePosted": "2026-11-14",
+    "validThrough": "2026-12-31",
+    "hiringOrganization": {
+      "name": "Digital Bridge Ethiopia",
+      "sameAs": "https://digitalbridge.et"
+    },
+    "jobLocation": {
+      "addressLocality": "Addis Ababa",
+      "addressRegion": "Addis Ababa",
+      "addressCountry": "ET"
+    },
+    "jobLocationType": "TELECOMMUTE",
+    "baseSalary": {
+      "currency": "ETB",
+      "value": 22000,
+      "unitText": "MONTH"
+    },
+    "accommodations": [
+      "Screen reader optimized software and documents (NVDA/JAWS/TalkBack)",
+      "Flexible schedule for prayer, health, and family care needs",
+      "Text-first asynchronous communication without mandatory video calls",
+      "Monthly remote internet and workstation stipend"
+    ]
+  },
+  {
+    "id": "job-cs-102",
+    "title": "Bilingual Customer Support Representative (Amharic & English)",
+    "title_am": "ባለ ሁለት ቋንቋ የደንበኞች ድጋፍ ተወካይ (አማርኛ እና እንግሊዝኛ)",
+    "description": "Handle incoming learner inquiries and client onboarding via live chat, email, and ticketing systems. Troubleshoot account issues, provide empathetic guidance, and document customer feedback in both Amharic and English.",
+    "description_am": "በቀጥታ ቻት፣ በኢሜይል እና በትኬቲንግ ሲስተም የሚመጡ የተማሪዎች እና ደንበኞች ጥያቄዎችን ማስተናገድ። የሂሳብ ችግሮችን መፍታት እና በአማርኛ እና በእንግሊዝኛ ጥራት ያለው ድጋፍ መስጠት።",
+    "employmentType": "FULL_TIME",
+    "datePosted": "2026-11-14",
+    "validThrough": "2026-12-31",
+    "hiringOrganization": {
+      "name": "Savanna Talent Hub",
+      "sameAs": "https://savanna.et"
+    },
+    "jobLocation": {
+      "addressLocality": "Addis Ababa",
+      "addressRegion": "Addis Ababa",
+      "addressCountry": "ET"
+    },
+    "jobLocationType": "TELECOMMUTE",
+    "baseSalary": {
+      "currency": "ETB",
+      "value": 18000,
+      "unitText": "MONTH"
+    },
+    "accommodations": [
+      "Sign language interpreter provided for interviews and team orientations",
+      "High-contrast and accessible ticketing software interface",
+      "Written chat transcripts provided for all audio briefings",
+      "Ergonomic assistive peripherals allowance"
+    ]
+  },
+  {
+    "id": "job-de-103",
+    "title": "Junior Data Entry & Quality Specialist",
+    "title_am": "ጀማሪ የዳታ ኤንትሪ እና የጥራት ስፔሻሊስት",
+    "description": "Review, cleanse, and structure tabular dataset entries for e-commerce and logistics partners. Verify contact directories, normalize addresses, and ensure compliance with formatting standards.",
+    "description_am": "ለኢ-ኮሜርስ እና ሎጂስቲክስ አጋሮች የዳታቤዝ መረጃዎችን መገምገም፣ ማጽዳት እና ማስተካከል፤ የአድራሻዎችን ትክክለኛነት ማረጋገጥ እና መረጃዎችን በስታንዳርድ መሰረት መመዝገብ።",
+    "employmentType": "PART_TIME",
+    "datePosted": "2026-11-14",
+    "validThrough": "2026-12-31",
+    "hiringOrganization": {
+      "name": "GeezJobs Remote Network",
+      "sameAs": "https://geezjobs.com"
+    },
+    "jobLocation": {
+      "addressLocality": "Hawassa",
+      "addressRegion": "Sidama",
+      "addressCountry": "ET"
+    },
+    "jobLocationType": "TELECOMMUTE",
+    "baseSalary": {
+      "currency": "ETB",
+      "value": 14000,
+      "unitText": "MONTH"
+    },
+    "accommodations": [
+      "Screen reader compatible spreadsheets and entry portals",
+      "Extended time allowances on technical assignments",
+      "Keyboard-only navigable input software",
+      "Flexible part-time working hours"
+    ]
+  },
+  {
+    "id": "job-ai-104",
+    "title": "AI Annotation & Evaluation Specialist",
+    "title_am": "የአርቴፊሻል ኢንተለጀንስ (AI) ዳታ አሰልጣኝ እና ገምጋሚ",
+    "description": "Evaluate and label Ethiopic and English language datasets for large language models and machine translation engines. Annotate audio transcripts, assess tone, and verify factual accuracy of model outputs.",
+    "description_am": "ለቋንቋ ሞዴሎች እና የትርጉም ሶፍትዌሮች የአማርኛ እና የእንግሊዝኛ ዳታዎችን መገምገም እና መሰየም። የድምፅ ቅጂዎችን ወደ ጽሑፍ መቀየር እና ትክክለኛነታቸውን ማረጋገጥ።",
+    "employmentType": "CONTRACTOR",
+    "datePosted": "2026-11-14",
+    "validThrough": "2026-12-31",
+    "hiringOrganization": {
+      "name": "EthioAI Research Collective",
+      "sameAs": "https://ethioai.org"
+    },
+    "jobLocation": {
+      "addressLocality": "Addis Ababa",
+      "addressRegion": "Addis Ababa",
+      "addressCountry": "ET"
+    },
+    "jobLocationType": "TELECOMMUTE",
+    "baseSalary": {
+      "currency": "ETB",
+      "value": 25000,
+      "unitText": "MONTH"
+    },
+    "accommodations": [
+      "High-contrast and dark mode interface options",
+      "Neurodivergent-friendly task breakdowns and checklists",
+      "Screen-magnifier compatible annotation tools",
+      "Asynchronous project evaluations"
+    ]
+  },
+  {
+    "id": "job-sm-105",
+    "title": "Social Media & Community Coordinator",
+    "title_am": "የማህበራዊ ሚዲያ እና የማህበረሰብ አስተባባሪ",
+    "description": "Plan social media posts, schedule content updates, respond to community messages, and analyze monthly engagement trends for remote creative agencies.",
+    "description_am": "የማህበራዊ ሚዲያ ጽሑፎችን ማቀድ፣ የይዘት ማሻሻያዎችን በሰዓት መለጠፍ፣ የማህበረሰብ ጥያቄዎችን መመለስ እና የተሳትፎ ሪፖርቶችን ማዘጋጀት።",
+    "employmentType": "FULL_TIME",
+    "datePosted": "2026-11-14",
+    "validThrough": "2026-12-31",
+    "hiringOrganization": {
+      "name": "Afriwork Remote Talent",
+      "sameAs": "https://afriwork.et"
+    },
+    "jobLocation": {
+      "addressLocality": "Bahir Dar",
+      "addressRegion": "Amhara",
+      "addressCountry": "ET"
+    },
+    "jobLocationType": "TELECOMMUTE",
+    "baseSalary": {
+      "currency": "ETB",
+      "value": 20000,
+      "unitText": "MONTH"
+    },
+    "accommodations": [
+      "Screen reader friendly publishing dashboards",
+      "Full remote setup with home power-backup subsidy",
+      "Flexible work schedule with protected non-meeting focus time",
+      "Accessible document formats provided for all brand assets"
+    ]
+  }
+]

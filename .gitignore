@@ -10,7 +10,7 @@ venv/
 ENV/
 
 # Data & secrets
-data/
+/data/
 .env
 .fernet_key
 
