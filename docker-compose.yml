@@ -11,6 +11,7 @@ services:
     # nginx alias, because nested mounts inside a read-only mount fail on
     # Docker Desktop ("make mountpoint ... read-only file system").
     volumes:
+      - ./site:/srv/site:ro
       - ./savanna:/srv/savanna:ro
       - ./module:/srv/module:ro
       - ./demo:/srv/demo:ro

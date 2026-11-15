@@ -124,3 +124,28 @@ class HelperPresence(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(80))
     seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class Account(Base):
+    """A developer who signed in with Google (never a learner). Only what the portal needs."""
+
+    __tablename__ = "accounts"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    google_sub: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    email: Mapped[str] = mapped_column(String(320))
+    name: Mapped[str] = mapped_column(String(200), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class Site(Base):
+    """One website where a developer installs SYLY. No secrets: the public key is meant to be in page source."""
+
+    __tablename__ = "sites"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(80))
+    public_key: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    allowed_origins: Mapped[list] = mapped_column(JSON, default=list)
+    settings: Mapped[dict] = mapped_column(JSON, default=dict)
+    bot_username: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)

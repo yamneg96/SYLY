@@ -9,6 +9,8 @@ sys.path.insert(0, str(API))
 _tmp = tempfile.mkdtemp(prefix="syly-test-")
 os.environ["DATA_DIR"] = _tmp
 os.environ["PROVIDER"] = "none"
+os.environ["DATABASE_URL"] = ""  # tests always use their own SQLite file, never a hosted database
+os.environ["GOOGLE_CLIENT_ID"] = ""
 os.environ.pop("FERNET_KEY", None)
 for k in ("GEMINI_API_KEY", "GROQ_API_KEY", "TELEGRAM_BOT_TOKEN", "BOT_TOKEN", "HELPER_KEY", "OLLAMA_URL"):
     os.environ[k] = ""

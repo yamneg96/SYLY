@@ -11,15 +11,19 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from config import fernet_key, settings
 
 settings.data_dir.mkdir(parents=True, exist_ok=True)
-engine = create_engine(settings.db_url, connect_args={"check_same_thread": False})
+if settings.is_sqlite:
+    engine = create_engine(settings.db_url, connect_args={"check_same_thread": False})
 
-
-@event.listens_for(engine, "connect")
-def _sqlite_pragmas(dbapi_conn, _record) -> None:  # noqa: ANN001
-    cur = dbapi_conn.cursor()
-    cur.execute("PRAGMA journal_mode=WAL")
-    cur.execute("PRAGMA foreign_keys=ON")
-    cur.close()
+    @event.listens_for(engine, "connect")
+    def _sqlite_pragmas(dbapi_conn, _record) -> None:  # noqa: ANN001
+        cur = dbapi_conn.cursor()
+        cur.execute("PRAGMA journal_mode=WAL")
+        cur.execute("PRAGMA foreign_keys=ON")
+        cur.close()
+else:
+    # Hosted Postgres (Neon): it suspends idle databases, so test connections before use;
+    # no server-side prepared statements, so Neon's pooled endpoint works too.
+    engine = create_engine(settings.db_url, pool_pre_ping=True, pool_recycle=300, connect_args={"prepare_threshold": None})
 
 
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)

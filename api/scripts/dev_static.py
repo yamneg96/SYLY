@@ -2,7 +2,7 @@
 
     python api/scripts/dev_static.py            # http://localhost:8080
 
-/module/* -> module/, /demo/* -> demo/, everything else -> savanna/.
+/module/* -> module/, /demo/* -> demo/, then site/ (the portal), then savanna/ (the starter).
 /api and /sms are not served here (use docker compose for the API).
 """
 
@@ -22,7 +22,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         for prefix, base in MOUNTS.items():
             if clean.startswith(prefix):
                 return str(base / clean[len(prefix):])
-        return str(ROOT / "savanna" / clean.lstrip("/"))
+        rel = clean.lstrip("/") or "index.html"
+        if clean.endswith("/"):
+            rel += "index.html"
+        for base in (ROOT / "site", ROOT / "savanna"):  # same order as nginx: portal first, then the starter
+            if (base / rel).is_file():
+                return str(base / rel)
+        return str(ROOT / "savanna" / rel)
 
     def end_headers(self) -> None:
         self.send_header("Cache-Control", "no-store")

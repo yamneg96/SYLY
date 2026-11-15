@@ -51,6 +51,9 @@ class Settings:
     seed_jobs: Path = field(
         default_factory=lambda: _first_existing(_env("SEED_JOBS"), str(REPO_DIR / "demo/data/jobs.json"))
     )
+    database_url: str = field(default_factory=lambda: _env("DATABASE_URL"))
+    google_client_id: str = field(default_factory=lambda: _env("GOOGLE_CLIENT_ID"))
+    session_secret: str = field(default_factory=lambda: _env("SESSION_SECRET"))
     threshold_en: float = field(default_factory=lambda: float(_env("THRESHOLD_EN", "1.5")))
     threshold_am: float = field(default_factory=lambda: float(_env("THRESHOLD_AM", "0.35")))
 
@@ -64,7 +67,22 @@ class Settings:
 
     @property
     def db_url(self) -> str:
-        return f"sqlite:///{self.data_dir / 'syly.db'}"
+        """SQLite file by default; DATABASE_URL (for example a Neon Postgres URL) when set."""
+        url = self.database_url
+        if not url:
+            return f"sqlite:///{self.data_dir / 'syly.db'}"
+        for old in ("postgres://", "postgresql://"):
+            if url.startswith(old):  # psycopg 3 is the driver we ship
+                return "postgresql+psycopg://" + url[len(old):]
+        return url
+
+    @property
+    def is_sqlite(self) -> bool:
+        return self.db_url.startswith("sqlite")
+
+    @property
+    def auth_enabled(self) -> bool:
+        return bool(self.google_client_id)
 
 
 def fernet_key(settings: Settings) -> bytes:
@@ -79,6 +97,20 @@ def fernet_key(settings: Settings) -> bytes:
     new = Fernet.generate_key()
     path.write_bytes(new)
     log.warning("FERNET_KEY not set: generated one and saved it to %s", path)
+    return new
+
+
+def session_secret(settings: Settings) -> bytes:
+    """SESSION_SECRET from env, else one generated once and kept in data/.session_secret (like the Fernet key)."""
+    if settings.session_secret:
+        return settings.session_secret.encode()
+    path = settings.data_dir / ".session_secret"
+    if path.exists():
+        return path.read_bytes().strip()
+    settings.data_dir.mkdir(parents=True, exist_ok=True)
+    new = Fernet.generate_key()
+    path.write_bytes(new)
+    log.warning("SESSION_SECRET not set: generated one and saved it to %s (set it on hosted servers with no persistent disk)", path)
     return new
 
 

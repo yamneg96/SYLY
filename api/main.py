@@ -14,9 +14,10 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 import models  # noqa: F401 - registers tables
 from config import settings
-from db import Base, SessionLocal, engine
-from routers import ask, data, help, jobs, sms, voice
-from services import content
+from db import SessionLocal
+from migrate import upgrade_to_head
+from routers import ask, data, help, jobs, portal, sms, voice
+from services import content, sites
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("syly")
@@ -24,7 +25,7 @@ log = logging.getLogger("syly")
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):  # noqa: ANN201
-    Base.metadata.create_all(engine)
+    upgrade_to_head()  # Alembic: creates or updates the tables (SQLite file, or DATABASE_URL such as Neon)
     with SessionLocal() as db:
         content.seed(db)
     log.info("provider=%s ai_enabled=%s", settings.provider, settings.ai_enabled)
@@ -37,11 +38,30 @@ app = FastAPI(
     description="Course-grounded multilingual assistant, human help, text route and career gateway (Track 3).",
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def site_origin_check(req: Request, call_next):  # noqa: ANN001, ANN201
+    """A request that carries a site key (the widget sends X-Site-Key) is accepted only from that site's
+    allowed origins, in addition to HOST_ORIGINS. Calls without a key, and the key's own config call, are not affected.
+    Added before the CORS middleware, so the refusal still carries CORS headers and the widget can read the words."""
+    key = req.headers.get("x-site-key")
+    origin = req.headers.get("origin")
+    if key and origin and req.method != "OPTIONS":
+        with SessionLocal() as db:
+            allowed = sites.allowed_origins_for(db, key)
+        if allowed is None:
+            return JSONResponse(status_code=403, content={"detail": "This site key is not known."})
+        if not sites.origin_allowed(origin, allowed):
+            return JSONResponse(status_code=403, content={"detail": "This website is not on the list of sites allowed to use this key."})
+    return await call_next(req)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.host_origins,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
-    allow_headers=["Content-Type", "X-Helper-Key"],
+    allow_headers=["Content-Type", "X-Helper-Key", "X-Site-Key", "X-Requested-With"],
 )
 
 
@@ -83,6 +103,12 @@ async def http_error(req: Request, exc: StarletteHTTPException) -> Response:
     return resp
 
 
+@app.exception_handler(sites.FieldError)
+async def field_error(req: Request, exc: sites.FieldError) -> Response:
+    """Portal forms: one message in words per field."""
+    return JSONResponse(status_code=400, content={"detail": "Please fix the marked fields.", "fields": exc.fields})
+
+
 @app.exception_handler(SQLAlchemyError)
 async def db_error(req: Request, exc: SQLAlchemyError) -> Response:
     log.error("database error on %s %s: %s", req.method, req.url.path, type(exc).__name__)
@@ -103,5 +129,5 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-for r in (ask.router, help.router, jobs.router, sms.router, voice.router, data.router):
+for r in (ask.router, help.router, jobs.router, sms.router, voice.router, data.router, portal.router):
     app.include_router(r)
