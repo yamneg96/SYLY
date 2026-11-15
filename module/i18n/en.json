@@ -16,6 +16,8 @@
   "notFound": "I could not find this in the course. Would you like to talk to a person?",
   "escalatedNotice": "A tutor will answer here. It may take until morning.",
   "typing": "SYLY is typing...",
+  "stop": "Stop",
+  "audioUnavailable": "Audio unavailable",
   "you": "You",
   "assistant": "SYLY Tutor",
   "simpleMode": "Simple mode",

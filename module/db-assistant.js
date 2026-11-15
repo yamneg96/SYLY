@@ -53,6 +53,8 @@
       notFound: 'I could not find this in the course. Would you like to talk to a person?',
       escalatedNotice: 'A tutor will answer here. It may take until morning.',
       typing: 'SYLY is typing...',
+      stop: 'Stop',
+      audioUnavailable: 'Audio unavailable',
       you: 'You',
       assistant: 'SYLY Tutor',
       simpleMode: 'Simple mode',
@@ -77,6 +79,8 @@
       notFound: 'ይህንን በትምህርቱ ውስጥ ማግኘት አልቻልኩም። ከሰው ጋር መነጋገር ይፈልጋሉ?',
       escalatedNotice: 'አስተማሪ እዚህ ይመልሳል። እስከ ነገ ጥዋት ድረስ ሊወስድ ይችላል።',
       typing: 'ሲሊ በመጻፍ ላይ ነው...',
+      stop: 'አቁም',
+      audioUnavailable: 'ድምጽ አይገኝም',
       you: 'እርስዎ',
       assistant: 'ሲሊ አስተማሪ',
       simpleMode: 'ቀላል ሁነታ',
@@ -101,6 +105,8 @@
       notFound: 'لم أتمكن من العثور على هذا في الدرس. هل ترغب في التحدث إلى معلم؟',
       escalatedNotice: 'سيجيب المعلم هنا. قد يستغرق الأمر حتى الصباح.',
       typing: 'سيلي يكتب الآن...',
+      stop: 'إيقاف',
+      audioUnavailable: 'الصوت غير متاح',
       you: 'أنت',
       assistant: 'معلم سيلي',
       simpleMode: 'الوضع البسيط',
@@ -219,6 +225,9 @@
       this.contentData = null;
       this.speechRecognition = null;
       this.isRecognizing = false;
+      this.currentAudio = null;
+      this.currentAudioBtn = null;
+      this.thirdPartyConsent = true;
 
       // Bind handlers
       this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -284,6 +293,7 @@
     }
 
     disconnectedCallback() {
+      this.stopAudio();
       window.removeEventListener('keydown', this.handleKeyDown);
       window.removeEventListener('resize', this.handleResize);
       if (this.speechRecognition) {
@@ -467,6 +477,7 @@
     }
 
     close(options = { returnFocus: true }) {
+      this.stopAudio();
       if (this.mode === 'inline') return;
 
       const panel = this.shadowRoot.getElementById('panel');
@@ -893,7 +904,7 @@
           listenBtn.innerHTML = `🔊 <span>${t.listen}</span>`;
 
           listenBtn.addEventListener('click', () => {
-            this.speakText(msg.text, msg.lang || this.lang);
+            this.playMessageAudio(msg, listenBtn);
           });
 
           actionsDiv.appendChild(listenBtn);
@@ -906,12 +917,201 @@
       list.scrollTop = list.scrollHeight;
     }
 
-    speakText(text, language) {
+    /**
+     * Stops active audio playback (Audio element or SpeechSynthesis)
+     * and resets the active button state.
+     */
+    stopAudio() {
+      if (this.currentAudio) {
+        try {
+          this.currentAudio.pause();
+          this.currentAudio.currentTime = 0;
+        } catch (_) {}
+        this.currentAudio = null;
+      }
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = language === 'am' ? 'am-ET' : (language === 'ar' ? 'ar-SA' : 'en-US');
-        window.speechSynthesis.speak(utterance);
+        try {
+          window.speechSynthesis.cancel();
+        } catch (_) {}
+      }
+      if (this.currentAudioBtn) {
+        const t = this.getTranslations();
+        this.currentAudioBtn.innerHTML = `🔊 <span>${t.listen}</span>`;
+        this.currentAudioBtn.setAttribute('aria-label', t.listen);
+        this.currentAudioBtn.classList.remove('playing');
+        this.currentAudioBtn = null;
+      }
+    }
+
+    /**
+     * Plays an HTML5 Audio object and manages UI state.
+     */
+    playAudioElement(audio, button) {
+      const t = this.getTranslations();
+      this.currentAudio = audio;
+      this.currentAudioBtn = button;
+
+      button.innerHTML = `⏹️ <span>${t.stop || 'Stop'}</span>`;
+      button.setAttribute('aria-label', t.stop || 'Stop');
+      button.classList.add('playing');
+
+      audio.onended = () => {
+        this.stopAudio();
+      };
+      audio.onerror = () => {
+        this.stopAudio();
+      };
+
+      return audio.play();
+    }
+
+    /**
+     * Orchestrates Text-to-Speech playback according to strict fallback hierarchy:
+     * 1. Check Consent & Network
+     * 2. Fallback 1 (Pre-generated Audio): module/audio/<section>.mp3
+     * 3. Primary (Server TTS): POST /api/v1/voice/speak
+     * 4. Fallback 2 (Browser Native): window.speechSynthesis with voice availability check
+     * 5. Fallback 3 (Graceful Failure): "Audio unavailable" & aria-live status alert
+     * 6. Interruptible: Clicking button during playback stops audio immediately
+     */
+    async playMessageAudio(msg, button) {
+      const t = this.getTranslations();
+
+      // 6. If currently playing, clicking interrupts playback
+      if (this.currentAudioBtn === button) {
+        this.stopAudio();
+        return;
+      }
+
+      this.stopAudio();
+
+      const isOffline = !navigator.onLine;
+      const isConsentDenied = (this.thirdPartyConsent === false);
+      const language = msg.lang || this.lang || 'en';
+      const text = msg.text || '';
+
+      // Fallback 3: Graceful Failure
+      const triggerAudioUnavailable = () => {
+        this.stopAudio();
+        button.innerHTML = `⚠️ <span>${t.audioUnavailable || 'Audio unavailable'}</span>`;
+        button.setAttribute('aria-label', t.audioUnavailable || 'Audio unavailable');
+        this.setStatus(t.audioUnavailable || 'Audio unavailable for this answer.');
+        setTimeout(() => {
+          button.innerHTML = `🔊 <span>${t.listen}</span>`;
+          button.setAttribute('aria-label', `${t.listen}: ${text.slice(0, 40)}...`);
+        }, 3000);
+      };
+
+      // Fallback 2: Browser Native SpeechSynthesis
+      const trySpeechSynthesis = () => {
+        if (!('speechSynthesis' in window)) {
+          triggerAudioUnavailable();
+          return;
+        }
+
+        const voices = window.speechSynthesis.getVoices() || [];
+        let matchedVoice = null;
+        if (language === 'am') {
+          matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith('am'));
+        } else if (language === 'ar') {
+          matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith('ar'));
+        } else {
+          matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith('en'));
+        }
+
+        // For Amharic, if phone has no Amharic system voice, do NOT use default English voice
+        if (language === 'am' && !matchedVoice) {
+          triggerAudioUnavailable();
+          return;
+        }
+
+        try {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          if (matchedVoice) {
+            utterance.voice = matchedVoice;
+          }
+          utterance.lang = language === 'am' ? 'am-ET' : (language === 'ar' ? 'ar-SA' : 'en-US');
+
+          this.currentAudioBtn = button;
+          button.innerHTML = `⏹️ <span>${t.stop || 'Stop'}</span>`;
+          button.setAttribute('aria-label', t.stop || 'Stop');
+          button.classList.add('playing');
+
+          utterance.onend = () => {
+            this.stopAudio();
+          };
+          utterance.onerror = () => {
+            this.stopAudio();
+          };
+
+          window.speechSynthesis.speak(utterance);
+        } catch (_) {
+          triggerAudioUnavailable();
+        }
+      };
+
+      // Fallback 1: Pre-generated Audio (offline / consent denied)
+      const tryPregeneratedAudio = async () => {
+        let sectionId = '';
+        if (msg.sources && msg.sources.length > 0) {
+          const sourceUrl = msg.sources[0].url || '';
+          const hashIdx = sourceUrl.indexOf('#');
+          if (hashIdx !== -1) {
+            sectionId = sourceUrl.slice(hashIdx + 1);
+          } else {
+            sectionId = msg.sources[0].id || '';
+          }
+        }
+
+        if (!sectionId) {
+          trySpeechSynthesis();
+          return;
+        }
+
+        try {
+          const audioUrl = new URL(`audio/${sectionId}.mp3`, CURRENT_SCRIPT_SRC).href;
+          const audio = new Audio(audioUrl);
+          await this.playAudioElement(audio, button);
+        } catch (err) {
+          console.warn('[db-assistant] Pre-generated audio failed, falling back:', err);
+          trySpeechSynthesis();
+        }
+      };
+
+      // 1. Check Consent & Network
+      if (isOffline || isConsentDenied) {
+        // 2. Fallback 1: Pre-generated Audio
+        await tryPregeneratedAudio();
+        return;
+      }
+
+      // 3. Primary: Server TTS
+      const speakUrl = this.resolveApiUrl('/api/v1/voice/speak');
+      try {
+        button.innerHTML = `⏳ <span>...</span>`;
+        const res = await fetch(speakUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text, language: language })
+        });
+
+        if (res.ok) {
+          const blob = await res.blob();
+          const objectUrl = URL.createObjectURL(blob);
+          const audio = new Audio(objectUrl);
+          await this.playAudioElement(audio, button);
+          return;
+        } else {
+          throw new Error(`Server returned HTTP ${res.status}`);
+        }
+      } catch (err) {
+        console.warn('[db-assistant] Server TTS failed, falling back to pre-generated or native:', err);
+        if (msg.sources && msg.sources.length > 0) {
+          await tryPregeneratedAudio();
+        } else {
+          trySpeechSynthesis();
+        }
       }
     }
 
