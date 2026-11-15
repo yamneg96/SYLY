@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SYLY: an accessible course assistant</title>
+    <meta
+      name="description"
+      content="SYLY answers a learner's question from the course itself, in Amharic, English or Arabic, shows the source, reads it aloud and always offers a real person."
+    />
+    <link rel="icon" type="image/png" href="/demo/assets/syly-logo.png" />
+    <link rel="apple-touch-icon" href="/demo/assets/syly-logo.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p style="padding: 1rem; font: 1rem/1.5 system-ui, sans-serif">
+        This site needs JavaScript. SYLY itself works on any page with two lines of HTML: see
+        https://github.com/yamneg96/SYLY
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- The real assistant: Home and Docs use it (dogfooding). Served by nginx next to this app. -->
+    <script src="/module/db-assistant.js" defer></script>
+  </body>
+</html>
