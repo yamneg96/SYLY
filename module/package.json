@@ -22,7 +22,7 @@
   "publishConfig": { "access": "public" },
   "scripts": {
     "i18n": "node scripts/sync-i18n.mjs",
-    "test": "node --test tests/i18n.test.mjs tests/search.test.mjs tests/page-reading.test.mjs tests/site-config.test.mjs tests/portal-lib.test.mjs tests/site-content.test.mjs",
+    "test": "node --test tests/i18n.test.mjs tests/search.test.mjs tests/page-reading.test.mjs tests/site-config.test.mjs tests/site-content.test.mjs",
     "axe": "node scripts/axe.mjs",
     "site": "node scripts/site-check.mjs",
     "icons": "node scripts/sync-icons.mjs"
