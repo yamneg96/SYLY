@@ -241,14 +241,14 @@ All phrases are in `bot/intents.json` (3 to 8 per command and language). A messa
 
 **Voice notes.** The bot downloads the note (up to 20 MB), converts it to 16 kHz WAV with ffmpeg (inside the Docker image), and sends it to the speech-to-text engines below in order, 15 seconds each (`STT_TIMEOUT`). It replies "I heard: «…»" and then acts on it. Audio leaves the server only after the learner allows online answers (`/consent`). If every engine fails, the bot says so and offers "Talk to a person". The same router is at `POST /api/v1/voice/transcribe` (returns `text`, `language`, `engine`). With `/voice` on, answers also come back as a voice note (OGG/Opus).
 
-| Language | Status | Speech-to-text, in order | Measured (`scripts/stt_check.py`, synthetic clips, 15 Nov) | Voice replies |
+| Language | Status | Speech-to-text, in order | Measured word accuracy (`scripts/stt_check.py`, 5 synthetic edge-tts clips each, 15 Nov; real phones will score lower) | Voice replies |
 | --- | --- | --- | --- | --- |
 | English (en) | Done | Groq Whisper → Gemini | 5/5 clips 100% (Groq) | Microsoft neural voice (edge-tts) |
-| Amharic (am) | Done, **weak speech-to-text** | Addis AI → Gemini → Groq Whisper | 13% word accuracy (Gemini; Addis had no credit). Typed Amharic works fully; spoken Amharic needs Addis credit and a real-phone test | edge-tts, Addis AI fallback |
-| Afaan Oromo (om) | Beta | Addis AI → Gemini | Untested (Addis no credit, no voice to make clips) | Addis AI (no credit) |
-| Tigrinya (ti) | Beta | Gemini (Meta MMS optional, off) | Untested | none (text only) |
-| Somali (so) | Beta | Groq Whisper → Gemini | See phase 2 | edge-tts |
-| Arabic (ar) | Beta | Groq Whisper → Gemini | See phase 2 | edge-tts |
+| Amharic (am) | Done, **weak speech-to-text** | Addis AI → Gemini → Groq Whisper | 9 to 13% word accuracy (Gemini; Groq Whisper 0%; Addis had no credit). Typed Amharic works fully; spoken Amharic needs Addis credit and a real-phone test | edge-tts, Addis AI fallback |
+| Afaan Oromo (om) | Beta | Addis AI → Gemini | **Untested**: Addis had no credit and there is no synthetic Oromo voice; needs self-recorded clips | Addis AI (no credit, so text only for now) |
+| Tigrinya (ti) | Beta | Gemini (Meta MMS optional, off) | **Untested**: no synthetic Tigrinya voice; needs self-recorded clips | none (text only) |
+| Somali (so) | Beta, **weak speech-to-text** | Gemini → Groq Whisper (swapped from the spec after measuring) | Gemini 20 to 23%, Groq Whisper 0% (wrote Somali sounds in English spelling) | edge-tts (so-SO-UbaxNeural) |
+| Arabic (ar) | Beta | Groq Whisper → Gemini | 90% (4 of 5 clips exact, Groq) | edge-tts |
 
 Beta means: the interface text and phrases are machine-assisted drafts (**needs native reader check**) and the speech engines have not been tested with real speakers. Meta MMS (`MMS_ENABLED=true`) runs locally but its weights are **CC-BY-NC 4.0 (non-commercial)**; it is off by default. Engine licences: Groq, Gemini and Addis AI are paid or free-tier online APIs under their own terms **[unverified for this use]**.
 

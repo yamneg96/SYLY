@@ -21,7 +21,7 @@ ORDER: dict[str, list[str]] = {
     "en": ["groq", "gemini"],
     "om": ["addis", "gemini"],
     "ti": ["gemini", "mms"],
-    "so": ["groq", "gemini"],
+    "so": ["gemini", "groq"],  # spec says Groq first; stt_check 15 Nov: Gemini 23%, Groq Whisper 0% on Somali clips
     "ar": ["groq", "gemini"],
 }
 BETA = {"om", "ti", "so", "ar"}
