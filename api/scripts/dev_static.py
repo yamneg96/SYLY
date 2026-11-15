@@ -2,7 +2,7 @@
 
     python api/scripts/dev_static.py            # http://localhost:8080
 
-/module/* -> module/, /demo/* -> demo/, then site/ (the portal), then savanna/ (the starter).
+/module/* -> module/, /demo/* -> demo/, then web/dist/ (the portal: run `npm run build` in web/), then savanna/ (the starter).
 /api and /sms are not served here (use docker compose for the API).
 """
 
@@ -25,9 +25,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         rel = clean.lstrip("/") or "index.html"
         if clean.endswith("/"):
             rel += "index.html"
-        for base in (ROOT / "site", ROOT / "savanna"):  # same order as nginx: portal first, then the starter
+        for base in (ROOT / "web" / "dist", ROOT / "savanna"):  # same order as nginx: portal first, then the starter
             if (base / rel).is_file():
                 return str(base / rel)
+        portal = ROOT / "web" / "dist" / "index.html"
+        if "." not in rel.rsplit("/", 1)[-1] and portal.is_file():  # /documentation, /signin, /dashboard: pages of the portal app
+            return str(portal)
         return str(ROOT / "savanna" / rel)
 
     def end_headers(self) -> None:

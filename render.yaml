@@ -1,0 +1,49 @@
+# Render Blueprint: the SYLY API as a Docker web service (docs/deployment.md, option D).
+# New + Blueprint on render.com, pick this repository; fill the values marked "sync: false" in the dashboard.
+# The static side (the React portal, the widget, the demo pages) is NOT here: it goes on Vercel or Cloudflare Pages.
+services:
+  - type: web
+    name: syly-api            # the address is https://syly-api.onrender.com: the same name is used in vercel.json
+    runtime: docker
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    plan: free                # free services sleep after 15 minutes without traffic (first request waits about a minute); use "starter" to stay awake
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: PROVIDER
+        value: cloud
+      - key: DATABASE_URL     # Neon: postgresql://USER:PASSWORD@HOST.neon.tech/DBNAME?sslmode=require
+        sync: false
+      - key: FERNET_KEY       # REQUIRED here: there is no disk, so a generated key would be lost at each deploy and contacts could not be read
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: HELPER_KEY
+        generateValue: true
+      - key: HOST_ORIGINS     # the address of the static site (and of every site that embeds the widget), comma separated
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ADDIS_AI_API_KEY
+        sync: false
+      - key: PUBLIC_BASE_URL  # the address of the static site (the bot's links point there)
+        sync: false
+  # The Telegram bot needs a process that never sleeps. On Render that is a paid Background Worker; uncomment to use it.
+  # - type: worker
+  #   name: syly-bot
+  #   runtime: docker
+  #   dockerfilePath: ./bot/Dockerfile
+  #   dockerContext: ./bot
+  #   plan: starter
+  #   envVars:
+  #     - key: API_URL
+  #       value: https://syly-api.onrender.com
+  #     - key: TELEGRAM_BOT_TOKEN
+  #       sync: false
+  #     - key: PUBLIC_BASE_URL
+  #       sync: false

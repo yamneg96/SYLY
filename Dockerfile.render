@@ -1,0 +1,15 @@
+# The API as one image built from the repository root, for hosts that build from git (Render, Fly, Railway ...).
+# docker compose does not use this file: it builds ./api and mounts the seed data (docker-compose.yml).
+# Storage: DATABASE_URL (Neon Postgres). Without it the data would vanish at every deploy, because these hosts have no persistent disk.
+FROM python:3.12-slim
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    DATA_DIR=/app/data SEED_CONTENT=/app/seed/content.json SEED_JOBS=/app/seed/jobs.json
+# ffmpeg converts voice notes and speech (bot-voice-commands.md)
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
+COPY api/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY api/ .
+COPY demo/data/ /app/seed/
+# Render and similar hosts tell the app which port to use in $PORT
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]
