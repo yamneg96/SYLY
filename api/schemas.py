@@ -209,4 +209,5 @@ class ScreenshotIn(BaseModel):
 
 class SpeakIn(BaseModel):
     text: str = Field(min_length=1, max_length=3000)
-    language: Lang = "am"
+    language: Literal["am", "en", "ar", "om", "ti", "so"] = "am"
+    format: Literal["mp3", "ogg"] = Field(default="mp3", description="ogg = OGG/Opus, for Telegram voice notes (needs ffmpeg)")

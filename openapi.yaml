@@ -647,6 +647,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - career gateway
+      summary: Alerts of one Telegram chat or phone (for the bot's /myalerts)
+      operationId: list_alerts_api_v1_alerts_get
+      parameters:
+      - name: channel
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Channel
+      - name: address
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Address
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Alerts Api V1 Alerts Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
     delete:
       tags:
       - career gateway
@@ -830,9 +865,12 @@ paths:
         '200':
           description: Successful Response
           content:
+            application/json:
+              schema: {}
             audio/mpeg: {}
+            audio/ogg: {}
         '503':
-          description: No voice service reachable
+          description: No voice for this language
         '422':
           description: Validation Error
           content:
@@ -843,8 +881,8 @@ paths:
     post:
       tags:
       - voice
-      summary: 'Optional speech to text: Addis AI for Amharic (wav/mp3/m4a/webm),
-        else Groq Whisper. Sends audio online: consent first'
+      summary: 'Speech to text through the router (Addis AI, Gemini audio, Groq Whisper).
+        Sends audio online: consent first'
       operationId: transcribe_api_v1_voice_transcribe_post
       requestBody:
         content:
@@ -1150,7 +1188,8 @@ components:
         language:
           type: string
           title: Language
-          default: am
+          description: am, en, om, ti, so, ar, or auto
+          default: auto
       type: object
       required:
       - file
@@ -1610,8 +1649,19 @@ components:
           - am
           - en
           - ar
+          - om
+          - ti
+          - so
           title: Language
           default: am
+        format:
+          type: string
+          enum:
+          - mp3
+          - ogg
+          title: Format
+          description: ogg = OGG/Opus, for Telegram voice notes (needs ffmpeg)
+          default: mp3
       type: object
       required:
       - text

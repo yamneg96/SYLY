@@ -37,6 +37,7 @@ class Settings:
     ollama_url: str = field(default_factory=lambda: _env("OLLAMA_URL").rstrip("/"))
     ollama_model: str = field(default_factory=lambda: _env("OLLAMA_MODEL", "llama3.2:3b"))
     provider_timeout: float = field(default_factory=lambda: float(_env("PROVIDER_TIMEOUT", "8")))
+    stt_timeout: float = field(default_factory=lambda: float(_env("STT_TIMEOUT", "15")))
     telegram_token: str = field(default_factory=lambda: _env("TELEGRAM_BOT_TOKEN") or _env("BOT_TOKEN"))
     telegram_username: str = field(default_factory=lambda: _env("TELEGRAM_BOT_USERNAME").lstrip("@"))
     helper_key: str = field(default_factory=lambda: _env("HELPER_KEY"))

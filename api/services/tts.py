@@ -14,7 +14,8 @@ from pathlib import Path
 from config import settings
 
 log = logging.getLogger("syly")
-VOICES = {"am": "am-ET-MekdesNeural", "en": "en-US-AriaNeural", "ar": "ar-SA-ZariyahNeural"}
+# Somali voice exists in the online read-aloud voice list [unverified until tested]; om/ti have none (om: Addis AI).
+VOICES = {"am": "am-ET-MekdesNeural", "en": "en-US-AriaNeural", "ar": "ar-SA-ZariyahNeural", "so": "so-SO-UbaxNeural"}
 
 
 def cache_path(text: str, language: str) -> Path:
@@ -29,9 +30,11 @@ async def synthesize(text: str, language: str, out: Path | None = None) -> Path 
     if path.exists() and path.stat().st_size > 0:
         return path
     try:
+        if language not in VOICES:
+            raise LookupError(f"no edge-tts voice for {language}")  # never read Tigrinya with an English voice
         import edge_tts  # imported lazily: optional at runtime
 
-        await edge_tts.Communicate(text, VOICES.get(language, VOICES["en"])).save(str(path))
+        await edge_tts.Communicate(text, VOICES[language]).save(str(path))
         if path.exists() and path.stat().st_size > 0:
             return path
     except Exception as e:  # noqa: BLE001 - any failure means "try the next voice"
