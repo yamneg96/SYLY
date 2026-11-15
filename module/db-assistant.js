@@ -729,6 +729,20 @@
       keywords_en: [], keywords_am: [] };
   }
 
+  /* developer portal: <db-assistant site="pk_..">. Settings from GET /v1/sites/{key}/config fill in only the
+     attributes the tag does not already have, so attributes written on the tag always win. */
+  var SITE_ATTRS = [['lang', 'lang'], ['mode', 'mode'], ['position', 'position'], ['theme', 'theme'], ['primary', 'primary'],
+    ['content', 'content'], ['content-selector', 'content_selector'], ['read-page', 'read_page']];
+  function applySite(cfg, hasAttr) {
+    var out = [];
+    if (!cfg || typeof cfg !== 'object') return out;
+    SITE_ATTRS.forEach(function (pair) {
+      var v = cfg[pair[1]];
+      if (typeof v === 'string' && v && !hasAttr(pair[0])) out.push([pair[0], v]);
+    });
+    return out;
+  }
+
   /* --------------------------------------------------------------- styles */
   var CSS = [
     ':host{all:initial;display:block;font-family:var(--bs-body-font-family,system-ui),"Noto Sans Ethiopic","Noto Naskh Arabic",sans-serif;font-size:1rem;line-height:1.5;}',
@@ -841,7 +855,7 @@
 
   /* --------------------------------------------------------------- element */
   class DbAssistant extends HTMLElement {
-    static get observedAttributes() { return ['lang', 'theme', 'position']; }
+    static get observedAttributes() { return ['lang', 'theme', 'position', 'primary']; }
 
     constructor() {
       super();
@@ -863,10 +877,25 @@
     }
 
     connectedCallback() {
-      if (this.shadowRoot) return;
+      if (this.shadowRoot || this._siteWait) return;
+      if (this.hasAttribute('site') && !this._siteDone) {
+        // Developer portal: fetch this site's settings first (4 s at most), then start as usual. Any failure: attributes and defaults.
+        var host = this;
+        this._siteWait = true;
+        this._loadSite().then(function (cfg) {
+          host._siteWait = false; host._siteDone = true;
+          if (cfg) {
+            host._siteKey = (host.getAttribute('site') || '').trim();
+            host._siteSimple = !!cfg.simple;
+            applySite(cfg, function (a) { return host.hasAttribute(a); }).forEach(function (kv) { host.setAttribute(kv[0], kv[1]); });
+          }
+          if (host.isConnected) host.connectedCallback();
+        });
+        return;
+      }
       this.attachShadow({ mode: 'open' });
       this._mode = this.getAttribute('mode') === 'inline' ? 'inline' : 'panel';
-      this._simple = !!load('simple', false);
+      this._simple = !!load('simple', !!this._siteSimple);
       this._consent = load('consent', null); // 'yes' | 'no' | null
       this._render();
       this._applyTheme();
@@ -1105,6 +1134,8 @@
       root.classList.toggle('pos-start', pos === 'start');
       if (theme === 'dark') { root.style.removeProperty('--c-btn'); return; }
       var btn = FALLBACK_BUTTON;
+      var own = parseColor((this.getAttribute('primary') || '').trim());
+      if (own && contrast(own, [255, 255, 255]) >= 4.5) { root.style.setProperty('--c-btn', this.getAttribute('primary').trim()); return; }
       if (theme === 'auto') {
         var host = getComputedStyle(this).getPropertyValue('--bs-primary');
         var rgb = parseColor(host);
@@ -1225,10 +1256,22 @@
     /* api */
     _apiOrigin() { var b = this._apiBase(); try { return b ? new URL(b, document.baseURI).href : document.baseURI; } catch (e) { return document.baseURI; } }
     _apiBase() { var a = (this.getAttribute('api') || '').trim(); return a ? a.replace(/\/+$/, '') : ''; }
+    _loadSite() {
+      var key = (this.getAttribute('site') || '').trim();
+      if (!key || !this._apiBase() || !window.fetch) return Promise.resolve(null);
+      var ctl = window.AbortController ? new AbortController() : null;
+      var timer = ctl && setTimeout(function () { ctl.abort(); }, 4000);
+      return fetch(this._apiBase() + '/v1/sites/' + encodeURIComponent(key) + '/config', ctl ? { signal: ctl.signal } : {})
+        .then(function (r) { clearTimeout(timer); return r.ok ? r.json() : null; })
+        .catch(function () { clearTimeout(timer); return null; });
+    }
+    // The site key travels with every API call, so the server can check the page's origin against the site's list.
+    _keyed(headers) { return this._siteKey ? Object.assign({}, headers, { 'X-Site-Key': this._siteKey }) : headers; }
     _fetchJson(path, opts) {
       var ctl = window.AbortController ? new AbortController() : null;
       var timer = ctl && setTimeout(function () { ctl.abort(); }, 15000); // network only, never a user time-out
       var o = Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {});
+      o.headers = this._keyed(o.headers);
       if (ctl) o.signal = ctl.signal;
       return fetch(this._apiBase() + path, o).then(function (r) {
         clearTimeout(timer);
@@ -1550,7 +1593,7 @@
           if (!self._sharing || !video.videoWidth) return;
           self._toJpeg(video, video.videoWidth, video.videoHeight, 1280).toBlob(function (blob) {
             if (!blob || !self._sharing) return;
-            fetch(self._apiBase() + self._ticketPath('/screen'), { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob }).catch(function () {});
+            fetch(self._apiBase() + self._ticketPath('/screen'), { method: 'POST', headers: self._keyed({ 'Content-Type': 'image/jpeg' }), body: blob }).catch(function () {});
           }, 'image/jpeg', 0.6);
         };
         self._sharing.timer = setInterval(send, 2000);
@@ -1782,7 +1825,7 @@
       var server = function () {
         // Server TTS sends text to an online voice service: only with consent (NFR-S2).
         if (!self._apiBase() || !navigator.onLine || self._consent !== 'yes') { system(); return; }
-        fetch(self._apiBase() + '/v1/voice/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        fetch(self._apiBase() + '/v1/voice/speak', { method: 'POST', headers: self._keyed({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ text: m.text, language: m.lang }) })
           .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
           .then(function (b) { if (self._listenBtn === btn) playUrl(URL.createObjectURL(b), system); })
@@ -1827,6 +1870,6 @@
   }
 
   // Exposed for tests only through the element class (no globals).
-  DbAssistant._internals = { readPage: readPage, pageRoot: pageRoot, decidePageReading: decidePageReading, pageToIndex: pageToIndex, textFragment: textFragment, formatDate: formatDate, Index: Index, splitSentences: splitSentences, detectLang: detectLang, NO_ADVICE: NO_ADVICE, parseColor: parseColor, contrast: contrast, I18N: I18N };
+  DbAssistant._internals = { readPage: readPage, pageRoot: pageRoot, decidePageReading: decidePageReading, pageToIndex: pageToIndex, textFragment: textFragment, formatDate: formatDate, Index: Index, splitSentences: splitSentences, detectLang: detectLang, NO_ADVICE: NO_ADVICE, parseColor: parseColor, contrast: contrast, applySite: applySite, I18N: I18N };
   customElements.define('db-assistant', DbAssistant);
 })();

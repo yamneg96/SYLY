@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Developer sign in: SYLY</title>
+  <meta name="description" content="Sign in with Google to manage the sites where you install SYLY.">
+  <link rel="icon" type="image/png" href="/demo/assets/syly-logo.png">
+  <link rel="apple-touch-icon" href="/demo/assets/syly-logo.png">
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body>
+  <a class="skip" href="#main" data-t="skip">Skip to main content</a>
+
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true"><svg focusable="false" viewBox="0 0 200 200"><use href="/demo/icons.svg#i-logo"/></svg></span>
+        <span>SYLY</span>
+      </a>
+      <nav class="topnav" aria-label="Main" data-t-label="navLabel">
+        <a href="/" data-t="navHome">Home</a>
+        <a href="/docs.html" data-t="navDocs">Docs</a>
+        <a href="/demo/install.html" data-t="navInstall">Install</a>
+        <a href="/signin.html" data-t="navSignin" aria-current="page">Developer sign in</a>
+      </nav>
+      <div class="lang-pick">
+        <label for="page-lang" style="margin:0"><svg class="i" aria-hidden="true" focusable="false"><use href="/demo/icons.svg#i-languages"/></svg> <span data-t="pageLang">Page language</span></label>
+        <select id="page-lang">
+          <option value="en" lang="en">English</option>
+          <option value="am" lang="am">አማርኛ</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="hero small" aria-labelledby="h1">
+      <div class="wrap"><div><h1 id="h1" data-t="h1">Developer sign in</h1><p class="lead" data-t="lead"></p></div></div>
+    </section>
+    <section class="section">
+      <div class="wrap" style="max-width:40rem">
+        <p id="status" role="status" aria-live="polite" data-t="checking">Checking whether you are already signed in…</p>
+        <p id="not-configured" class="note" hidden data-t="notConfigured"></p>
+        <p id="already" class="note ok" hidden><span data-t="already"></span> <a href="/dashboard.html" data-t="toDash"></a></p>
+        <div id="signin-box" hidden>
+          <p data-t="why"></p>
+          <h2 data-t="btnH">Sign in with Google</h2>
+          <p class="hint" data-t="btnHelp"></p>
+          <p><a href="#after" data-t="skipBtn">Skip the Google button</a></p>
+          <div id="g-button" style="min-height:2.75rem; margin:0.5rem 0 1rem"></div>
+          <p><button type="button" class="btn btn-line" id="g-prompt" data-t="promptBtn">Open Google's quick sign-in prompt</button></p>
+          <p class="hint" data-t="promptHelp"></p>
+          <p id="after" tabindex="-1" data-t="after"></p>
+        </div>
+        <p id="error" class="error" role="alert"></p>
+        <p><a href="/" data-t="back">Back to Home</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <ul>
+        <li><a href="/docs.html" data-t="footDocs">Documentation</a></li>
+        <li><a href="/demo/install.html" data-t="footInstall">Install page</a></li>
+        <li><a href="/privacy.html" data-t="footPrivacy">Privacy</a></li>
+        <li><a href="https://github.com/yamneg96/SYLY/blob/main/CONFORMANCE.md" data-t="footAccess">Accessibility statement</a></li>
+        <li><a href="https://github.com/yamneg96/SYLY" data-t="footRepo">Source code</a></li>
+        <li><a href="/starter" data-t="footStarter">Starter pages</a></li>
+      </ul>
+      <p data-t="footTeam">Team SYLY: Lemi, Saron, Yabets, Yamlak. Digital Bridge Accessibility Hackathon, ALX, Track 3.</p>
+      <p data-t="footLicence">Licence: to be confirmed (TBD). Test data only; do not enter real personal information.</p>
+      <p data-t="footDraft">Amharic text on this site is a draft and needs a native reader check.</p>
+    </div>
+  </footer>
+
+  <script src="/site.js"></script>
+  <script src="/signin.js"></script>
+  <script>SYLYSite.init("signin");</script>
+</body>
+</html>

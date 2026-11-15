@@ -1,12 +1,30 @@
 {
-  "name": "syly-db-assistant-module",
-  "private": true,
-  "description": "SYLY <db-assistant>: dev scripts only. The module itself has no dependencies and no build step.",
-  "type": "module",
+  "name": "syly-db-assistant",
+  "version": "1.0.0",
+  "description": "SYLY <db-assistant>: an accessible, multilingual course assistant as one web component. No dependencies, no build step.",
+  "keywords": ["accessibility", "a11y", "web-component", "assistant", "amharic", "education", "telegram"],
+  "homepage": "https://github.com/yamneg96/SYLY#readme",
+  "repository": { "type": "git", "url": "git+https://github.com/yamneg96/SYLY.git", "directory": "module" },
+  "bugs": { "url": "https://github.com/yamneg96/SYLY/issues" },
+  "license": "SEE LICENSE IN LICENSE",
+  "main": "db-assistant.js",
+  "jsdelivr": "db-assistant.js",
+  "unpkg": "db-assistant.js",
+  "sideEffects": true,
+  "exports": {
+    ".": "./db-assistant.js",
+    "./db-assistant.js": "./db-assistant.js",
+    "./i18n/*": "./i18n/*",
+    "./audio/*": "./audio/*",
+    "./package.json": "./package.json"
+  },
+  "files": ["db-assistant.js", "i18n/", "audio/", "README.md", "LICENSE"],
+  "publishConfig": { "access": "public" },
   "scripts": {
     "i18n": "node scripts/sync-i18n.mjs",
-    "test": "node --test tests/i18n.test.mjs tests/search.test.mjs tests/page-reading.test.mjs",
+    "test": "node --test tests/i18n.test.mjs tests/search.test.mjs tests/page-reading.test.mjs tests/site-config.test.mjs tests/portal-lib.test.mjs tests/site-content.test.mjs",
     "axe": "node scripts/axe.mjs",
+    "site": "node scripts/site-check.mjs",
     "icons": "node scripts/sync-icons.mjs"
   },
   "devDependencies": {

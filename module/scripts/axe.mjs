@@ -14,6 +14,7 @@ const PAGES = (process.env.PAGES || [
   '/demo/helper.html',
   '/demo/install.html',
   '/demo/page-reading.html',
+  '/', '/docs.html', '/privacy.html', '/signin.html', '/dashboard.html',
 ].join(',')).split(',');
 
 // Whole page by default (our pages must be clean). Starter pages carry known starter defects
