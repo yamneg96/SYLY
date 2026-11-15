@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 from types import SimpleNamespace
 
 import pytest
@@ -66,15 +67,15 @@ def fresh(monkeypatch):
 
 
 # ---------------------------------------------------------------- setMyCommands
-@pytest.mark.parametrize("lang", ["en", "am"])
+@pytest.mark.parametrize("lang", ["en", "am", "om", "ti", "so", "ar"])
 def test_set_my_commands_payload_is_valid(lang):
     payload = commands.build(lang, bot.TEXT)
     assert commands.valid(payload)
     names = [n for n, _ in payload]
     assert {"start", "help", "lang", "alerts", "stop", "lesson", "ask", "simple", "person", "status", "jobs",
             "myalerts", "accommodate", "voice", "mydata", "delete"} <= set(names)
-    if lang == "am":
-        assert dict(payload)["person"] == bot.TEXT["am"]["cmd_person"]  # translated description
+    if lang != "en":
+        assert dict(payload)["person"] == bot.TEXT[lang]["cmd_person"] != bot.TEXT["en"]["cmd_person"]  # translated
 
 
 def test_set_commands_called_once_per_language():
@@ -86,7 +87,7 @@ def test_set_commands_called_once_per_language():
 
     run(bot.set_commands(FakeBot()))
     codes = [c for c, _ in calls]
-    assert codes[0] is None and "am" in codes and "en" not in codes  # English = default, no language_code
+    assert codes[0] is None and set(codes[1:]) == {"am", "om", "ti", "so", "ar"}  # English = default, no language_code
     assert all(commands.valid(p) for _, p in calls)
 
 
@@ -208,12 +209,15 @@ def test_ethiopian_dates():
     assert ethiopian.format_am("2027-01-07") == "ታኅሣሥ 29 ቀን 2019 ዓ.ም."
 
 
-def test_am_and_en_dictionaries_are_complete():
-    en, am = bot.TEXT["en"], bot.TEXT["am"]
-    assert set(am) == set(en)
-    assert all(str(v).strip() for v in am.values())
-    for lang in bot.TEXT:  # beta files may be partial in phase 1, but never have unknown keys
-        assert set(bot.TEXT[lang]) <= set(en), lang
+@pytest.mark.parametrize("lang", ["am", "om", "ti", "so", "ar"])
+def test_every_dictionary_is_complete_with_the_same_placeholders(lang):
+    en, d = bot.TEXT["en"], bot.TEXT[lang]
+    assert set(d) == set(en)
+    assert all(str(v).strip() for v in d.values())
+    for k, v in en.items():
+        assert set(re.findall(r"\{\w+\}", v)) == set(re.findall(r"\{\w+\}", d[k])), (lang, k)
+    if lang in bot.BETA:
+        assert "needs native reader check" in d["_draft"]
 
 
 def test_menu_buttons_are_recognised_in_every_language():

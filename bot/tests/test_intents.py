@@ -9,6 +9,8 @@ import intents
 
 DATA = json.loads((Path(intents.__file__).with_name("intents.json")).read_text(encoding="utf-8"))
 MAIN = ("am", "en")
+BETA = ("om", "ti", "so", "ar")
+LANGS = MAIN + BETA
 
 
 def setup_module():
@@ -16,17 +18,21 @@ def setup_module():
 
 
 @pytest.mark.parametrize("intent,lang,phrase", [
-    (i, lang, p) for i, per in DATA.items() if not i.startswith("_") for lang, ps in per.items() if lang in MAIN for p in ps
+    (i, lang, p) for i, per in DATA.items() if not i.startswith("_") for lang, ps in per.items() if lang in LANGS for p in ps
 ])
-def test_every_am_en_phrase_maps_to_its_intent(intent, lang, phrase):
+def test_every_phrase_maps_to_its_intent(intent, lang, phrase):
     assert intents.match(phrase) == intent, f"{lang} {phrase!r}"
 
 
-def test_each_intent_has_3_to_8_phrases_per_main_language():
+def test_beta_phrases_are_marked_draft():
+    assert all(DATA["_draft"][lang] is True for lang in BETA) and not any(DATA["_draft"][lang] for lang in MAIN)
+
+
+def test_each_intent_has_3_to_8_phrases_per_language():
     for intent, per in DATA.items():
         if intent.startswith("_"):
             continue
-        for lang in MAIN:
+        for lang in LANGS:
             assert 3 <= len(per[lang]) <= 8, (intent, lang, len(per[lang]))
 
 
