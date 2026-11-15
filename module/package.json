@@ -1,0 +1,17 @@
+{
+  "name": "syly-db-assistant-module",
+  "private": true,
+  "description": "SYLY <db-assistant>: dev scripts only. The module itself has no dependencies and no build step.",
+  "type": "module",
+  "scripts": {
+    "i18n": "node scripts/sync-i18n.mjs",
+    "test": "node --test tests/i18n.test.mjs tests/search.test.mjs",
+    "axe": "node scripts/axe.mjs",
+    "icons": "node scripts/sync-icons.mjs"
+  },
+  "devDependencies": {
+    "axe-core": "^4.10.2",
+    "lucide-static": "^0.460.0",
+    "puppeteer-core": "^23.11.1"
+  }
+}

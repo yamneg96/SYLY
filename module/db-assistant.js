@@ -1,0 +1,1612 @@
+/*!
+ * SYLY <db-assistant> : accessible multilingual course assistant (Track 3).
+ * One zero-dependency vanilla JS file, no build step (SDS 1.2, FR-L9).
+ *
+ * Host contract (FR-L1, FR-L2):
+ *   <script src="/module/db-assistant.js" defer></script>
+ *   <db-assistant lang="am" api="/api" content="/demo/data/content.json"
+ *                 theme="auto" mode="panel" position="end"></db-assistant>
+ * Events (FR-L3), bubbles + composed:
+ *   db-assistant:question  {text, language}
+ *   db-assistant:escalated {ticketId}
+ *   db-assistant:language  {language}
+ * Methods: open(), close(), getText(key, lang?)
+ *
+ * Sections: config, i18n, util, search, element (panel / inline), api, queue,
+ * voice, links, dates.
+ */
+(function () {
+  'use strict';
+  if (!window.customElements || window.customElements.get('db-assistant')) return;
+
+  /* ---------------------------------------------------------------- config */
+  var SCRIPT_URL = (document.currentScript && document.currentScript.src) || location.href;
+  // Guide section 8: "Use the <dialog> element with showModal()". The panel is
+  // therefore always modal. Set to false for the SDS 1.3 variant (show() at
+  // 900px and wider, showModal() below).
+  var MODAL_ALWAYS = true;
+  var MODAL_BELOW_PX = 900;
+  var FALLBACK_BUTTON = '#002B56'; // guide's skeleton colour, 4.5:1+ with white
+  var THRESHOLD = { en: 1.5, am: 0.35 }; // tuned on api/scripts/eval.py questions
+  var STORE = 'db-assistant:';
+  var POLL_MS = 5000;
+
+  /* ------------------------------------------------------------------ i18n */
+  // Generated from module/i18n/*.json by `npm --prefix module run i18n`.
+  // A test checks this copy and the JSON files are identical.
+  /* I18N:BEGIN */
+  var I18N = {
+    "en": {
+      "dir": "ltr",
+      "speechLang": "en-US",
+      "title": "SYLY Assistant",
+      "launcher": "Ask SYLY",
+      "close": "Close",
+      "language": "Language",
+      "simpleMode": "Simple mode",
+      "onlineAnswers": "Online answers",
+      "questionLabel": "Your question",
+      "inlineLabel": "Ask about this lesson",
+      "questionHint": "Enter sends. Shift and Enter adds a new line.",
+      "send": "Send",
+      "mic": "Speak",
+      "micStop": "Stop recording",
+      "micListening": "Listening. Speak now.",
+      "micDone": "Check the text, then press Send.",
+      "micUnsupported": "Voice input does not work in this browser. Please type your question.",
+      "micError": "I could not hear you. Please try again or type.",
+      "talk": "Talk to a person",
+      "you": "You",
+      "assistant": "SYLY",
+      "tutor": "Tutor",
+      "sources": "Sources",
+      "listen": "Listen",
+      "stopListening": "Stop",
+      "noVoice": "No voice is available for this answer. It is shown as text.",
+      "fromSection": "From the section “{title}”:",
+      "answeredLocal": "Answer taken from the course text.",
+      "answeredAi": "Written by AI from the course text. Check the source.",
+      "notFound": "I could not find this in the course.",
+      "notFoundOffer": "A person can help you. Press “Talk to a person”.",
+      "noAdvice": "I cannot give medical, legal or immigration advice. A person can help you.",
+      "emptyIntro": "Ask a question about this lesson. I answer only from the course and show where each answer came from.",
+      "examplesTitle": "Try one of these:",
+      "example1": "Will AI replace virtual assistants?",
+      "example2": "What skills will clients value?",
+      "example3": "What should an aspiring VA do?",
+      "statusOnline": "Online",
+      "statusOffline": "Offline: answers from saved course notes",
+      "statusSending": "Sending…",
+      "statusReady": "Ready",
+      "queued": "Saved on this phone. It will send when you are online.",
+      "queuedSent": "Your saved message was sent.",
+      "emptyQuestion": "Please type a question first.",
+      "consentTitle": "Before we start",
+      "consentText": "To answer, SYLY can send your question to an online AI service. Nothing about who you are is sent.",
+      "consentAllow": "Allow online answers",
+      "consentDeny": "Use answers from this page only",
+      "consentWhat": "What is sent?",
+      "consentDetails": "Only your question and the course sections that match it. No name, phone number or account is sent. You can change this choice with the “Online answers” button at the top.",
+      "escalating": "Connecting…",
+      "escalatedOnline": "A tutor is joining. Stay on this page; their reply will appear here.",
+      "escalatedLater": "A tutor will answer here. It may take until morning.",
+      "escalateQueued": "Your request for a person is saved on this phone. It will send when you are online.",
+      "ticketNumber": "Request number: {id}",
+      "tutorJoined": "A person joined: {name}",
+      "skipLink": "Skip to assistant",
+      "langName_am": "አማርኛ",
+      "langName_en": "English",
+      "langName_ar": "العربية",
+      "noVoiceAm": "No Amharic voice available. The answer is shown as text.",
+      "telegramOption": "Also get the tutor's reply on Telegram",
+      "shareScreen": "Share my screen",
+      "shareStop": "Stop sharing (Esc)",
+      "sharing": "You are sharing your screen with the tutor.",
+      "shareStopped": "Screen sharing stopped.",
+      "shareAsked": "The tutor asks to see your screen. You choose: share it, or send a screenshot.",
+      "sendScreenshot": "Send a screenshot",
+      "screenshotSent": "Screenshot sent to the tutor.",
+      "screenshotTooBig": "This picture is too big. Please choose a smaller screenshot.",
+      "yourData": "Your data",
+      "exportData": "Download my data",
+      "deleteData": "Delete my conversation",
+      "dataDeleted": "Your conversation was deleted from this phone and from the server.",
+      "dataNote": "We keep your questions without your name, to improve the course. You can download or delete them here.",
+      "jobTrust": "Check on the employer's own site. Never pay to apply.",
+      "jobDeadline": "Apply by {date}.",
+      "jobDeadlinePassed": "The deadline for this job has passed ({date}).",
+      "jobAsk": "Tell me about this job: {title}",
+      "alertsHow": "To get alerts for jobs like this, send “/alerts {keyword}” to our Telegram bot, or text “ALERT {keyword}”. Send STOP at any time to stop.",
+      "openTelegram": "Open the Telegram bot",
+      "accTitle": "Interview support request",
+      "accFor": "For the job: {title}",
+      "accStep": "Step {n} of {total}",
+      "accQ1": "What support do you need?",
+      "accHint1": "Choose any. You do not need to explain why or show any document.",
+      "need_interpreter": "Sign-language interpreter",
+      "need_extra_time": "Extra time",
+      "need_written_questions": "Written questions",
+      "need_accessible_venue": "Accessible venue",
+      "need_other": "Other",
+      "accQ2": "Anything else the career helper should know? (optional)",
+      "accQ3": "How should we send you a copy?",
+      "copy_none": "No copy",
+      "copy_telegram": "Telegram",
+      "copy_sms": "Text message (SMS)",
+      "copy_email": "Email",
+      "accContact": "Phone number, Telegram username or email for the copy",
+      "accReview": "Check your request",
+      "accNeeds": "Support",
+      "accNote": "Note",
+      "accCopy": "Copy by",
+      "accNext": "Next",
+      "accBack": "Back",
+      "accCancel": "Cancel",
+      "accSend": "Send to a career helper",
+      "accSent": "Sent. A career helper will contact you. Your request goes to a person, not to the employer.",
+      "accFailed": "The request could not be sent now. Please try again, or press “Talk to a person”.",
+      "accChooseOne": "Please choose at least one kind of support.",
+      "accNeedContact": "Please enter where to send the copy, or choose “No copy”.",
+      "accNone": "None"
+    },
+    "am": {
+      "dir": "ltr",
+      "speechLang": "am-ET",
+      "title": "SYLY ረዳት",
+      "launcher": "SYLYን ይጠይቁ",
+      "close": "ዝጋ",
+      "language": "ቋንቋ",
+      "simpleMode": "ቀላል ቋንቋ",
+      "onlineAnswers": "የመስመር ላይ መልሶች",
+      "questionLabel": "ጥያቄዎ",
+      "inlineLabel": "ስለዚህ ትምህርት ይጠይቁ",
+      "questionHint": "Enter ይልካል። Shift እና Enter አዲስ መስመር ያክላሉ።",
+      "send": "ላክ",
+      "mic": "በድምፅ ይናገሩ",
+      "micStop": "ቀረጻውን አቁም",
+      "micListening": "እያዳመጥኩ ነው። አሁን ይናገሩ።",
+      "micDone": "ጽሑፉን ያረጋግጡ፣ ከዚያ ላክን ይጫኑ።",
+      "micUnsupported": "በዚህ ብራውዘር የድምፅ ግብዓት አይሰራም። እባክዎ ጥያቄዎን ይጻፉ።",
+      "micError": "ድምፅዎን መስማት አልቻልኩም። እባክዎ እንደገና ይሞክሩ ወይም ይጻፉ።",
+      "talk": "ከሰው ጋር ይነጋገሩ",
+      "you": "እርስዎ",
+      "assistant": "SYLY",
+      "tutor": "አስጠኚ",
+      "sources": "ምንጮች",
+      "listen": "ያዳምጡ",
+      "stopListening": "አቁም",
+      "noVoice": "ለዚህ መልስ ድምፅ የለም። መልሱ በጽሑፍ ቀርቧል።",
+      "fromSection": "ከ“{title}” ክፍል፦",
+      "answeredLocal": "መልሱ ከትምህርቱ ጽሑፍ የተወሰደ ነው።",
+      "answeredAi": "በAI ከትምህርቱ ጽሑፍ የተጻፈ። ምንጩን ያረጋግጡ።",
+      "notFound": "ይህንን በትምህርቱ ውስጥ ማግኘት አልቻልኩም።",
+      "notFoundOffer": "ሰው ሊረዳዎት ይችላል። “ከሰው ጋር ይነጋገሩ” የሚለውን ይጫኑ።",
+      "noAdvice": "የሕክምና፣ የሕግ ወይም የኢሚግሬሽን ምክር መስጠት አልችልም። ሰው ሊረዳዎት ይችላል።",
+      "emptyIntro": "ስለዚህ ትምህርት ጥያቄ ይጠይቁ። የምመልሰው ከትምህርቱ ብቻ ነው፤ እያንዳንዱ መልስ ከየት እንደመጣም አሳያለሁ።",
+      "examplesTitle": "ከእነዚህ አንዱን ይሞክሩ፦",
+      "example1": "AI ምናባዊ ረዳቶችን ይተካል?",
+      "example2": "ደንበኞች ምን ዓይነት ክህሎቶችን ያደንቃሉ?",
+      "example3": "ምናባዊ ረዳት መሆን የሚፈልግ ሰው ምን ማድረግ አለበት?",
+      "statusOnline": "መስመር ላይ",
+      "statusOffline": "ከመስመር ውጭ፦ መልሶች ከተቀመጡ የትምህርት ማስታወሻዎች",
+      "statusSending": "በመላክ ላይ…",
+      "statusReady": "ዝግጁ",
+      "queued": "በዚህ ስልክ ላይ ተቀምጧል። መስመር ላይ ሲሆኑ ይላካል።",
+      "queuedSent": "የተቀመጠው መልእክትዎ ተልኳል።",
+      "emptyQuestion": "እባክዎ መጀመሪያ ጥያቄ ይጻፉ።",
+      "consentTitle": "ከመጀመራችን በፊት",
+      "consentText": "ለመመለስ SYLY ጥያቄዎን ወደ የመስመር ላይ AI አገልግሎት ሊልክ ይችላል። ስለ እርስዎ ማንነት ምንም አይላክም።",
+      "consentAllow": "የመስመር ላይ መልሶችን ፍቀድ",
+      "consentDeny": "ከዚህ ገጽ ብቻ መልሶችን ተጠቀም",
+      "consentWhat": "ምን ይላካል?",
+      "consentDetails": "ጥያቄዎ እና ከእሱ ጋር የሚዛመዱት የትምህርት ክፍሎች ብቻ። ስም፣ ስልክ ቁጥር ወይም መለያ አይላክም። ይህን ምርጫ ከላይ ባለው “የመስመር ላይ መልሶች” ቁልፍ መቀየር ይችላሉ።",
+      "escalating": "በማገናኘት ላይ…",
+      "escalatedOnline": "አስጠኚ እየመጣ ነው። በዚህ ገጽ ላይ ይቆዩ፤ መልሳቸው እዚህ ይታያል።",
+      "escalatedLater": "አስጠኚ እዚህ ይመልሳል። እስከ ጠዋት ሊወስድ ይችላል።",
+      "escalateQueued": "ሰው ለማግኘት ያቀረቡት ጥያቄ በዚህ ስልክ ላይ ተቀምጧል። መስመር ላይ ሲሆኑ ይላካል።",
+      "ticketNumber": "የጥያቄ ቁጥር፦ {id}",
+      "tutorJoined": "ሰው ተቀላቅሏል፦ {name}",
+      "skipLink": "ወደ ረዳቱ ይዝለሉ",
+      "langName_am": "አማርኛ",
+      "langName_en": "English",
+      "langName_ar": "العربية",
+      "noVoiceAm": "የአማርኛ ድምፅ የለም። መልሱ በጽሑፍ ቀርቧል።",
+      "telegramOption": "የአስጠኚውን መልስ በቴሌግራምም ያግኙ",
+      "shareScreen": "ስክሪኔን አጋራ",
+      "shareStop": "ማጋራት አቁም (Esc)",
+      "sharing": "ስክሪንዎን ለአስጠኚው እያጋሩ ነው።",
+      "shareStopped": "ስክሪን ማጋራት ቆሟል።",
+      "shareAsked": "አስጠኚው ስክሪንዎን ማየት ይፈልጋል። እርስዎ ይምረጡ፦ ስክሪንዎን ያጋሩ ወይም የስክሪን ምስል ይላኩ።",
+      "sendScreenshot": "የስክሪን ምስል ላክ",
+      "screenshotSent": "የስክሪን ምስሉ ለአስጠኚው ተልኳል።",
+      "screenshotTooBig": "ይህ ምስል በጣም ትልቅ ነው። እባክዎ አነስ ያለ የስክሪን ምስል ይምረጡ።",
+      "yourData": "የእርስዎ መረጃ",
+      "exportData": "መረጃዬን አውርድ",
+      "deleteData": "ውይይቴን ሰርዝ",
+      "dataDeleted": "ውይይትዎ ከዚህ ስልክ እና ከሰርቨሩ ተሰርዟል።",
+      "dataNote": "ትምህርቱን ለማሻሻል ጥያቄዎችዎን ያለ ስምዎ እናስቀምጣለን። እዚህ ማውረድ ወይም መሰረዝ ይችላሉ።",
+      "jobTrust": "በአሠሪው የራሱ ድረ-ገጽ ላይ ያረጋግጡ። ለማመልከት ፈጽሞ ገንዘብ አይክፈሉ።",
+      "jobDeadline": "እስከ {date} ድረስ ያመልክቱ።",
+      "jobDeadlinePassed": "የዚህ ሥራ የማመልከቻ ጊዜ አልፏል ({date})።",
+      "jobAsk": "ስለዚህ ሥራ ንገረኝ፦ {title}",
+      "alertsHow": "እንደዚህ ያሉ ሥራዎች ማሳወቂያ ለማግኘት “/alerts {keyword}” ወደ ቴሌግራም ቦታችን ይላኩ፣ ወይም “ALERT {keyword}” በጽሑፍ መልእክት ይላኩ። ለማቆም በማንኛውም ጊዜ STOP ይላኩ።",
+      "openTelegram": "የቴሌግራም ቦቱን ክፈት",
+      "accTitle": "የቃለ መጠይቅ ድጋፍ ጥያቄ",
+      "accFor": "ለሥራው፦ {title}",
+      "accStep": "ደረጃ {n} ከ{total}",
+      "accQ1": "ምን ዓይነት ድጋፍ ያስፈልግዎታል?",
+      "accHint1": "የፈለጉትን ይምረጡ። ምክንያት ማስረዳት ወይም ሰነድ ማሳየት አያስፈልግዎትም።",
+      "need_interpreter": "የምልክት ቋንቋ አስተርጓሚ",
+      "need_extra_time": "ተጨማሪ ጊዜ",
+      "need_written_questions": "በጽሑፍ የሚቀርቡ ጥያቄዎች",
+      "need_accessible_venue": "ተደራሽ ቦታ",
+      "need_other": "ሌላ",
+      "accQ2": "የሙያ ረዳቱ ማወቅ ያለበት ሌላ ነገር አለ? (አማራጭ)",
+      "accQ3": "ቅጂውን እንዴት እንላክልዎ?",
+      "copy_none": "ቅጂ አያስፈልግም",
+      "copy_telegram": "ቴሌግራም",
+      "copy_sms": "የጽሑፍ መልእክት (SMS)",
+      "copy_email": "ኢሜል",
+      "accContact": "ለቅጂው ስልክ ቁጥር፣ የቴሌግራም ስም ወይም ኢሜል",
+      "accReview": "ጥያቄዎን ያረጋግጡ",
+      "accNeeds": "ድጋፍ",
+      "accNote": "ማስታወሻ",
+      "accCopy": "ቅጂ በ",
+      "accNext": "ቀጣይ",
+      "accBack": "ተመለስ",
+      "accCancel": "ሰርዝ",
+      "accSend": "ለሙያ ረዳት ላክ",
+      "accSent": "ተልኳል። የሙያ ረዳት ያገኝዎታል። ጥያቄዎ የሚሄደው ለሰው ነው፤ ለአሠሪው አይደለም።",
+      "accFailed": "ጥያቄው አሁን ሊላክ አልቻለም። እባክዎ እንደገና ይሞክሩ፣ ወይም “ከሰው ጋር ይነጋገሩ” የሚለውን ይጫኑ።",
+      "accChooseOne": "እባክዎ ቢያንስ አንድ ዓይነት ድጋፍ ይምረጡ።",
+      "accNeedContact": "እባክዎ ቅጂው የሚላክበትን ያስገቡ፣ ወይም “ቅጂ አያስፈልግም” የሚለውን ይምረጡ።",
+      "accNone": "የለም"
+    },
+    "ar": {
+      "dir": "rtl",
+      "speechLang": "ar-SA",
+      "title": "مساعد SYLY",
+      "launcher": "اسأل SYLY",
+      "close": "إغلاق",
+      "language": "اللغة",
+      "simpleMode": "الوضع المبسّط",
+      "onlineAnswers": "الإجابات عبر الإنترنت",
+      "questionLabel": "سؤالك",
+      "inlineLabel": "اسأل عن هذا الدرس",
+      "questionHint": "زر Enter يرسل. Shift مع Enter يضيف سطرًا جديدًا.",
+      "send": "إرسال",
+      "mic": "تحدّث",
+      "micStop": "إيقاف التسجيل",
+      "micListening": "أستمع إليك. تحدّث الآن.",
+      "micDone": "راجع النص، ثم اضغط إرسال.",
+      "micUnsupported": "الإدخال الصوتي لا يعمل في هذا المتصفح. يرجى كتابة سؤالك.",
+      "micError": "لم أتمكن من سماعك. حاول مرة أخرى أو اكتب.",
+      "talk": "تحدّث مع شخص",
+      "you": "أنت",
+      "assistant": "SYLY",
+      "tutor": "المعلّم",
+      "sources": "المصادر",
+      "listen": "استمع",
+      "stopListening": "إيقاف",
+      "noVoice": "لا يتوفر صوت لهذه الإجابة. الإجابة معروضة كنص.",
+      "fromSection": "من قسم «{title}»:",
+      "answeredLocal": "الإجابة مأخوذة من نص الدورة.",
+      "answeredAi": "كتبها الذكاء الاصطناعي من نص الدورة. تحقّق من المصدر.",
+      "notFound": "لم أجد هذا في الدورة.",
+      "notFoundOffer": "يمكن لشخص أن يساعدك. اضغط «تحدّث مع شخص».",
+      "noAdvice": "لا أستطيع تقديم نصائح طبية أو قانونية أو متعلقة بالهجرة. يمكن لشخص أن يساعدك.",
+      "emptyIntro": "اطرح سؤالًا عن هذا الدرس. أجيب من الدورة فقط وأبيّن مصدر كل إجابة.",
+      "examplesTitle": "جرّب أحد هذه الأسئلة:",
+      "example1": "هل سيحل الذكاء الاصطناعي محل المساعدين الافتراضيين؟",
+      "example2": "ما المهارات التي سيقدّرها العملاء؟",
+      "example3": "ماذا يجب أن يفعل من يريد أن يصبح مساعدًا افتراضيًا؟",
+      "statusOnline": "متصل",
+      "statusOffline": "غير متصل: الإجابات من ملاحظات الدورة المحفوظة",
+      "statusSending": "جارٍ الإرسال…",
+      "statusReady": "جاهز",
+      "queued": "حُفظت على هذا الهاتف. ستُرسل عندما تكون متصلًا.",
+      "queuedSent": "أُرسلت رسالتك المحفوظة.",
+      "emptyQuestion": "يرجى كتابة سؤال أولًا.",
+      "consentTitle": "قبل أن نبدأ",
+      "consentText": "للإجابة، يمكن لـ SYLY إرسال سؤالك إلى خدمة ذكاء اصطناعي عبر الإنترنت. لا يُرسل أي شيء عن هويتك.",
+      "consentAllow": "السماح بالإجابات عبر الإنترنت",
+      "consentDeny": "استخدام الإجابات من هذه الصفحة فقط",
+      "consentWhat": "ما الذي يُرسل؟",
+      "consentDetails": "سؤالك وأقسام الدورة المطابقة له فقط. لا يُرسل اسم ولا رقم هاتف ولا حساب. يمكنك تغيير هذا الاختيار بزر «الإجابات عبر الإنترنت» في الأعلى.",
+      "escalating": "جارٍ الاتصال…",
+      "escalatedOnline": "معلّم في الطريق. ابقَ في هذه الصفحة؛ سيظهر رده هنا.",
+      "escalatedLater": "سيجيب معلّم هنا. قد يستغرق ذلك حتى الصباح.",
+      "escalateQueued": "حُفظ طلبك للتحدث مع شخص على هذا الهاتف. سيُرسل عندما تكون متصلًا.",
+      "ticketNumber": "رقم الطلب: {id}",
+      "tutorJoined": "انضم شخص: {name}",
+      "skipLink": "انتقل إلى المساعد",
+      "langName_am": "አማርኛ",
+      "langName_en": "English",
+      "langName_ar": "العربية",
+      "noVoiceAm": "لا يتوفر صوت باللغة الأمهرية. الإجابة معروضة كنص.",
+      "telegramOption": "استلم رد المعلّم على تيليجرام أيضًا",
+      "shareScreen": "مشاركة شاشتي",
+      "shareStop": "إيقاف المشاركة (Esc)",
+      "sharing": "أنت تشارك شاشتك مع المعلّم.",
+      "shareStopped": "توقفت مشاركة الشاشة.",
+      "shareAsked": "يطلب المعلّم رؤية شاشتك. أنت تختار: شارك الشاشة أو أرسل لقطة شاشة.",
+      "sendScreenshot": "إرسال لقطة شاشة",
+      "screenshotSent": "أُرسلت لقطة الشاشة إلى المعلّم.",
+      "screenshotTooBig": "هذه الصورة كبيرة جدًا. يرجى اختيار لقطة شاشة أصغر.",
+      "yourData": "بياناتك",
+      "exportData": "تنزيل بياناتي",
+      "deleteData": "حذف محادثتي",
+      "dataDeleted": "حُذفت محادثتك من هذا الهاتف ومن الخادم.",
+      "dataNote": "نحتفظ بأسئلتك دون اسمك لتحسين الدورة. يمكنك تنزيلها أو حذفها هنا.",
+      "jobTrust": "تحقّق من الموقع الرسمي لصاحب العمل. لا تدفع أبدًا مقابل التقديم.",
+      "jobDeadline": "قدّم قبل {date}.",
+      "jobDeadlinePassed": "انتهى موعد التقديم لهذه الوظيفة ({date}).",
+      "jobAsk": "أخبرني عن هذه الوظيفة: {title}",
+      "alertsHow": "لتلقي تنبيهات بوظائف مشابهة، أرسل «/alerts {keyword}» إلى بوت تيليجرام الخاص بنا، أو أرسل رسالة نصية «ALERT {keyword}». أرسل STOP في أي وقت للإيقاف.",
+      "openTelegram": "فتح بوت تيليجرام",
+      "accTitle": "طلب دعم للمقابلة",
+      "accFor": "للوظيفة: {title}",
+      "accStep": "الخطوة {n} من {total}",
+      "accQ1": "ما الدعم الذي تحتاجه؟",
+      "accHint1": "اختر ما تشاء. لا تحتاج إلى شرح السبب أو تقديم أي مستند.",
+      "need_interpreter": "مترجم لغة الإشارة",
+      "need_extra_time": "وقت إضافي",
+      "need_written_questions": "أسئلة مكتوبة",
+      "need_accessible_venue": "مكان يسهل الوصول إليه",
+      "need_other": "غير ذلك",
+      "accQ2": "هل هناك شيء آخر يجب أن يعرفه المساعد المهني؟ (اختياري)",
+      "accQ3": "كيف نرسل لك نسخة؟",
+      "copy_none": "بدون نسخة",
+      "copy_telegram": "تيليجرام",
+      "copy_sms": "رسالة نصية (SMS)",
+      "copy_email": "البريد الإلكتروني",
+      "accContact": "رقم الهاتف أو اسم مستخدم تيليجرام أو البريد الإلكتروني للنسخة",
+      "accReview": "راجع طلبك",
+      "accNeeds": "الدعم",
+      "accNote": "ملاحظة",
+      "accCopy": "النسخة عبر",
+      "accNext": "التالي",
+      "accBack": "رجوع",
+      "accCancel": "إلغاء",
+      "accSend": "إرسال إلى مساعد مهني",
+      "accSent": "تم الإرسال. سيتواصل معك مساعد مهني. يذهب طلبك إلى شخص، وليس إلى صاحب العمل.",
+      "accFailed": "تعذّر إرسال الطلب الآن. حاول مرة أخرى، أو اضغط «تحدّث مع شخص».",
+      "accChooseOne": "يرجى اختيار نوع واحد من الدعم على الأقل.",
+      "accNeedContact": "يرجى إدخال مكان إرسال النسخة، أو اختيار «بدون نسخة».",
+      "accNone": "لا شيء"
+    }
+  };
+  /* I18N:END */
+
+  /* ICONS:BEGIN */
+  // Lucide 0.460.0 (ISC licence, https://lucide.dev), copied by scripts/sync-icons.mjs.
+  var ICONS = {
+    "close": "<path d=\"M18 6 6 18\" /><path d=\"m6 6 12 12\" />",
+    "language": "<path d=\"m5 8 6 6\" /><path d=\"m4 14 6-6 2-3\" /><path d=\"M2 5h12\" /><path d=\"M7 2h1\" /><path d=\"m22 22-5-10-5 10\" /><path d=\"M14 18h6\" />",
+    "simple": "<path d=\"M17 6.1H3\" /><path d=\"M21 12.1H3\" /><path d=\"M15.1 18H3\" />",
+    "online": "<circle cx=\"12\" cy=\"12\" r=\"10\" /><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\" /><path d=\"M2 12h20\" />",
+    "data": "<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\" /><path d=\"m9 12 2 2 4-4\" />",
+    "send": "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /><path d=\"m21.854 2.147-10.94 10.939\" />",
+    "mic": "<path d=\"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z\" /><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\" /><line x1=\"12\" x2=\"12\" y1=\"19\" y2=\"22\" />",
+    "stop": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" />",
+    "talk": "<path d=\"M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z\" /><path d=\"M21 16v2a4 4 0 0 1-4 4h-5\" />",
+    "listen": "<path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /><path d=\"M16 9a5 5 0 0 1 0 6\" /><path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />",
+    "sources": "<path d=\"M12 7v14\" /><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />",
+    "share": "<path d=\"M13 3H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3\" /><path d=\"M8 21h8\" /><path d=\"M12 17v4\" /><path d=\"m17 8 5-5\" /><path d=\"M17 3h5v5\" />",
+    "shareOff": "<path d=\"M13 3H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3\" /><path d=\"M8 21h8\" /><path d=\"M12 17v4\" /><path d=\"m22 3-5 5\" /><path d=\"m17 3 5 5\" />",
+    "screenshot": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\" /><circle cx=\"9\" cy=\"9\" r=\"2\" /><path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" />",
+    "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /><polyline points=\"7 10 12 15 17 10\" /><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />",
+    "trash": "<path d=\"M3 6h18\" /><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />",
+    "next": "<path d=\"M5 12h14\" /><path d=\"m12 5 7 7-7 7\" />",
+    "back": "<path d=\"m12 19-7-7 7-7\" /><path d=\"M19 12H5\" />",
+    "check": "<path d=\"M20 6 9 17l-5-5\" />",
+    "idea": "<path d=\"M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5\" /><path d=\"M9 18h6\" /><path d=\"M10 22h4\" />",
+    "notFound": "<path d=\"m13.5 8.5-5 5\" /><path d=\"m8.5 8.5 5 5\" /><circle cx=\"11\" cy=\"11\" r=\"8\" /><path d=\"m21 21-4.3-4.3\" />",
+    "bot": "<path d=\"M12 8V4H8\" /><rect width=\"16\" height=\"12\" x=\"4\" y=\"8\" rx=\"2\" /><path d=\"M2 14h2\" /><path d=\"M20 14h2\" /><path d=\"M15 13v2\" /><path d=\"M9 13v2\" />",
+    "you": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /><circle cx=\"12\" cy=\"7\" r=\"4\" />",
+    "tutor": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /><path d=\"M22 10v6\" /><path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />",
+    "wifi": "<path d=\"M12 20h.01\" /><path d=\"M2 8.82a15 15 0 0 1 20 0\" /><path d=\"M5 12.859a10 10 0 0 1 14 0\" /><path d=\"M8.5 16.429a5 5 0 0 1 7 0\" />",
+    "wifiOff": "<path d=\"M12 20h.01\" /><path d=\"M8.5 16.429a5 5 0 0 1 7 0\" /><path d=\"M5 12.859a10 10 0 0 1 5.17-2.69\" /><path d=\"M19 12.859a10 10 0 0 0-2.007-1.523\" /><path d=\"M2 8.82a15 15 0 0 1 4.177-2.643\" /><path d=\"M22 8.82a15 15 0 0 0-11.288-3.764\" /><path d=\"m2 2 20 20\" />",
+    "support": "<path d=\"M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16\" /><path d=\"m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9\" /><path d=\"m2 15 6 6\" /><path d=\"M19.5 8.5c.7-.7 1.5-1.6 1.5-2.7A2.73 2.73 0 0 0 16 4a2.78 2.78 0 0 0-5 1.8c0 1.2.8 2 1.5 2.8L16 12Z\" />",
+    "bell": "<path d=\"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9\" /><path d=\"M10.3 21a1.94 1.94 0 0 0 3.4 0\" />",
+    "job": "<path d=\"M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\" /><rect width=\"20\" height=\"14\" x=\"2\" y=\"6\" rx=\"2\" />",
+    "ai": "<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /><path d=\"M20 3v4\" /><path d=\"M22 5h-4\" /><path d=\"M4 17v2\" /><path d=\"M5 18H3\" />",
+    "telegram": "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /><path d=\"m21.854 2.147-10.94 10.939\" />",
+    "consent": "<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\" /><path d=\"m9 12 2 2 4-4\" />"
+  };
+  /* ICONS:END */
+
+  /* ------------------------------------------------------------------ util */
+  function h(tag, attrs, kids) {
+    var el = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === 'text') el.textContent = v;
+      else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : v);
+    });
+    (kids || []).forEach(function (c) { if (c) el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return el;
+  }
+  // Decorative Lucide icon: always next to visible text, hidden from screen readers.
+  function icon(name, extra) {
+    var t = document.createElement('span');
+    t.innerHTML = '<svg class="icon' + (extra ? ' ' + extra : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + (ICONS[name] || '') + '</svg>';
+    return t.firstChild;
+  }
+  // Decorative emoji: aria-hidden so screen readers do not read "light bulb" in the middle of Amharic.
+  function emoji(ch) { return h('span', { class: 'emoji', 'aria-hidden': 'true', text: ch }); }
+  // Button content = icon + text span (the span carries data-t so language changes keep the icon).
+  function iconText(name, attrs, extra) { return [icon(name, extra), h('span', attrs)]; }
+  function fmt(s, vars) {
+    return String(s).replace(/\{(\w+)\}/g, function (m, k) { return vars && k in vars ? vars[k] : m; });
+  }
+  function load(key, fallback) {
+    try { var v = localStorage.getItem(STORE + key); return v === null ? fallback : JSON.parse(v); } catch (e) { return fallback; }
+  }
+  function save(key, value) {
+    try { localStorage.setItem(STORE + key, JSON.stringify(value)); } catch (e) { /* private mode: keep in memory */ }
+  }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  function reducedMotion() { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+  // Colour contrast (WCAG relative luminance), used for the host's --bs-primary (NFR-A5).
+  function parseColor(str) {
+    str = (str || '').trim().toLowerCase();
+    var m = str.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/);
+    if (m) {
+      var x = m[1].length === 3 ? m[1].replace(/./g, '$&$&') : m[1];
+      return [0, 2, 4].map(function (i) { return parseInt(x.substr(i, 2), 16); });
+    }
+    m = str.match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)(?:[\s,/]+([\d.]+%?))?\s*\)$/);
+    if (m && (m[4] === undefined || parseFloat(m[4]) >= (m[4].indexOf('%') > 0 ? 100 : 1))) {
+      return [+m[1], +m[2], +m[3]];
+    }
+    return null;
+  }
+  function luminance(rgb) {
+    var c = rgb.map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function contrast(a, b) {
+    var l1 = luminance(a), l2 = luminance(b);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
+
+  /* ---------------------------------------------------------------- search */
+  // Same algorithm as api/services/retrieval.py (SDS 1.5). Keep them in step.
+  var EN_STOP = new Set(('a an and are as at be been but by can could did do does for from had has have how i if in ' +
+    'into is it its me my of on or our so that the their them then there these they this to too us was we were what ' +
+    'when where which who why will with would you your about more most than also just not no yes any some much many ' +
+    'should shall may might must going get gets').split(' '));
+  var AM_STOP = new Set(('ነው ናቸው ነበር ምን ምንድን ምንድነው ምንድናቸው እንዴት ለምን የት መቼ ማን ይህ ያ እነዚህ እና ወይም ግን ላይ ውስጥ ' +
+    'ጋር ስለ አለ አለበት አሉ ይሆናል ነገር እኔ እርስዎ እኛ').split(' '));
+  // Topics the assistant must not advise on (FR-T6). Data, not UI sentences.
+  var NO_ADVICE = /\b(visa|immigration|asylum|refugee status|lawyer|lawsuit|legal advice|court|medicine|medical|doctor|diagnos\w*|prescription|symptom\w*)\b|ቪዛ|ኢሚግሬሽን|ስደተኛ ፈቃድ|ጠበቃ|ፍርድ ቤት|ሐኪም|ሀኪም|መድኃኒት|መድሃኒት|ሕክምና|ህክምና|تأشيرة|هجرة|لجوء|محام|محكمة|طبيب|دواء|علاج/i;
+
+  function ethiopicShare(s) {
+    var eth = (s.match(/[ሀ-፿]/g) || []).length;
+    var lat = (s.match(/[A-Za-z]/g) || []).length;
+    return eth + lat ? eth / (eth + lat) : 0;
+  }
+  function detectLang(s, fallback) {
+    if (/[؀-ۿ]/.test(s)) return 'ar';
+    if (ethiopicShare(s) >= 0.5) return 'am';
+    return /[A-Za-z]/.test(s) ? 'en' : fallback;
+  }
+  function stem(w) { return w.length <= 4 ? w : w.replace(/(ies|es|s|ed|ing|ly|e)$/, ''); }
+  function wordsOf(s) { return (String(s || '').toLowerCase().normalize('NFC').match(/[\p{L}\p{N}]+/gu)) || []; }
+  function tokensEn(s) {
+    return wordsOf(s).filter(function (w) { return w.length > 1 && !EN_STOP.has(w); }).map(stem);
+  }
+  function wordsAm(s) {
+    return wordsOf(s).filter(function (w) { return !AM_STOP.has(w); });
+  }
+  function grams(w) {
+    if (w.length < 3) return [w];
+    var out = [];
+    for (var i = 0; i + 3 <= w.length; i++) out.push(w.substr(i, 3));
+    return out;
+  }
+  function repeat(list, n) { var out = []; for (var i = 0; i < n; i++) out = out.concat(list); return out; }
+
+  function Index(sections) {
+    this.sections = sections;
+    this.en = sections.map(function (s) {
+      return [].concat(repeat(tokensEn(s.title_en), 2), tokensEn(s.text_en), repeat(tokensEn((s.keywords_en || []).join(' ')), 3));
+    });
+    this.avg = this.en.reduce(function (a, d) { return a + d.length; }, 0) / Math.max(1, this.en.length);
+    this.df = {};
+    var self = this;
+    this.en.forEach(function (doc) { new Set(doc).forEach(function (t) { self.df[t] = (self.df[t] || 0) + 1; }); });
+    this.am = sections.map(function (s) {
+      var g = new Set();
+      [].concat(wordsAm(s.title_am), wordsAm(s.text_am), wordsAm((s.keywords_am || []).join(' ')))
+        .forEach(function (w) { grams(w).forEach(function (x) { g.add(x); }); });
+      return g;
+    });
+    this.gdf = {};
+    this.am.forEach(function (g) { g.forEach(function (x) { self.gdf[x] = (self.gdf[x] || 0) + 1; }); });
+  }
+  Index.prototype.scoreEn = function (q) {
+    var N = this.sections.length, k1 = 1.2, b = 0.75, self = this;
+    var terms = Array.from(new Set(tokensEn(q)));
+    return this.en.map(function (doc) {
+      var tf = {};
+      doc.forEach(function (t) { tf[t] = (tf[t] || 0) + 1; });
+      return terms.reduce(function (sum, t) {
+        if (!tf[t]) return sum;
+        var df = self.df[t] || 0;
+        var idf = Math.log(1 + (N - df + 0.5) / (df + 0.5));
+        return sum + idf * (tf[t] * (k1 + 1)) / (tf[t] + k1 * (1 - b + b * doc.length / self.avg));
+      }, 0);
+    });
+  };
+  Index.prototype.scoreAm = function (q) {
+    var N = this.sections.length, self = this;
+    var qg = new Set();
+    wordsAm(q).filter(function (w) { return /[ሀ-፿]/.test(w); })
+      .forEach(function (w) { grams(w).forEach(function (x) { qg.add(x); }); });
+    var latin = new Set(wordsOf(q).filter(function (w) { return /^[a-z0-9]+$/.test(w); }));
+    var ql = q.toLowerCase();
+    var weights = {}, total = 0;
+    qg.forEach(function (x) { var df = self.gdf[x] || 0; weights[x] = Math.log(1 + N / (df || 0.5)); total += weights[x]; });
+    return this.am.map(function (g, i) {
+      var hit = 0;
+      qg.forEach(function (x) { if (g.has(x)) hit += weights[x]; });
+      var score = total ? hit / total : 0;
+      var bonus = 0;
+      (self.sections[i].keywords_am || []).forEach(function (k) {
+        k = String(k).toLowerCase();
+        if (k.length >= 2 && (/^[a-z0-9]+$/.test(k) ? latin.has(k) : ql.indexOf(k) >= 0)) bonus += 0.15;
+      });
+      return score + Math.min(bonus, 0.45);
+    });
+  };
+  // Returns { lang: 'am'|'en', ranked: [{section, score}], best, found }
+  Index.prototype.search = function (q) {
+    var lang = ethiopicShare(q) >= 0.5 ? 'am' : 'en';
+    var scores = lang === 'am' ? this.scoreAm(q) : this.scoreEn(q);
+    var ranked = this.sections.map(function (s, i) { return { section: s, score: scores[i] }; })
+      .sort(function (a, b) { return b.score - a.score; });
+    var best = ranked[0];
+    return { lang: lang, ranked: ranked, best: best, found: !!best && best.score >= THRESHOLD[lang] };
+  };
+  function splitSentences(text) {
+    return String(text || '').replace(/\s+/g, ' ').trim().split(/(?<=[.!?።])\s+/).filter(Boolean);
+  }
+  // The n sentences of a section that best match the question, kept in page order.
+  // No match at all: the first n sentences (SDS 1.5 step 3).
+  Index.prototype.excerpt = function (q, section, lang, n) {
+    var parts = splitSentences(section['text_' + lang] || section.text_en);
+    return this.excerptIndices(q, section, lang, n).map(function (i) { return parts[i]; }).join(' ');
+  };
+  // Indices of the n best-matching sentences in page order (pre-generated audio is per sentence).
+  Index.prototype.excerptIndices = function (q, section, lang, n) {
+    var parts = splitSentences(section['text_' + lang] || section.text_en);
+    var scores;
+    if (lang === 'am') {
+      var qg = new Set();
+      wordsAm(q).forEach(function (w) { grams(w).forEach(function (x) { qg.add(x); }); });
+      scores = parts.map(function (p) {
+        var g = new Set();
+        wordsAm(p).forEach(function (w) { grams(w).forEach(function (x) { g.add(x); }); });
+        var hit = 0;
+        qg.forEach(function (x) { if (g.has(x)) hit += 1; });
+        return hit;
+      });
+    } else {
+      var terms = new Set(tokensEn(q)), N = this.sections.length, df = this.df;
+      scores = parts.map(function (p) {
+        return Array.from(new Set(tokensEn(p))).reduce(function (sum, t) {
+          return terms.has(t) ? sum + Math.log(1 + (N + 0.5) / ((df[t] || 0) + 0.5)) : sum;
+        }, 0);
+      });
+    }
+    // Short heading-like lines ("AI fluency.") count less than full sentences.
+    scores = scores.map(function (sc, i) { return wordsOf(parts[i]).length < 5 ? sc * 0.3 : sc; });
+    var order = parts.map(function (p, i) { return i; }).filter(function (i) { return scores[i] > 0; })
+      .sort(function (a, b) { return scores[b] - scores[a] || a - b; }).slice(0, n).sort(function (a, b) { return a - b; });
+    if (!order.length) order = parts.slice(0, n).map(function (p, i) { return i; });
+    return order;
+  };
+
+  /* --------------------------------------------------------------- styles */
+  var CSS = [
+    ':host{all:initial;display:block;font-family:var(--bs-body-font-family,system-ui),"Noto Sans Ethiopic","Noto Naskh Arabic",sans-serif;font-size:1rem;line-height:1.5;}',
+    ':host([mode="panel"]),:host(:not([mode])){display:contents;}',
+    '*{box-sizing:border-box;}',
+    '[hidden]{display:none !important;}',
+    '.root{--c-bg:#FFFFFF;--c-bg2:#F2F2F2;--c-text:#111111;--c-muted:#4A4A4A;--c-border:#767676;--c-btn-text:#FFFFFF;--c-focus:#F5A300;color:var(--c-text);font:inherit;}',
+    '.root.dark{--c-bg:#1B1B1B;--c-bg2:#2A2A2A;--c-text:#F2F2F2;--c-muted:#CFCFCF;--c-border:#8C8C8C;--c-btn:#9CC9FF;--c-btn-text:#111111;}',
+    '[lang|="am"]{line-height:1.7;letter-spacing:normal;text-transform:none;}',
+    'button,select,textarea{font:inherit;color:inherit;}',
+    ':focus-visible{outline:3px solid var(--c-focus);outline-offset:2px;box-shadow:0 0 0 2px var(--c-text);}',
+    '.btn{min-height:2.75rem;min-width:2.75rem;padding:0.5rem 1rem;border-radius:0.5rem;border:2px solid var(--c-border);background:var(--c-bg);color:var(--c-text);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;font-size:1rem;text-align:center;}',
+    '.btn.primary{background:var(--c-btn);border-color:var(--c-btn);color:var(--c-btn-text);font-weight:600;}',
+    '.btn[aria-pressed="true"]{background:var(--c-text);color:var(--c-bg);border-color:var(--c-text);}',
+    '.btn[aria-pressed="true"]::before{content:"✓";content:"✓" / "";}',
+    '.btn svg,.icon{inline-size:1.25rem;block-size:1.25rem;flex:none;vertical-align:-0.2em;}',
+    '[dir="rtl"] .icon.flip{transform:scaleX(-1);}',
+    '.emoji{margin-inline-end:0.375rem;font-style:normal;}',
+    '.who .icon{inline-size:1rem;block-size:1rem;}',
+    '.sources h3,.note,.intro p,.consent h3,.form h3,.share p,details.data summary{display:flex;align-items:center;gap:0.375rem;flex-wrap:wrap;}',
+    '.head h2{display:flex;align-items:center;gap:0.5rem;}',
+    '.head h2 .icon{inline-size:1.5rem;block-size:1.5rem;}',
+    '.launcher{position:fixed;inset-inline-end:0;inset-block-start:50%;transform:translateY(-50%);z-index:2147483000;border-radius:999px;border-start-end-radius:0;border-end-end-radius:0;border:2px solid #FFFFFF;border-inline-end:0;background:var(--c-btn);color:var(--c-btn-text);font-weight:600;padding:0.5rem 1rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,0.35);}',
+    '.root.pos-start .launcher{inset-inline-end:auto;inset-inline-start:0;border-radius:999px;border-start-start-radius:0;border-end-start-radius:0;border-inline-end:2px solid #FFFFFF;border-inline-start:0;}',
+    '.root.pos-start dialog.panel{inset-inline-end:auto;inset-inline-start:0;border-inline-start:0;border-inline-end:1px solid var(--c-border);}',
+    'dialog.panel{position:fixed;inset-block:0;inset-inline-end:0;inset-inline-start:auto;margin:0;padding:0;inline-size:min(26rem,100vw);max-inline-size:100vw;block-size:100vh;block-size:100dvh;max-block-size:none;border:0;border-inline-start:1px solid var(--c-border);background:var(--c-bg);color:var(--c-text);flex-direction:column;overflow:hidden;}',
+    'dialog.panel[open]{display:flex;}',
+    'dialog.panel::backdrop{background:rgba(0,0,0,0.2);}',
+    '@media (max-width:899.98px){dialog.panel{inline-size:100vw;border:0;}}',
+    '.head{padding:0.75rem 1rem;border-block-end:1px solid var(--c-border);display:flex;flex-direction:column;gap:0.5rem;}',
+    '.head-row{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;justify-content:space-between;}',
+    '.head h2{margin:0;font-size:1.25rem;line-height:1.3;}',
+    '.tools{display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;}',
+    '.field{display:inline-flex;align-items:center;gap:0.5rem;flex-wrap:wrap;}',
+    'select{min-height:2.75rem;padding:0.25rem 0.5rem;border:2px solid var(--c-border);border-radius:0.5rem;background:var(--c-bg);}',
+    '.body{flex:1 1 auto;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.75rem;}',
+    '.intro p{margin:0 0 0.5rem;}',
+    '.examples{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem;}',
+    '.examples .btn{inline-size:100%;justify-content:flex-start;text-align:start;}',
+    '.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.75rem;}',
+    '.msg{padding:0.75rem 1rem;border-radius:1rem;max-inline-size:100%;overflow-wrap:anywhere;}',
+    '.msg.you{background:var(--c-btn);color:var(--c-btn-text);margin-inline-start:2rem;}',
+    '.msg.bot,.msg.tutor{background:var(--c-bg2);margin-inline-end:1rem;}',
+    '.msg.tutor{border-inline-start:0.375rem solid var(--c-text);}',
+    '.who{display:flex;flex-wrap:wrap;gap:0.5rem;font-size:0.875rem;margin-block-end:0.25rem;}',
+    '.who time{opacity:1;}',
+    '.msg.bot .who time,.msg.tutor .who time,.note{color:var(--c-muted);}',
+    '.msg p{margin:0 0 0.5rem;}',
+    '.msg p:last-child{margin-block-end:0;}',
+    '.msg a{color:inherit;text-decoration:underline;text-underline-offset:0.15em;}',
+    '.sources{margin:0.5rem 0;}',
+    '.sources h3{font-size:0.875rem;margin:0 0 0.25rem;}',
+    '.sources ul{margin:0;padding-inline-start:1.25rem;}',
+    '.sources li{margin-block:0.25rem;}',
+    '.note{font-size:0.875rem;margin:0.25rem 0 0.5rem;}',
+    '.actions{display:flex;flex-wrap:wrap;gap:0.5rem;margin-block-start:0.5rem;}',
+    '.status{margin:0;padding:0.5rem 1rem;font-size:0.9375rem;border-block-start:1px solid var(--c-border);}',
+    '.status:empty{display:none;}',
+    '.consent{border:2px solid var(--c-border);border-radius:0.75rem;padding:1rem;}',
+    '.consent h3{margin:0 0 0.5rem;font-size:1.125rem;}',
+    '.consent p{margin:0 0 0.75rem;}',
+    '.consent .actions{flex-direction:column;}',
+    '.consent .actions .btn{inline-size:100%;}',
+    '.linkbtn{background:none;border:0;padding:0.5rem 0;min-height:2.75rem;text-decoration:underline;cursor:pointer;color:inherit;font:inherit;}',
+    '.composer{padding:0.75rem 1rem 1rem;border-block-start:1px solid var(--c-border);display:flex;flex-direction:column;gap:0.5rem;background:var(--c-bg);}',
+    '.composer label{font-weight:600;}',
+    'textarea{inline-size:100%;min-block-size:3.25rem;padding:0.5rem 0.75rem;border:2px solid var(--c-border);border-radius:0.5rem;background:var(--c-bg);resize:vertical;font-size:1rem;}',
+    '.hint{margin:0;font-size:0.875rem;color:var(--c-muted);}',
+    '.row{display:flex;flex-wrap:wrap;gap:0.5rem;}',
+    '.row .grow{flex:1 1 8rem;}',
+    '.inline{border:2px solid var(--c-border);border-radius:0.75rem;background:var(--c-bg);overflow:hidden;}',
+    '.inline .composer{border-block-start:0;}',
+    '.inline .body{max-block-size:none;overflow:visible;}',
+    '.inline .status{border-block-start:1px solid var(--c-border);}',
+    '.share{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;padding:0.75rem 1rem;background:var(--c-text);color:var(--c-bg);}',
+    '.share p{margin:0;font-weight:600;flex:1 1 10rem;}',
+    '.share .btn{background:var(--c-bg);color:var(--c-text);border-color:var(--c-bg);}',
+    'details.data{inline-size:100%;}',
+    'details.data summary{min-height:2.75rem;display:flex;align-items:center;cursor:pointer;text-decoration:underline;}',
+    'details.data p{margin:0.25rem 0 0.5rem;font-size:0.875rem;color:var(--c-muted);}',
+    '.form{border:2px solid var(--c-border);border-radius:0.75rem;padding:1rem;}',
+    '.form h3{margin:0 0 0.25rem;font-size:1.125rem;}',
+    '.form h4{margin:0.75rem 0 0.5rem;font-size:1rem;}',
+    '.form fieldset{border:0;margin:0;padding:0;}',
+    '.form legend{font-weight:600;padding:0;margin-block-end:0.5rem;}',
+    '.check{display:flex;align-items:center;gap:0.75rem;min-height:2.75rem;padding:0.25rem 0;}',
+    '.check input{inline-size:1.5rem;block-size:1.5rem;flex:none;margin:0;}',
+    '.form input[type="text"],.form textarea{inline-size:100%;min-height:2.75rem;padding:0.5rem 0.75rem;border:2px solid var(--c-border);border-radius:0.5rem;background:var(--c-bg);font:inherit;}',
+    '.error{color:#B00020;font-weight:600;margin:0.5rem 0;}',
+    '.root.dark .error{color:#FFB4AB;}',
+    '.form dl{margin:0;}',
+    '.form dt{font-weight:600;margin-block-start:0.5rem;}',
+    '.form dd{margin:0;}',
+    '.filebtn{position:relative;}',
+    '.filebtn input{position:absolute;inset:0;opacity:0;inline-size:100%;block-size:100%;cursor:pointer;}',
+    '.filebtn:focus-within{outline:3px solid var(--c-focus);outline-offset:2px;box-shadow:0 0 0 2px var(--c-text);}'
+  ].join('\n');
+
+  var ICON_VOICE = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm4 5v5h1.6V8zm3.2-2v9h1.6V6zm3.2 3v3h1.6V9z"/></svg>';
+
+  /* --------------------------------------------------------------- element */
+  class DbAssistant extends HTMLElement {
+    static get observedAttributes() { return ['lang', 'theme', 'position']; }
+
+    constructor() {
+      super();
+      this._t = I18N.en || {};
+      this._lang = 'en';
+      this._index = null;
+      this._history = [];
+      this._pending = null;
+      this._ticket = null;
+      this._afterId = 0;
+      this._recognizer = null;
+      this._audio = null;
+      this._config = null;
+      this._onOnline = this._online.bind(this);
+      this._onOffline = this._setStatusNetwork.bind(this);
+      // Same id for this browser so the learner can export or delete their data (NFR-S4).
+      this._sessionId = load('cid', null) || uid();
+      save('cid', this._sessionId);
+    }
+
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      this.attachShadow({ mode: 'open' });
+      this._mode = this.getAttribute('mode') === 'inline' ? 'inline' : 'panel';
+      this._simple = !!load('simple', false);
+      this._consent = load('consent', null); // 'yes' | 'no' | null
+      this._render();
+      this._applyTheme();
+      window.addEventListener('online', this._onOnline);
+      window.addEventListener('offline', this._onOffline);
+      this._setLang(this.getAttribute('lang') || 'en', true);
+      this._loadContent();
+      this._loadConfig();
+    }
+
+    disconnectedCallback() {
+      window.removeEventListener('online', this._onOnline);
+      window.removeEventListener('offline', this._onOffline);
+      clearInterval(this._poll);
+      this._stopVoice();
+    }
+
+    attributeChangedCallback(name, oldV, newV) {
+      if (!this.shadowRoot || oldV === newV) return;
+      if (name === 'lang') this._setLang(newV || 'en');
+      else this._applyTheme();
+    }
+
+    /* public API */
+    open() {
+      if (this._mode === 'inline') { this.$q.focus(); return; }
+      var d = this.$dialog;
+      if (!d.open) {
+        this.$launcher.hidden = true;
+        if (MODAL_ALWAYS || window.innerWidth < MODAL_BELOW_PX) d.showModal(); else d.show();
+      }
+      if (this._needsConsent() && !this.$consent.hidden) this.$consentTitle.focus();
+      else this.$q.focus();
+    }
+    close(opts) {
+      if (this._mode === 'inline') return;
+      var d = this.$dialog;
+      this._stopVoice();
+      if (d.open) d.close();
+      this.$launcher.hidden = false;
+      if (!opts || opts.returnFocus !== false) this.$launcher.focus();
+    }
+    /** Ask a question as if typed (hosts: "Ask about this job"). */
+    ask(text) {
+      if (!text) return;
+      this.open();
+      this.$q.value = text;
+      this._submit();
+    }
+    /** Interview support request for a job (FR-J4): goes to a person, never to the employer. */
+    openAccommodation(job) {
+      this.open();
+      this._accStart(job || {});
+    }
+    /** Explain how to get alerts for jobs like this one (FR-J3). */
+    showJobAlerts(keyword) {
+      this.open();
+      var t = this._t, msg = { role: 'bot', text: fmt(t.alertsHow, { keyword: keyword || '' }) };
+      var bot = this._config && this._config.telegram_bot;
+      if (bot) msg.link = { href: 'https://t.me/' + encodeURIComponent(bot) + '?start=alerts_' + encodeURIComponent(String(keyword || '').replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 40)), text: t.openTelegram };
+      this._addMessage(msg);
+    }
+    getText(key, lang) {
+      var dict = lang ? (I18N[lang] || this._t) : this._t;
+      return dict[key] !== undefined ? dict[key] : (I18N.en[key] !== undefined ? I18N.en[key] : key);
+    }
+
+    /* rendering */
+    _render() {
+      var root = this.shadowRoot;
+      var style = h('style');
+      style.textContent = CSS;
+      var wrap = this.$root = h('div', { class: 'root' });
+      root.appendChild(style);
+      root.appendChild(wrap);
+
+      var self = this;
+      var tx = function (key, attrs) { var a = attrs || {}; a['data-t'] = key; return a; };
+
+      // composer (shared)
+      this.$q = h('textarea', { id: 'q', rows: '2', 'aria-describedby': 'hint', autocomplete: 'off' });
+      this.$q.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); self._submit(); }
+      });
+      this.$hint = h('p', tx('questionHint', { id: 'hint', class: 'hint' }));
+      this.$mic = h('button', { type: 'button', class: 'btn grow', 'aria-pressed': 'false', onclick: function () { self._toggleMic(); } }, iconText('mic', tx('mic')));
+      this.$send = h('button', { type: 'button', class: 'btn primary grow', onclick: function () { self._submit(); } }, iconText('send', tx('send'), 'flip'));
+      this.$talk = h('button', { type: 'button', class: 'btn', onclick: function () { self._escalate(); } }, iconText('talk', tx('talk')));
+      var composer = h('div', { class: 'composer' }, [
+        h('label', tx(this._mode === 'inline' ? 'inlineLabel' : 'questionLabel', { for: 'q' })),
+        this.$q, this.$hint,
+        h('div', { class: 'row' }, [this.$mic, this.$send]),
+        this.$talk
+      ]);
+
+      // intro + examples
+      var examples = h('ul', { class: 'examples' }, ['example1', 'example2', 'example3'].map(function (k) {
+        return h('li', null, [h('button', tx(k, { type: 'button', class: 'btn', onclick: function () { self.$q.value = self.getText(k); self._submit(); } }))]);
+      }));
+      this.$intro = h('div', { class: 'intro' }, [
+        h('p', null, [emoji('👋'), h('span', tx('emptyIntro'))]),
+        h('p', null, [emoji('💡'), h('span', tx('examplesTitle'))]),
+        examples
+      ]);
+
+      // consent card (NFR-S2)
+      this.$consentTitle = h('h3', { tabindex: '-1', id: 'consent-title' }, [emoji('🔒'), h('span', tx('consentTitle'))]);
+      this.$consentDetails = h('p', tx('consentDetails', { id: 'consent-details', hidden: true }));
+      this.$consent = h('section', { class: 'consent', 'aria-labelledby': 'consent-title', hidden: true }, [
+        this.$consentTitle,
+        h('p', tx('consentText')),
+        h('button', tx('consentWhat', { type: 'button', class: 'linkbtn', 'aria-expanded': 'false', 'aria-controls': 'consent-details', onclick: function (e) {
+          var open = self.$consentDetails.hidden;
+          self.$consentDetails.hidden = !open;
+          e.currentTarget.setAttribute('aria-expanded', String(open));
+        } })),
+        this.$consentDetails,
+        h('div', { class: 'actions' }, [
+          h('button', { type: 'button', class: 'btn primary', onclick: function () { self._setConsent('yes'); } }, iconText('online', tx('consentAllow'))),
+          h('button', { type: 'button', class: 'btn', onclick: function () { self._setConsent('no'); } }, iconText('sources', tx('consentDeny')))
+        ])
+      ]);
+
+      // role="log" sits on a wrapper so the <ol> keeps its list semantics (axe: listitem).
+      this.$log = h('ol', { class: 'log' });
+      this.$logBox = h('div', { class: 'logbox', role: 'log', 'aria-live': 'polite', 'aria-relevant': 'additions', 'aria-labelledby': 'title' }, [this.$log]);
+      this.$status = h('p', { class: 'status', role: 'status' });
+      this.$acc = h('section', { class: 'form', 'aria-labelledby': 'acc-title', hidden: true });
+      var body = this.$body = h('div', { class: 'body' }, [this.$intro, this.$consent, this.$logBox, this.$acc]);
+      // Persistent bar while the screen is shared (FR-H4, NFR-S5)
+      this.$shareStop = h('button', { type: 'button', class: 'btn', onclick: function () { self._stopShare(); } }, iconText('shareOff', tx('shareStop')));
+      this.$share = h('div', { class: 'share', hidden: true }, [h('p', null, [icon('share'), h('span', tx('sharing'))]), this.$shareStop]);
+
+      if (this._mode === 'inline') {
+        wrap.classList.add('inline');
+        wrap.appendChild(h('h2', tx('title', { id: 'title', class: 'visually-title', style: 'margin:0;padding:0.75rem 1rem 0;font-size:1.125rem;' })));
+        wrap.appendChild(this.$share);
+        wrap.appendChild(composer);
+        wrap.appendChild(this.$status);
+        wrap.appendChild(body);
+        return;
+      }
+
+      // panel mode: launcher + dialog
+      this.$launcher = h('button', { type: 'button', class: 'btn launcher', 'aria-haspopup': 'dialog', 'aria-expanded': 'false', 'aria-controls': 'panel', onclick: function () { self.open(); } });
+      this.$launcher.innerHTML = ICON_VOICE;
+      this.$launcher.appendChild(h('span', tx('launcher')));
+
+      this.$langSel = h('select', { id: 'lang', onchange: function (e) { self.setAttribute('lang', e.target.value); } });
+      this.$simpleBtn = h('button', { type: 'button', class: 'btn', 'aria-pressed': String(this._simple), onclick: function () { self._toggleSimple(); } }, iconText('simple', tx('simpleMode')));
+      this.$onlineBtn = h('button', { type: 'button', class: 'btn', 'aria-pressed': 'false', hidden: true, onclick: function () {
+        self._setConsent(self._consent === 'yes' ? 'no' : 'yes', true);
+      } }, iconText('online', tx('onlineAnswers')));
+      var head = h('header', { class: 'head' }, [
+        h('div', { class: 'head-row' }, [
+          h('h2', { id: 'title' }, [icon('bot'), h('span', tx('title'))]),
+          h('button', { type: 'button', class: 'btn', onclick: function () { self.close(); } }, iconText('close', tx('close')))
+        ]),
+        h('div', { class: 'tools' }, [
+          h('span', { class: 'field' }, [h('label', { for: 'lang' }, iconText('language', tx('language'))), this.$langSel]),
+          this.$simpleBtn, this.$onlineBtn,
+          h('details', { class: 'data' }, [
+            h('summary', null, iconText('data', tx('yourData'))),
+            h('p', tx('dataNote')),
+            h('div', { class: 'row' }, [
+              h('button', { type: 'button', class: 'btn', onclick: function () { self._exportData(); } }, iconText('download', tx('exportData'))),
+              h('button', { type: 'button', class: 'btn', onclick: function () { self._deleteData(); } }, iconText('trash', tx('deleteData')))
+            ])
+          ])
+        ])
+      ]);
+      this.$dialog = h('dialog', { id: 'panel', class: 'panel', 'aria-labelledby': 'title' }, [head, this.$share, body, this.$status, composer]);
+      this.$dialog.addEventListener('cancel', function (e) { e.preventDefault(); if (self._sharing) self._stopShare(); else self.close(); });
+      this.$dialog.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape' || e.defaultPrevented) return;
+        e.preventDefault();
+        if (self._sharing) self._stopShare(); else self.close(); // "Stop sharing (Esc)" first
+      });
+      this.$dialog.addEventListener('close', function () { self.$launcher.hidden = false; });
+      window.addEventListener('resize', function () {
+        var d = self.$dialog;
+        if (MODAL_ALWAYS || !d.open) return;
+        var shouldModal = window.innerWidth < MODAL_BELOW_PX;
+        if (shouldModal !== d.matches(':modal')) { d.close(); self.$launcher.hidden = true; shouldModal ? d.showModal() : d.show(); }
+      });
+      wrap.appendChild(this.$launcher);
+      wrap.appendChild(this.$dialog);
+    }
+
+    _applyTheme() {
+      var theme = this.getAttribute('theme') || 'auto';
+      var pos = this.getAttribute('position') || 'end';
+      var root = this.$root;
+      root.classList.toggle('dark', theme === 'dark');
+      root.classList.toggle('pos-start', pos === 'start');
+      if (theme === 'dark') { root.style.removeProperty('--c-btn'); return; }
+      var btn = FALLBACK_BUTTON;
+      if (theme === 'auto') {
+        var host = getComputedStyle(this).getPropertyValue('--bs-primary');
+        var rgb = parseColor(host);
+        if (rgb && contrast(rgb, [255, 255, 255]) >= 4.5) btn = host.trim();
+      }
+      root.style.setProperty('--c-btn', btn);
+    }
+
+    _setLang(lang, first) {
+      var self = this;
+      lang = String(lang || 'en').toLowerCase().split('-')[0];
+      var done = function (dict) {
+        self._t = Object.assign({}, I18N.en, dict || {});
+        self._lang = dict ? lang : 'en';
+        self._applyTexts();
+        if (!first) self._emit('language', { language: self._lang });
+      };
+      this._langWanted = lang;
+      // Inlined dictionaries equal module/i18n/*.json (tested), so no extra request on 3G.
+      if (I18N[lang]) { done(I18N[lang]); return; }
+      // Any other language: the JSON file next to the script (NFR-E5).
+      fetch(new URL('i18n/' + lang + '.json', SCRIPT_URL).href)
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (dict) { if (self._langWanted === lang) done(dict); })
+        .catch(function () { if (self._langWanted === lang) done(null); });
+    }
+
+    _applyTexts() {
+      var t = this._t, root = this.$root;
+      root.setAttribute('lang', this._lang);
+      root.setAttribute('dir', t.dir || 'ltr');
+      if (this.$dialog) { this.$dialog.setAttribute('lang', this._lang); this.$dialog.setAttribute('dir', t.dir || 'ltr'); }
+      root.querySelectorAll('[data-t]').forEach(function (el) {
+        var v = t[el.getAttribute('data-t')];
+        if (v !== undefined) el.textContent = v;
+      });
+      if (this._recognizer) this._setBtn(this.$mic, 'stop', 'micStop');
+      if (this.$langSel) {
+        var sel = this.$langSel, cur = this._lang;
+        var langs = Object.keys(I18N);
+        if (langs.indexOf(cur) < 0) langs.push(cur);
+        sel.textContent = '';
+        langs.forEach(function (l) {
+          sel.appendChild(h('option', { value: l, lang: l, selected: l === cur, text: t['langName_' + l] || l }));
+        });
+      }
+      this._setStatusNetwork();
+    }
+
+    _setBtn(btn, iconName, key) {
+      btn.textContent = '';
+      btn.appendChild(icon(iconName));
+      btn.appendChild(h('span', { 'data-t': key, text: this._t[key] }));
+    }
+
+    _emit(name, detail) {
+      this.dispatchEvent(new CustomEvent('db-assistant:' + name, { bubbles: true, composed: true, detail: detail }));
+    }
+
+    _status(text) { this.$status.textContent = text || ''; }
+    _setStatusNetwork() {
+      if (!navigator.onLine) this._status(this._t.statusOffline);
+      else if (this._apiBase() && this._config) this._status(this._t.statusOnline);
+      else this._status('');
+    }
+
+    _toggleSimple() {
+      this._simple = !this._simple;
+      save('simple', this._simple);
+      this.$simpleBtn.setAttribute('aria-pressed', String(this._simple));
+    }
+
+    /* consent (NFR-S2) */
+    _needsConsent() { return !!(this._config && this._config.ai) && this._consent === null; }
+    _showConsentIfNeeded() {
+      var need = this._needsConsent();
+      this.$consent.hidden = !need;
+      if (this.$onlineBtn) {
+        this.$onlineBtn.hidden = !(this._config && this._config.ai);
+        this.$onlineBtn.setAttribute('aria-pressed', String(this._consent === 'yes'));
+      }
+      return need;
+    }
+    _setConsent(value, fromToggle) {
+      this._consent = value;
+      save('consent', value);
+      this._showConsentIfNeeded();
+      if (!fromToggle) this.$q.focus();
+      var pending = this._pending;
+      this._pending = null;
+      if (pending) this._ask(pending, true);
+    }
+
+    /* content */
+    _loadContent() {
+      var self = this;
+      var src = this.getAttribute('content');
+      var url = src ? new URL(src, location.href).href : (this._apiBase() ? this._apiBase() + '/v1/content' : null);
+      if (!url) return;
+      var cacheKey = 'content:' + url;
+      var use = function (data) {
+        var list = Array.isArray(data) ? data : (data && (data.sections || data.items)) || [];
+        self._index = new Index(list.filter(function (s) { return s && s.url; }));
+      };
+      var cached = load(cacheKey, null);
+      if (cached) use(cached);
+      fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (data) { use(data); save(cacheKey, data); })
+        .catch(function () { /* offline: cached copy (if any) stays in use */ });
+    }
+
+    /* api */
+    _apiBase() { var a = (this.getAttribute('api') || '').trim(); return a ? a.replace(/\/+$/, '') : ''; }
+    _fetchJson(path, opts) {
+      var ctl = window.AbortController ? new AbortController() : null;
+      var timer = ctl && setTimeout(function () { ctl.abort(); }, 15000); // network only, never a user time-out
+      var o = Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {});
+      if (ctl) o.signal = ctl.signal;
+      return fetch(this._apiBase() + path, o).then(function (r) {
+        clearTimeout(timer);
+        if (!r.ok) { var err = new Error('HTTP ' + r.status); err.status = r.status; throw err; }
+        return r.status === 204 ? null : r.json();
+      }, function (e) { clearTimeout(timer); throw e; });
+    }
+    _loadConfig() {
+      var self = this;
+      if (!this._apiBase()) return;
+      this._fetchJson('/v1/config').then(function (cfg) {
+        self._config = cfg || {};
+        self._showConsentIfNeeded();
+        self._setStatusNetwork();
+        self._flushQueue();
+      }).catch(function () { self._config = null; });
+    }
+
+    /* asking */
+    _submit() {
+      var text = this.$q.value.trim();
+      if (!text) {
+        this._status(this._t.emptyQuestion);
+        this.$q.focus();
+        return;
+      }
+      this._stopMic();
+      this.$q.value = '';
+      this._ask(text);
+    }
+
+    _ask(text, resumed) {
+      var self = this;
+      if (!resumed) {
+        this._addMessage({ role: 'you', text: text, lang: detectLang(text, this._lang) });
+        this._emit('question', { text: text, language: this._lang });
+      }
+      if (this._showConsentIfNeeded()) {
+        this._pending = text;
+        this.$consentTitle.focus();
+        return;
+      }
+      var local = this._index ? this._index.search(text) : null;
+      if (NO_ADVICE.test(text)) { this._addMessage({ role: 'bot', text: this._t.noAdvice, offerHelp: true }); return; }
+
+      if (this._apiBase() && navigator.onLine) {
+        this._status(this._t.statusSending);
+        this._fetchJson('/v1/ask', { method: 'POST', body: JSON.stringify({
+          question: text, language: this._lang, page_url: location.href, conversation_id: this._sessionId,
+          allow_ai: this._consent === 'yes', simple: this._simple
+        }) }).then(function (res) {
+          self._setStatusNetwork();
+          var sources = (res && res.sources || []).filter(function (s) { return s && s.url; });
+          if (res && res.reason === 'no_advice') { self._addMessage({ role: 'bot', text: self._t.noAdvice, offerHelp: true }); return; }
+          if (!res || !res.answer || !sources.length) { self._notFound(); return; } // FR-T5: no source, no answer
+          self._addMessage({ role: 'bot', text: res.answer, lang: res.language || self._lang, sources: sources,
+            note: res.provider && res.provider !== 'none' ? self._t.answeredAi : self._t.answeredLocal, ai: res.provider && res.provider !== 'none', audio: res.audio || [] });
+        }).catch(function () {
+          self._setStatusNetwork();
+          self._answerLocal(text, local);
+        });
+        return;
+      }
+      this._answerLocal(text, local);
+    }
+
+    _answerLocal(text, local) {
+      if (!local || !local.found) {
+        if (!navigator.onLine && this._apiBase()) {
+          this._enqueue({ type: 'ask', text: text });
+          this._addMessage({ role: 'bot', text: this._t.queued });
+        }
+        this._notFound();
+        return;
+      }
+      var s = local.best.section;
+      // Answer in the learner's language when the section has it; Arabic falls back to English text.
+      var lang = this._lang === 'am' || local.lang === 'am' ? 'am' : 'en';
+      var title = s['title_' + lang] || s.title_en;
+      var n = this._simple ? 1 : 3;
+      var idx = this._index.excerptIndices(text, s, lang, n);
+      var body = this._index.excerpt(text, s, lang, n);
+      // Pre-generated Amharic audio (api/scripts/gen_audio.py): title + each chosen sentence, offline.
+      var audio = lang === 'am' && s.type !== 'job'
+        ? ['sections/' + s.id + '/title.am.mp3'].concat(idx.map(function (i) { return 'sections/' + s.id + '/' + i + '.am.mp3'; }))
+        : [];
+      this._addMessage({
+        role: 'bot', lang: lang,
+        text: fmt(this.getText('fromSection', lang), { title: title }) + '\n' + body + this._jobNotes(s, lang),
+        sources: [{ title: title, url: s.url }],
+        note: this.getText('answeredLocal', lang),
+        audio: audio,
+        section: s.id
+      });
+    }
+
+    _jobNotes(s, lang) {
+      if (s.type !== 'job') return '';
+      var notes = [];
+      if (s.deadline) {
+        var passed = s.deadline < new Date().toISOString().slice(0, 10);
+        notes.push(fmt(this.getText(passed ? 'jobDeadlinePassed' : 'jobDeadline', lang), { date: formatDate(s.deadline, lang) }));
+      }
+      notes.push(this.getText('jobTrust', lang));
+      return '\n' + notes.join(' ');
+    }
+
+    _notFound() {
+      this._addMessage({ role: 'bot', emoji: '🔍', text: this._t.notFound + '\n' + this._t.notFoundOffer, offerHelp: true,
+        audio: this._lang === 'am' ? ['phrases/notFound.am.mp3', 'phrases/notFoundOffer.am.mp3'] : [] });
+    }
+
+    _addMessage(m) {
+      var self = this, t = this._t;
+      m.lang = m.lang || this._lang;
+      m.ts = m.ts || new Date();
+      this._history.push({ role: m.role, text: m.text, lang: m.lang, sources: m.sources || [], section: m.section || null, ts: m.ts.toISOString() });
+      if (m.section) this._lastSection = m.section;
+      this.$intro.hidden = true;
+
+      var who = m.role === 'you' ? t.you : m.role === 'tutor' ? (m.name || t.tutor) : t.assistant;
+      var li = h('li', { class: 'msg ' + m.role, lang: m.lang, dir: 'auto' });
+      li.appendChild(h('p', { class: 'who' }, [icon(m.role === 'you' ? 'you' : m.role === 'tutor' ? 'tutor' : 'bot'), h('strong', { text: who, dir: 'auto' }), h('time', { datetime: m.ts.toISOString(), text: formatTime(m.ts, this._lang) })]));
+      if (m.emoji) li.appendChild(emoji(m.emoji));
+      String(m.text).split(/\n+/).forEach(function (para) { if (para.trim()) li.appendChild(h('p', { dir: 'auto', text: para })); });
+
+      if (m.sources && m.sources.length) {
+        var ul = h('ul');
+        m.sources.forEach(function (s) {
+          var a = h('a', { href: s.url }, [h('bdi', { text: s.title || s.url })]);
+          a.addEventListener('click', function (e) { self._followSource(e, a); });
+          ul.appendChild(h('li', null, [a]));
+        });
+        li.appendChild(h('div', { class: 'sources' }, [h('h3', null, [icon('sources'), h('span', { text: this.getText('sources', m.lang) })]), ul]));
+      }
+      if (m.link) li.appendChild(h('p', null, [h('a', { href: m.link.href, target: '_blank', rel: 'noopener', text: m.link.text })]));
+      if (m.note) li.appendChild(h('p', { class: 'note' }, [icon(m.ai ? 'ai' : 'check'), h('span', { text: m.note })]));
+      if (m.role !== 'you') {
+        var actions = h('div', { class: 'actions' });
+        var listen = h('button', { type: 'button', class: 'btn', 'aria-pressed': 'false' }, iconText('listen', { 'data-t': 'listen', text: t.listen }));
+        listen.addEventListener('click', function () { self._listen(m, listen); });
+        actions.appendChild(listen);
+        if (m.offerHelp) actions.appendChild(h('button', { type: 'button', class: 'btn primary', onclick: function () { self._escalate(); } }, iconText('talk', { 'data-t': 'talk', text: t.talk })));
+        (m.extra || []).forEach(function (el) { actions.appendChild(el); });
+        li.appendChild(actions);
+      }
+      this.$log.appendChild(li);
+      if (this._mode === 'panel') {
+        // Show the start of the new message, not the end of a long answer.
+        var body = this.$body;
+        body.scrollTo({ top: Math.max(0, li.offsetTop - body.offsetTop - 8), behavior: reducedMotion() ? 'auto' : 'smooth' });
+      }
+      return li;
+    }
+
+    /* links (SDS 1.4, FR-T5): scroll to the host section and move focus to its heading */
+    _followSource(e, link) {
+      var url = new URL(link.getAttribute('href'), location.href);
+      if (url.pathname !== location.pathname || !url.hash) return; // other page: normal navigation
+      var target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+      if (!target) return;
+      e.preventDefault();
+      // The starter puts each id on an empty, aria-hidden <a> inside the <h4>: focus the heading instead.
+      // A job card (<article id>) holds its heading inside.
+      var H = 'h1,h2,h3,h4,h5,h6';
+      var heading = target.closest(H) || target.querySelector(H) || target;
+      if (this._mode === 'panel' && this.$dialog.open && (MODAL_ALWAYS || this.$dialog.matches(':modal'))) this.close({ returnFocus: false });
+      if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+      heading.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+      heading.focus({ preventScroll: true });
+      try { history.replaceState(null, '', url.hash); } catch (err) { /* sandboxed */ }
+    }
+
+    /* human help (FR-H1, FR-H2) */
+    _escalate() {
+      var self = this, t = this._t;
+      var payload = {
+        conversation: this._history.slice(-20).map(function (m) {
+          return { role: m.role === 'you' ? 'learner' : m.role === 'bot' ? 'assistant' : m.role, text: m.text, lang: m.lang };
+        }),
+        page_url: location.href, section: this._lastSection || null, language: this._lang
+      };
+      if (!this._apiBase() || !navigator.onLine) {
+        this._enqueue({ type: 'escalate', payload: payload });
+        this._addMessage({ role: 'bot', text: t.escalateQueued });
+        return;
+      }
+      this._status(t.escalating);
+      this.$talk.setAttribute('aria-busy', 'true');
+      this._fetchJson('/v1/escalations', { method: 'POST', body: JSON.stringify(Object.assign({ conversation_id: this._sessionId }, payload)) }).then(function (res) {
+        self.$talk.removeAttribute('aria-busy');
+        self._ticketOpened(res);
+      }).catch(function () {
+        self.$talk.removeAttribute('aria-busy');
+        self._enqueue({ type: 'escalate', payload: payload });
+        self._addMessage({ role: 'bot', text: t.escalateQueued });
+        self._setStatusNetwork();
+      });
+    }
+    _ticketOpened(res) {
+      var t = this._t, self = this;
+      this._ticket = res.ticketId;
+      this._ticketToken = res.token || '';
+      this._afterId = 0;
+      // FR-H2: say honestly what happens next, in words.
+      this._status(res.helper_online ? t.escalatedOnline : t.escalatedLater);
+      this._addMessage({ role: 'bot', emoji: '🙋', text: (res.helper_online ? t.escalatedOnline : t.escalatedLater) + '\n' + fmt(t.ticketNumber, { id: res.ticketId }),
+        link: res.telegram_link ? { href: res.telegram_link, text: t.telegramOption } : null,
+        extra: this._helpTools(),
+        audio: this._lang === 'am' ? [res.helper_online ? 'phrases/escalatedOnline.am.mp3' : 'phrases/escalatedLater.am.mp3'] : [] });
+      this._emit('escalated', { ticketId: res.ticketId });
+      clearInterval(this._poll);
+      this._poll = setInterval(function () { self._pollTicket(); }, POLL_MS);
+    }
+    _pollTicket() {
+      var self = this;
+      if (!this._ticket || !navigator.onLine || document.hidden) return;
+      this._fetchJson('/v1/escalations/' + encodeURIComponent(this._ticket) + '/messages?after=' + this._afterId + '&token=' + encodeURIComponent(this._ticketToken || '')).then(function (list) {
+        (list || []).forEach(function (m) {
+          self._afterId = Math.max(self._afterId, m.id || 0);
+          if (m.author === 'system' && m.text === 'screen_request') {
+            self._addMessage({ role: 'bot', text: self._t.shareAsked, extra: self._helpTools() });
+            return;
+          }
+          if (m.author !== 'helper') return;
+          if (!self._helperName) { self._helperName = m.name || self._t.tutor; self._status(fmt(self._t.tutorJoined, { name: self._helperName })); }
+          self._addMessage({ role: 'tutor', name: m.name, text: m.text, lang: m.lang || undefined });
+        });
+      }).catch(function () { /* keep polling quietly */ });
+    }
+
+    /* screen share (desktop) and screenshot (Android fallback) (FR-H4, FR-H5) */
+    _helpTools() {
+      var self = this, t = this._t, tools = [];
+      if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+        tools.push(h('button', { type: 'button', class: 'btn', onclick: function () { self._startShare(); } }, iconText('share', { text: t.shareScreen })));
+      }
+      var file = h('input', { type: 'file', accept: 'image/*' });
+      file.addEventListener('change', function () { if (file.files && file.files[0]) self._sendScreenshot(file.files[0]); file.value = ''; });
+      tools.push(h('label', { class: 'btn filebtn' }, [icon('screenshot'), h('span', { text: t.sendScreenshot }), file]));
+      return tools;
+    }
+    _ticketPath(suffix) {
+      return '/v1/escalations/' + encodeURIComponent(this._ticket) + suffix + (suffix.indexOf('?') < 0 ? '?' : '&') + 'token=' + encodeURIComponent(this._ticketToken || '');
+    }
+    _toJpeg(source, w, hgt, max) {
+      var scale = Math.min(1, max / Math.max(w, hgt));
+      var c = document.createElement('canvas');
+      c.width = Math.round(w * scale); c.height = Math.round(hgt * scale);
+      c.getContext('2d').drawImage(source, 0, 0, c.width, c.height);
+      return c;
+    }
+    _sendScreenshot(fileObj) {
+      var self = this, t = this._t;
+      if (!this._ticket) return;
+      if (fileObj.size > 8 * 1024 * 1024) { this._status(t.screenshotTooBig); return; }
+      var img = new Image(), url = URL.createObjectURL(fileObj);
+      img.onload = function () {
+        var data = self._toJpeg(img, img.naturalWidth, img.naturalHeight, 1280).toDataURL('image/jpeg', 0.7);
+        URL.revokeObjectURL(url);
+        self._fetchJson(self._ticketPath('/screenshot'), { method: 'POST', body: JSON.stringify({ screenshot: data }) })
+          .then(function () { self._status(t.screenshotSent); })
+          .catch(function () { self._status(t.screenshotTooBig); });
+      };
+      img.onerror = function () { self._status(t.screenshotTooBig); };
+      img.src = url;
+    }
+    _startShare() {
+      var self = this, t = this._t;
+      if (this._sharing || !this._ticket) return;
+      navigator.mediaDevices.getDisplayMedia({ video: true, audio: false }).then(function (stream) {
+        var video = document.createElement('video');
+        video.muted = true; video.srcObject = stream; video.play();
+        self._sharing = { stream: stream, video: video };
+        stream.getVideoTracks()[0].addEventListener('ended', function () { self._stopShare(); });
+        self.$share.hidden = false;
+        self._status(t.sharing);
+        self.$shareStop.focus();
+        var send = function () {
+          if (!self._sharing || !video.videoWidth) return;
+          self._toJpeg(video, video.videoWidth, video.videoHeight, 1280).toBlob(function (blob) {
+            if (!blob || !self._sharing) return;
+            fetch(self._apiBase() + self._ticketPath('/screen'), { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob }).catch(function () {});
+          }, 'image/jpeg', 0.6);
+        };
+        self._sharing.timer = setInterval(send, 2000);
+      }).catch(function () { /* learner cancelled the browser's picker: nothing to say */ });
+    }
+    _stopShare() {
+      if (!this._sharing) return;
+      clearInterval(this._sharing.timer);
+      this._sharing.stream.getTracks().forEach(function (tr) { tr.stop(); });
+      this._sharing = null;
+      this.$share.hidden = true;
+      this._status(this._t.shareStopped);
+      this.$q.focus();
+    }
+
+    /* learner data: export and delete (NFR-S4) */
+    _exportData() {
+      var self = this;
+      var local = { conversation_id: this._sessionId, on_this_phone: this._history };
+      var save = function (server) {
+        var blob = new Blob([JSON.stringify(Object.assign(local, { on_the_server: server }), null, 2)], { type: 'application/json' });
+        var a = h('a', { href: URL.createObjectURL(blob), download: 'syly-my-data.json' });
+        self.shadowRoot.appendChild(a); a.click(); a.remove();
+      };
+      if (!this._apiBase()) { save(null); return; }
+      this._fetchJson('/v1/data/' + encodeURIComponent(this._sessionId)).then(save).catch(function () { save(null); });
+    }
+    _deleteData() {
+      var self = this, old = this._sessionId;
+      var finish = function () {
+        self._history = [];
+        self.$log.textContent = '';
+        self.$intro.hidden = false;
+        self._ticket = null; clearInterval(self._poll);
+        save('queue', []);
+        self._sessionId = uid(); save('cid', self._sessionId);
+        self._status(self._t.dataDeleted);
+      };
+      if (!this._apiBase()) { finish(); return; }
+      this._fetchJson('/v1/data/' + encodeURIComponent(old), { method: 'DELETE' }).then(finish).catch(finish);
+    }
+
+    /* interview support request (FR-J4): one question per step, review, then a person */
+    _accStart(job) {
+      this._acc = { job: job, step: 1, needs: [], note: '', channel: 'none', contact: '', error: '' };
+      this.$intro.hidden = true;
+      this.$acc.hidden = false;
+      this._accRender();
+    }
+    _accClose(message) {
+      this.$acc.hidden = true;
+      this.$acc.textContent = '';
+      this._acc = null;
+      if (message) this._addMessage({ role: 'bot', emoji: '✅', text: message });
+      this.$q.focus();
+    }
+    _accRender() {
+      var self = this, t = this._t, st = this._acc, form = this.$acc;
+      var NEEDS = ['interpreter', 'extra_time', 'written_questions', 'accessible_venue', 'other'];
+      var CHANNELS = ['none', 'telegram', 'sms', 'email'];
+      form.textContent = '';
+      var title = h('h3', { id: 'acc-title', tabindex: '-1' }, [emoji('🤝'), h('span', { text: t.accTitle })]);
+      form.appendChild(title);
+      form.appendChild(h('p', { text: fmt(t.accFor, { title: st.job.title || st.job.id || '' }) }));
+      form.appendChild(h('p', { class: 'note', text: fmt(t.accStep, { n: st.step, total: 4 }) }));
+      var err = h('p', { id: 'acc-err', class: 'error', role: 'alert', text: st.error || '' });
+      var buttons = h('div', { class: 'actions' });
+      var ICON_FOR = { accCancel: 'close', accNext: 'next', accBack: 'back', accSend: 'send' };
+      var btn = function (key, primary, fn) {
+        return h('button', { type: 'button', class: 'btn' + (primary ? ' primary' : ''), onclick: fn },
+          iconText(ICON_FOR[key], { text: t[key] }, key === 'accNext' || key === 'accBack' || key === 'accSend' ? 'flip' : ''));
+      };
+      var go = function (step) { st.error = ''; st.step = step; self._accRender(); };
+
+      if (st.step === 1) {
+        var fs = h('fieldset', { 'aria-describedby': 'acc-hint' + (st.error ? ' acc-err' : '') }, [h('legend', { text: t.accQ1 }), h('p', { id: 'acc-hint', class: 'note', text: t.accHint1 })]);
+        NEEDS.forEach(function (k) {
+          var box = h('input', { type: 'checkbox', value: k, checked: st.needs.indexOf(k) >= 0 });
+          box.addEventListener('change', function () {
+            st.needs = NEEDS.filter(function (x) { return x === k ? box.checked : st.needs.indexOf(x) >= 0; });
+          });
+          fs.appendChild(h('label', { class: 'check' }, [box, h('span', { text: t['need_' + k] })]));
+        });
+        form.appendChild(fs);
+        buttons.appendChild(btn('accCancel', false, function () { self._accClose(); }));
+        buttons.appendChild(btn('accNext', true, function () {
+          if (!st.needs.length) { st.error = t.accChooseOne; self._accRender(); return; }
+          go(2);
+        }));
+      } else if (st.step === 2) {
+        var note = h('textarea', { id: 'acc-note', rows: '3' });
+        note.value = st.note;
+        note.addEventListener('input', function () { st.note = note.value; });
+        form.appendChild(h('label', { for: 'acc-note', text: t.accQ2 }));
+        form.appendChild(note);
+        buttons.appendChild(btn('accBack', false, function () { go(1); }));
+        buttons.appendChild(btn('accNext', true, function () { go(3); }));
+      } else if (st.step === 3) {
+        var fs3 = h('fieldset', st.error ? { 'aria-describedby': 'acc-err' } : null, [h('legend', { text: t.accQ3 })]);
+        var contact = h('input', { type: 'text', id: 'acc-contact', autocomplete: 'off', 'aria-invalid': st.error ? 'true' : null, 'aria-describedby': st.error ? 'acc-err' : null });
+        contact.value = st.contact;
+        contact.addEventListener('input', function () { st.contact = contact.value; });
+        var contactWrap = h('div', { hidden: st.channel === 'none' }, [h('label', { for: 'acc-contact', text: t.accContact }), contact]);
+        CHANNELS.forEach(function (k) {
+          var r = h('input', { type: 'radio', name: 'acc-channel', value: k, checked: st.channel === k });
+          r.addEventListener('change', function () { st.channel = k; contactWrap.hidden = k === 'none'; });
+          fs3.appendChild(h('label', { class: 'check' }, [r, h('span', { text: t['copy_' + k] })]));
+        });
+        form.appendChild(fs3);
+        form.appendChild(contactWrap);
+        buttons.appendChild(btn('accBack', false, function () { go(2); }));
+        buttons.appendChild(btn('accNext', true, function () {
+          if (st.channel !== 'none' && !st.contact.trim()) { st.error = t.accNeedContact; self._accRender(); contact = self.$acc.querySelector('#acc-contact'); if (contact) contact.focus(); return; }
+          go(4);
+        }));
+      } else {
+        form.appendChild(h('h4', { text: t.accReview }));
+        form.appendChild(h('dl', null, [
+          h('dt', { text: t.accNeeds }), h('dd', { text: st.needs.map(function (k) { return t['need_' + k]; }).join(', ') }),
+          h('dt', { text: t.accNote }), h('dd', { text: st.note.trim() || t.accNone }),
+          h('dt', { text: t.accCopy }), h('dd', { text: t['copy_' + st.channel] + (st.channel !== 'none' ? ': ' + st.contact : '') })
+        ]));
+        buttons.appendChild(btn('accBack', false, function () { go(3); }));
+        buttons.appendChild(btn('accSend', true, function () { self._accSend(); }));
+      }
+      form.appendChild(err);
+      form.appendChild(buttons);
+      if (!(st.step === 3 && st.error)) title.focus();
+    }
+    _accSend() {
+      var self = this, st = this._acc;
+      if (!this._apiBase()) { st.error = this._t.accFailed; this._accRender(); return; }
+      this._fetchJson('/v1/accommodations', { method: 'POST', body: JSON.stringify({
+        job_id: st.job.id, needs: st.needs, note: st.note.trim() || null,
+        contact_channel: st.channel, contact: st.channel === 'none' ? null : st.contact.trim(), language: this._lang
+      }) }).then(function () { self._accClose(self._t.accSent); })
+        .catch(function () { st.error = self._t.accFailed; self._accRender(); });
+    }
+
+    /* offline queue (FR-C5) */
+    _enqueue(item) { var q = load('queue', []); q.push(item); save('queue', q); }
+    _online() { this._setStatusNetwork(); this._flushQueue(); }
+    _flushQueue() {
+      var self = this, q = load('queue', []);
+      if (!q.length || !navigator.onLine || !this._apiBase()) return;
+      save('queue', []);
+      q.forEach(function (item) {
+        if (item.type === 'ask') self._ask(item.text, true);
+        if (item.type === 'escalate') {
+          self._fetchJson('/v1/escalations', { method: 'POST', body: JSON.stringify(item.payload) })
+            .then(function (res) { self._ticketOpened(res); })
+            .catch(function () { self._enqueue(item); });
+        }
+      });
+      this._status(this._t.queuedSent);
+    }
+
+    /* voice: input (FR-T7) */
+    _toggleMic() {
+      if (this._recognizer) { this._stopMic(); return; }
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { this._status(this._t.micUnsupported); return; }
+      var self = this, rec = new SR(), base = this.$q.value ? this.$q.value.trim() + ' ' : '';
+      rec.lang = this._t.speechLang || 'en-US';
+      rec.interimResults = true;
+      rec.continuous = false;
+      rec.onresult = function (e) {
+        var text = '';
+        for (var i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+        self.$q.value = base + text;
+      };
+      rec.onerror = function () { self._status(self._t.micError); };
+      rec.onend = function () {
+        self._recognizer = null;
+        self.$mic.setAttribute('aria-pressed', 'false');
+        self._setBtn(self.$mic, 'mic', 'mic');
+        if (self.$q.value.trim()) self._status(self._t.micDone);
+        self.$q.focus();
+      };
+      try { rec.start(); } catch (err) { this._status(this._t.micError); return; }
+      this._recognizer = rec;
+      this.$mic.setAttribute('aria-pressed', 'true');
+      this._setBtn(this.$mic, 'stop', 'micStop');
+      this._status(this._t.micListening);
+    }
+    _stopMic() { if (this._recognizer) { try { this._recognizer.stop(); } catch (e) { /* already stopped */ } } }
+
+    /* voice: output (FR-T8) pre-generated audio -> system voice -> server TTS -> text only */
+    _stopVoice() {
+      this._stopMic();
+      if (this._audio) { this._audio.pause(); this._audio = null; }
+      if (window.speechSynthesis) speechSynthesis.cancel();
+      if (this._listenBtn) { this._listenBtn.setAttribute('aria-pressed', 'false'); this._setBtn(this._listenBtn, 'listen', 'listen'); this._listenBtn = null; }
+    }
+    _listen(m, btn) {
+      var self = this, t = this._t;
+      if (this._listenBtn === btn) { this._stopVoice(); return; }
+      this._stopVoice();
+      this._listenBtn = btn;
+      btn.setAttribute('aria-pressed', 'true');
+      this._setBtn(btn, 'stop', 'stopListening');
+      var done = function () { if (self._listenBtn === btn) self._stopVoice(); };
+      var fail = function () { done(); self._status(m.lang === 'am' ? t.noVoiceAm : t.noVoice); };
+      var playUrl = function (url, onError) {
+        var a = new Audio(url), failed = false;
+        var once = function () { if (failed || self._audio !== a) return; failed = true; self._audio = null; onError(); };
+        self._audio = a;
+        a.onended = done;
+        a.onerror = once;
+        a.play().catch(once);
+      };
+      var speakSystem = function () {
+        var voice = findVoice(m.lang);
+        if (!voice) return false;
+        var u = new SpeechSynthesisUtterance(m.text);
+        u.lang = voice.lang; u.voice = voice;
+        u.onend = done; u.onerror = done;
+        speechSynthesis.speak(u);
+        return true;
+      };
+      var system = function () { if (!speakSystem()) fail(); };
+      var server = function () {
+        // Server TTS sends text to an online voice service: only with consent (NFR-S2).
+        if (!self._apiBase() || !navigator.onLine || self._consent !== 'yes') { system(); return; }
+        fetch(self._apiBase() + '/v1/voice/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: m.text, language: m.lang }) })
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
+          .then(function (b) { if (self._listenBtn === btn) playUrl(URL.createObjectURL(b), system); })
+          .catch(system);
+      };
+      // Order (FR-T8): saved audio files -> server voice (with consent) -> browser voice -> words.
+      var files = (Array.isArray(m.audio) ? m.audio : (m.audio ? [m.audio] : [])).map(function (a) { return new URL('audio/' + a, SCRIPT_URL).href; });
+      var playList = function (i) {
+        if (i >= files.length) { done(); return; }
+        var a = new Audio(files[i]), failed = false;
+        var bad = function () { if (failed || self._audio !== a) return; failed = true; self._audio = null; server(); };
+        self._audio = a;
+        a.onended = function () { if (self._audio === a) playList(i + 1); };
+        a.onerror = bad;
+        a.play().catch(bad);
+      };
+      if (files.length) playList(0); else server();
+    }
+  }
+
+  function findVoice(lang) {
+    if (!window.speechSynthesis) return null;
+    var voices = speechSynthesis.getVoices() || [];
+    for (var i = 0; i < voices.length; i++) if (voices[i].lang && voices[i].lang.toLowerCase().indexOf(lang) === 0) return voices[i];
+    return null;
+  }
+  if (window.speechSynthesis) speechSynthesis.getVoices(); // warm up the async voice list
+
+  /* ----------------------------------------------------------------- dates */
+  // Ethiopian calendar for Amharic (NFR-E3), Gregorian otherwise.
+  function formatDate(iso, lang) {
+    var d = new Date(iso + 'T12:00:00');
+    if (isNaN(d)) return iso;
+    try {
+      var opts = { day: 'numeric', month: 'long', year: 'numeric' };
+      if (lang === 'am') return new Intl.DateTimeFormat('am-ET-u-ca-ethiopic', opts).format(d) + ' (' + new Intl.DateTimeFormat('am-ET', opts).format(d) + ')';
+      return new Intl.DateTimeFormat(lang, opts).format(d);
+    } catch (e) { return iso; }
+  }
+  function formatTime(d, lang) {
+    try { return new Intl.DateTimeFormat(lang === 'am' ? 'am-ET' : lang, { hour: '2-digit', minute: '2-digit' }).format(d); } catch (e) { return d.toTimeString().slice(0, 5); }
+  }
+
+  // Exposed for tests only through the element class (no globals).
+  DbAssistant._internals = { formatDate: formatDate, Index: Index, splitSentences: splitSentences, detectLang: detectLang, NO_ADVICE: NO_ADVICE, parseColor: parseColor, contrast: contrast, I18N: I18N };
+  customElements.define('db-assistant', DbAssistant);
+})();
