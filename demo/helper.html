@@ -51,11 +51,34 @@
       <div>
         <section aria-labelledby="you-h">
           <h2 id="you-h" data-t="you">About you</h2>
+          <div id="signin" hidden>
+            <p data-t="signinIntro"></p>
+            <form id="email-form">
+              <label for="tutor-email" data-t="emailLabel">Your e-mail address</label>
+              <input id="tutor-email" type="email" autocomplete="email" required>
+              <div class="row"><button class="primary" type="submit" data-t="sendCode">Send me a code</button></div>
+            </form>
+            <form id="code-form" hidden>
+              <label for="tutor-code" data-t="codeLabel">The 6-digit code from the e-mail</label>
+              <input id="tutor-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+              <div class="row"><button class="primary" type="submit" data-t="signIn">Sign in</button></div>
+            </form>
+          </div>
+          <div id="signed" hidden>
+            <p id="who" class="meta"></p>
+            <div class="row">
+              <button type="button" id="avail" aria-pressed="false" data-t="imAvailable">I am available</button>
+              <button type="button" id="signout" data-t="signOut">Sign out</button>
+            </div>
+            <p class="meta" data-t="presenceNote"></p>
+            <p id="mates" class="meta"></p>
+          </div>
           <form id="start-form">
             <label for="helper-name" data-t="nameLabel">Your first name</label>
             <input id="helper-name" autocomplete="given-name" required>
+            <details><summary data-t="teamKey">Team helper key</summary>
             <label for="helper-key" data-t="keyLabel">Helper key</label>
-            <input id="helper-key" type="password" autocomplete="off">
+            <input id="helper-key" type="password" autocomplete="off"></details>
             <div class="row"><button class="primary" type="submit" data-t="start">Start helping</button></div>
           </form>
         </section>
@@ -103,7 +126,7 @@
   (function () {
     'use strict';
     var API = '/api/v1', t = SYLYPage.t, $ = function (id) { return document.getElementById(id); };
-    var state = { name: '', key: '', current: null, after: 0, known: {}, shownWaiting: -1 };
+    var state = { tutor: null, available: false, lastActive: Date.now(), name: '', key: '', current: null, after: 0, known: {}, shownWaiting: -1 };
     var LANGS = { am: 'አማርኛ / Amharic', en: 'English', ar: 'العربية / Arabic' };
     try { state.name = sessionStorage.getItem('helper-name') || ''; state.key = sessionStorage.getItem('helper-key') || ''; } catch (e) {}
     $('helper-name').value = state.name;
@@ -111,15 +134,51 @@
     function say(msg, isError) { var s = $('status'); s.textContent = msg; s.className = 'status' + (isError ? ' error' : ''); }
     function api(path, opts) {
       opts = opts || {};
-      opts.headers = Object.assign({ 'Content-Type': 'application/json' }, state.key ? { 'X-Helper-Key': state.key } : {}, opts.headers || {});
+      opts.credentials = 'same-origin';
+      opts.headers = Object.assign({ 'Content-Type': 'application/json', 'X-Requested-With': 'syly' }, state.key ? { 'X-Helper-Key': state.key } : {}, opts.headers || {});
       return fetch(API + path, opts).then(function (r) {
-        if (r.status === 401) { say(t('unauthorised'), true); throw new Error('401'); }
+        if (r.status === 401) { if (!state.tutor) showSignin(); say(t('unauthorised'), true); throw new Error('401'); }
         if (!r.ok) throw new Error(r.status);
         return r.status === 204 ? null : r.json();
       });
     }
 
-    function heartbeat() { if (state.name) api('/helper/presence?name=' + encodeURIComponent(state.name), { method: 'POST' }).catch(function () {}); }
+    function showSignin() { $('signin').hidden = false; $('signed').hidden = true; }
+    function showSigned(tutor) {
+      state.tutor = tutor; state.name = tutor.name || state.name;
+      $('signin').hidden = true; $('signed').hidden = false;
+      $('who').textContent = t('signedAs', { email: tutor.email });
+      if (!$('helper-name').value) $('helper-name').value = tutor.name || tutor.email.split('@')[0];
+      state.available = tutor.status === 'available' && state.available;
+      paintAvail();
+    }
+    function paintAvail() {
+      var b = $('avail');
+      b.setAttribute('aria-pressed', String(state.available));
+      b.textContent = state.available ? t('imAway') : t('imAvailable');
+    }
+    function activeRecently() { return Date.now() - state.lastActive < 120000; }
+    ['pointerdown', 'keydown', 'pointermove', 'touchstart', 'scroll'].forEach(function (ev) {
+      window.addEventListener(ev, function () { state.lastActive = Date.now(); }, { passive: true });
+    });
+    function sendPresence(status) {
+      return api('/tutor/presence', { method: 'POST', body: JSON.stringify({ status: status, name: $('helper-name').value.trim() || null }) })
+        .then(function (r) { state.tutor = r.tutor; }).catch(function () {});
+    }
+    /* A heartbeat only while this tab is visible and the person did something in the last 2 minutes, so a forgotten tab stops counting. */
+    function heartbeat() {
+      if (state.tutor) {
+        if (state.available && !document.hidden && activeRecently()) sendPresence('available');
+        return;
+      }
+      if (state.name && state.key) api('/helper/presence?name=' + encodeURIComponent(state.name), { method: 'POST' }).catch(function () {});
+    }
+    function mates() {
+      if (!state.tutor && !state.key) return;
+      api('/tutor/online').then(function (r) {
+        $('mates').textContent = r.online.length ? t('onlineList', { names: r.online.map(function (x) { return x.name; }).join(', ') }) : t('onlineNone');
+      }).catch(function () {});
+    }
 
     function renderTickets(list) {
       var ul = $('tickets');
@@ -175,7 +234,7 @@
         list.forEach(function (m) { state.after = Math.max(state.after, m.id); addLine(m); if (m.text === 'screenshot_attached') loadShot(); });
       }).catch(function () {});
       var img = $('screen');
-      fetch(API + '/escalations/' + tk.id + '/screen?ts=' + Date.now(), { headers: state.key ? { 'X-Helper-Key': state.key } : {} })
+      fetch(API + '/escalations/' + tk.id + '/screen?ts=' + Date.now(), { credentials: 'same-origin', headers: state.key ? { 'X-Helper-Key': state.key } : {} })
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
         .then(function (b) { $('screen-box').hidden = false; if (img.src) URL.revokeObjectURL(img.src); img.src = URL.createObjectURL(b); img.alt = t('screenAlt', { id: tk.id }); })
         .catch(function () { $('screen-box').hidden = true; });
@@ -203,11 +262,35 @@
       e.preventDefault();
       state.name = $('helper-name').value.trim();
       state.key = $('helper-key').value;
+      if (!state.key) { say(t('unauthorised'), true); return; }
       if (!state.name) { $('helper-name').focus(); return; }
       try { sessionStorage.setItem('helper-name', state.name); sessionStorage.setItem('helper-key', state.key); } catch (err) {}
       heartbeat();
       refresh();
       say(t('online', { name: state.name }));
+    });
+    var pendingEmail = '';
+    $('email-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      pendingEmail = $('tutor-email').value.trim();
+      api('/tutor/login/request', { method: 'POST', body: JSON.stringify({ email: pendingEmail }) }).then(function () {
+        $('code-form').hidden = false; $('tutor-code').focus(); say(t('codeSent'));
+      }).catch(function (err) { if (err.message !== '401') say(t('error'), true); });
+    });
+    $('code-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      api('/tutor/login/verify', { method: 'POST', body: JSON.stringify({ email: pendingEmail, code: $('tutor-code').value.trim() }) }).then(function (r) {
+        $('code-form').hidden = true; showSigned(r.tutor); say(t('signedIn')); refresh(); mates();
+      }).catch(function () { say(t('codeWrong'), true); });
+    });
+    $('avail').addEventListener('click', function () {
+      state.available = !state.available;
+      state.lastActive = Date.now();
+      paintAvail();
+      sendPresence(state.available ? 'available' : 'away').then(function () { say(t(state.available ? 'nowAvailable' : 'nowAway')); mates(); });
+    });
+    $('signout').addEventListener('click', function () {
+      api('/tutor/logout', { method: 'POST' }).catch(function () {}).then(function () { state.tutor = null; state.available = false; showSignin(); say(t('signedOut')); });
     });
     $('accept').addEventListener('click', function () {
       api('/escalations/' + state.current.id, { method: 'PATCH', body: JSON.stringify({ status: 'active', helper_name: state.name || null }) })
@@ -239,8 +322,10 @@
     });
 
     SYLYPage.load('helper', 'en').then(function () {
+      api('/tutor/me').then(function (r) { showSigned(r.tutor); refresh(); mates(); }).catch(function () { if (!state.key) showSignin(); });
       refresh();
-      if (state.name) { heartbeat(); say(t('online', { name: state.name })); }
+      if (state.name && state.key) { heartbeat(); say(t('online', { name: state.name })); }
+      setInterval(mates, 15000);
       setInterval(refresh, 5000);
       setInterval(poll, 2500);
       setInterval(heartbeat, 30000);
