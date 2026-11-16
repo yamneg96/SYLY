@@ -1,4 +1,4 @@
-"""HTTP contract (guide section 5 data contract, section 6 status codes)."""
+﻿"""HTTP contract (guide section 5 data contract, section 6 status codes)."""
 
 from services import webhook
 
@@ -227,3 +227,32 @@ def test_translate_needs_consent_and_uses_the_model(client, monkeypatch):
     monkeypatch.setattr(answer_mod, "chain", lambda: [])
     none = client.post("/api/v1/translate", json={**body, "allow_ai": True}).json()
     assert none["text"] is None and none["reason"] == "failed"
+
+
+def test_amharic_question_on_an_english_page_is_translated_for_the_search(client, monkeypatch):
+    from config import settings
+    from services import answer as answer_mod
+
+    seen = []
+
+    class Fake:
+        NAME = "fake"
+
+        @staticmethod
+        async def complete(system, user):
+            seen.append(system[:20])
+            if system.startswith("Translate the user text to English"):
+                return '{"text": "Why should I not charge my laptop on a bed?"}'
+            return '{"answer": "\u12A0\u12ED\u12F0\u1208\u121D\u1362", "sections": [1]}'
+
+    monkeypatch.setattr(answer_mod, "chain", lambda: [Fake])
+    monkeypatch.setattr(settings, "provider", "cloud")
+    monkeypatch.setattr(settings, "gemini_key", "test")
+    body = {"question": "\u120B\u1355\u1276\u1355\u1295 \u12A0\u1303\u1295 \u120B\u12ED \u1260\u1218\u12AB\u12A8\u1218\u1293\u1275 \u1208\u121D\u1295 \u12A0\u12ED\u1349\u1295 \u12A8\u12E0\u12CD?", "language": "am", "allow_ai": True,
+            "page_url": "http://localhost:8080/demo/page-reading.html", "sections": PAGE}
+    r = client.post("/api/v1/ask", json=body).json()
+    assert r["answer"] and r["language"] == "am" and r["sources"], r
+    assert seen[0] == "Translate the user t"  # the question was translated before the answer was written
+    # without consent nothing is sent to a model, so the question stays unanswered
+    r2 = client.post("/api/v1/ask", json={**body, "allow_ai": False}).json()
+    assert r2["answer"] is None and r2["reason"] == "not_found"

@@ -141,6 +141,12 @@ async def answer(idx: Index, question: str, language: str, allow_ai: bool, simpl
         query = await _translate_to_english(question) or question
 
     result = idx.search(query)
+    if not result.found and use_ai and query is question and detect_lang(question) != "en":
+        # The page or course may only have English text (a page read by the widget): translate the question for the search.
+        english = await _translate_to_english(question)
+        if english:
+            query = english
+            result = idx.search(query)
     if not result.found or not result.best:
         return AnswerOut(text=None, language=language, reason="not_found")  # model not called
 
