@@ -145,6 +145,9 @@ export function SiteForm({ site, headingRef, onSaved, onCancel }: { site?: Site;
           <Input id="f-bot" autoComplete="off" spellCheck={false} aria-invalid={!!err("bot")} aria-describedby={describedBy("f-bot", true)} {...register("bot")} />
         </Field>
       </div>
+      <Field id="f-tutor" label={t("dashboard.fTutor")} hint={t("dashboard.fTutorHint")} error={err("tutorEmails")}>
+        <Textarea id="f-tutor" spellCheck={false} autoComplete="off" aria-invalid={!!err("tutorEmails")} aria-describedby={describedBy("f-tutor", true)} {...register("tutorEmails")} />
+      </Field>
 
       <Choice legend={t("dashboard.fMode")} name="mode" control={control} options={[["panel", t("dashboard.modePanel")], ["inline", t("dashboard.modeInline")]]} />
       <Choice legend={t("dashboard.fPosition")} name="position" control={control} options={[["end", t("dashboard.posEnd")], ["start", t("dashboard.posStart")]]} />
