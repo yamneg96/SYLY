@@ -132,5 +132,7 @@
   "micRecording": "Recording. Press Stop when you finish.",
   "micTranscribing": "Turning your voice into text…",
   "micNeedsConsent": "Voice in this language needs an online service. Press “Online answers” to allow it, or type your question.",
-  "micServerFailed": "I could not turn your voice into text. Please try again, or type your question."
+  "micServerFailed": "I could not turn your voice into text. Please try again, or type your question.",
+  "comeBackNote": "You can close this page. When you open it again on this phone, the answer will be here.",
+  "ticketResumed": "Your request {id} is still open. If the tutor has answered, the reply will appear here."
 }

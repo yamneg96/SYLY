@@ -132,5 +132,7 @@
   "micRecording": "Waa la duubayaa. Taabo Jooji markaad dhammayso.",
   "micTranscribing": "Codkaaga waxaa loo beddelayaa qoraal…",
   "micNeedsConsent": "Gelinta codka luqaddan waxay u baahan tahay adeeg internet. Taabo “Jawaabaha internetka” si aad u oggolaato, ama qor su'aashaada.",
-  "micServerFailed": "Codkaaga ma beddeli karin qoraal. Fadlan isku day mar kale, ama qor su'aashaada."
+  "micServerFailed": "Codkaaga ma beddeli karin qoraal. Fadlan isku day mar kale, ama qor su'aashaada.",
+  "comeBackNote": "Waad xiri kartaa bogga. Marka aad mar kale ku furto taleefankan, jawaabtu halkan ayay ku jiri doontaa.",
+  "ticketResumed": "Codsigaaga {id} wali waa furan yahay. Haddii macallinku jawaabay, jawaabtu halkan ayay ka muuqan doontaa."
 }

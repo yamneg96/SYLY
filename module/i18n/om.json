@@ -132,5 +132,7 @@
   "micRecording": "Waraabaa jira. Yoo xumurte Dhaabi tuqi.",
   "micTranscribing": "Sagalee kee gara barreeffamaatti jijjiiraa jira…",
   "micNeedsConsent": "Galchiin sagalee afaan kanaan tajaajila interneetii barbaada. Hayyamuuf “Deebii interneetii” tuqi, ykn gaaffii kee barreessi.",
-  "micServerFailed": "Sagalee kee gara barreeffamaatti jijjiiruu hin dandeenye. Maaloo irra deebi'ii yaali, ykn gaaffii kee barreessi."
+  "micServerFailed": "Sagalee kee gara barreeffamaatti jijjiiruu hin dandeenye. Maaloo irra deebi'ii yaali, ykn gaaffii kee barreessi.",
+  "comeBackNote": "Fuula kana cufuu dandeessa. Bilbila kana irratti yommuu irra deebi'ii bantu deebiin asitti ni jira.",
+  "ticketResumed": "Gaaffiin kee {id} amma iyyuu banaadha. Barsiisaan deebisee yoo ta'e, deebiin asitti mul'ata."
 }
