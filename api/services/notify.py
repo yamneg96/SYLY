@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 
 import httpx
 
@@ -40,39 +41,60 @@ def helper_link() -> str:
     return f"{settings.public_base_url or 'http://localhost:8080'}/demo/helper.html"
 
 
-def tutor_text(ticket_id: int, language: str, page_url: str | None, question: str, has_screenshot: bool) -> tuple[str, str]:
-    """(subject, body) for the tutors. Only what the learner wrote and where: never a contact, a token or a chat id."""
-    q = " ".join((question or "").split())[:400] or "(no question was written)"
-    lines = [
-        f"A learner asked for a person and no tutor is online. Request {ticket_id}, language {language}.",
-        "",
-        f"Question: {q}",
-        f"Page: {page_url or 'unknown'}",
-    ]
-    if has_screenshot:
-        lines.append("A screenshot is attached to the request: open it on the helper page.")
-    lines += ["", f"Open the waiting requests: {helper_link()}", "The learner sees your reply on the page, or on Telegram if they chose it."]
-    return f"SYLY: new request {ticket_id} ({language})", NL.join(lines)
+def tutor_text(ticket_id: int, language: str, page_url: str | None, question: str, has_screenshot: bool, site_name: str | None = None) -> tuple[str, str]:
+    """(subject, plain-text body) for the tutors. Only what the learner wrote and where: never a contact, a token or a chat id."""
+    from services import email_template as tpl
+
+    return tpl.subject(ticket_id, language), tpl.text(ticket_id, language, page_url, question, has_screenshot, site_name, helper_link())
 
 
-async def tutors(ticket_id: int, language: str, page_url: str | None, question: str, has_screenshot: bool = False) -> dict[str, bool]:
-    """Tell the tutors: Telegram group and/or email. One channel failing never stops the other. Returns which worked."""
+# Alerts per hour per target (a site, or the SYLY team): a site key is public, so without a limit anyone could fill a tutor's inbox.
+ALERTS_PER_HOUR = 20
+_recent: dict[str, list[float]] = {}
+
+
+def allow_alert(target: str, now: float | None = None) -> bool:
+    t = now if now is not None else time.monotonic()
+    window = [x for x in _recent.get(target, []) if t - x < 3600]
+    if len(window) >= ALERTS_PER_HOUR:
+        _recent[target] = window
+        return False
+    window.append(t)
+    _recent[target] = window
+    return True
+
+
+async def tutors(ticket_id: int, language: str, page_url: str | None, question: str, has_screenshot: bool = False,
+                 site_name: str | None = None, emails: list[str] | None = None) -> dict[str, bool]:
+    """Tell the tutors. `emails` are the addresses the site's developer entered: when there are some, ONLY they are told (the SYLY
+    team's inbox and Telegram group are the fallback for sites that gave none). One channel failing never stops the other.
+    Returns which channels worked."""
+    from services import email_template as tpl
     from services import mailer
 
-    subject, body = tutor_text(ticket_id, language, page_url, question, has_screenshot)
+    own = bool(emails)
+    to = list(emails) if own else list(settings.tutor_emails)
+    group = "" if own else settings.tutor_telegram_chat
     done = {"telegram": False, "email": False}
+    if not (to or group):
+        return done
+    if not allow_alert(f"{site_name or 'team'}:{','.join(to)}"):
+        log.warning("request %s: too many alerts this hour for this site; the request is on the helper page", ticket_id)
+        return done
+    subject, body = tutor_text(ticket_id, language, page_url, question, has_screenshot, site_name)
     # Each channel is guarded on its own: whatever goes wrong in one is logged and never stops the other or the learner's request.
-    if settings.tutor_telegram_chat:
+    if group:
         try:
-            done["telegram"] = await telegram(settings.tutor_telegram_chat, subject + NL + NL + body)
+            done["telegram"] = await telegram(group, subject + NL + NL + body)
         except Exception as e:  # noqa: BLE001
             log.warning("tutor telegram failed: %s", type(e).__name__)
-    if settings.tutor_emails:
+    if to:
         try:
-            done["email"] = await mailer.send(settings.tutor_emails, subject, body)
+            html_part = tpl.html_body(ticket_id, language, page_url, question, has_screenshot, site_name, helper_link(), own_addresses=own)
+            done["email"] = await mailer.send(to, subject, body, html_part)
         except Exception as e:  # noqa: BLE001
             log.warning("tutor email failed: %s", type(e).__name__)
-    if not any(done.values()) and (settings.tutor_telegram_chat or settings.tutor_emails):
+    if not any(done.values()):
         log.warning("request %s: the tutors could not be told (%s)", ticket_id, ", ".join(k for k, v in done.items() if not v))
     return done
 

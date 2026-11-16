@@ -492,6 +492,13 @@ async def on_start(m: Message, command: CommandObject) -> None:
     await do_start(m, c)
 
 
+@dp.message(Command("chatid"))
+async def on_chatid(m: Message) -> None:
+    """Hidden helper for setting up: the id of this chat, so a tutors' group can be put in TUTOR_TELEGRAM_CHAT.
+    Not in the menu. It answers with the number only and stores nothing."""
+    await m.answer(f"Chat id: {m.chat.id}")
+
+
 @dp.message(Command("help"))
 async def on_help(m: Message) -> None:
     await do_help(m, chat(m))

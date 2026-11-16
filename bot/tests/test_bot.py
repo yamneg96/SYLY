@@ -294,3 +294,12 @@ def test_wav_voice_from_the_gemini_voice_is_sent_as_a_wav_file(monkeypatch):
     run(bot.voice_reply(m, c, "answer", "om"))
     kind, doc, _ = m.sent[-1]
     assert kind == "audio" and doc.filename == "answer.wav"
+
+
+def test_chatid_answers_with_the_id_of_the_chat_and_is_not_in_the_menu():
+    m = FakeMsg(-1001234567890)
+    run(bot.on_chatid(m))
+    assert m.texts() == ["Chat id: -1001234567890"]  # a group id is negative: this is what goes in TUTOR_TELEGRAM_CHAT
+    for lang in ("en", "am", "ar", "om", "ti", "so"):
+        assert "chatid" not in [n for n, _ in commands.build(lang, bot.TEXT)]
+    assert bot.chats.get("-1001234567890") is None, "nothing is stored about the chat"
