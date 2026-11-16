@@ -96,8 +96,8 @@
   "selectorLabel": "የይዘት መምረጫ (አማራጭ)",
   "selectorHint": "ለገጽ ንባብ የትምህርትዎ ጽሑፍ ያለበት ቦታ። ለምሳሌ፦ #lesson ወይም .course-content። ባዶ ከሆነ፦ main፣ article ወይም ሙሉ ገጹ።",
   "readPageLabel": "ገጹን አንብብ",
-  "readPage_fallback": "ሌላ ይዘት ከሌለ ብቻ (ነባሪ)",
-  "readPage_always": "ሁልጊዜ፣ ከይዘት ፋይሉ ጋር",
+  "readPage_fallback": "ሌላ ይዘት ከሌለ ብቻ",
+  "readPage_always": "ሁልጊዜ፣ ከይዘት ፋይሉ ጋር (ነባሪ)",
   "readPage_off": "በፍጹም",
   "readPageHint": "ረዳቱ በገጹ ላይ ያለውን ትምህርት በተማሪው ብራውዘር ውስጥ ማንበብ ይችላል። ያለ ተማሪው ፈቃድ ምንም ወደ ሰርቨር አይላክም።"
 }

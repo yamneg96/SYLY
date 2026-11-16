@@ -486,6 +486,31 @@
   function save(key, value) {
     try { localStorage.setItem(STORE + key, JSON.stringify(value)); } catch (e) { /* private mode: keep in memory */ }
   }
+  // After a source link scrolls to a section, tint that section for about 3 seconds with a heartbeat (two soft beats a
+  // second, so nothing flashes more than 3 times a second). Uses the Web Animations API: nothing is added to the host
+  // page's markup or styles, and the tint is gone by itself. With reduced motion the tint stays steady instead of pulsing.
+  function sectionElements(heading, target) {
+    var box = target && target !== heading && target.contains(heading) && /^(ARTICLE|SECTION|LI)$/.test(target.tagName) ? target : null;
+    if (box) return [box];
+    var rank = Number(heading.tagName.slice(1)) || 6, out = [heading], n = heading.nextElementSibling;
+    while (n && out.length < 14 && !(/^H[1-6]$/.test(n.tagName) && Number(n.tagName.slice(1)) <= rank)) { out.push(n); n = n.nextElementSibling; }
+    return out;
+  }
+  function flashSection(heading, target) {
+    if (!heading.animate) return;
+    var amber = '245, 163, 0', still = reducedMotion();
+    var frames = still
+      ? [{ backgroundColor: 'rgba(' + amber + ',0.35)' }, { backgroundColor: 'rgba(' + amber + ',0.35)', offset: 0.85 }, { backgroundColor: 'rgba(' + amber + ',0)' }]
+      : [{ backgroundColor: 'rgba(' + amber + ',0)', boxShadow: '0 0 0 0 rgba(' + amber + ',0)' },
+         { backgroundColor: 'rgba(' + amber + ',0.55)', boxShadow: '0 0 0 6px rgba(' + amber + ',0.35)', offset: 0.14 },
+         { backgroundColor: 'rgba(' + amber + ',0.18)', boxShadow: '0 0 0 2px rgba(' + amber + ',0.15)', offset: 0.28 },
+         { backgroundColor: 'rgba(' + amber + ',0.45)', boxShadow: '0 0 0 5px rgba(' + amber + ',0.3)', offset: 0.42 },
+         { backgroundColor: 'rgba(' + amber + ',0)', boxShadow: '0 0 0 0 rgba(' + amber + ',0)' }];
+    sectionElements(heading, target).forEach(function (el) {
+      try { el.animate(frames, { duration: still ? 3000 : 1000, iterations: still ? 1 : 3, delay: 350, easing: 'ease-in-out' }); } catch (err) { /* old browser: no tint */ }
+    });
+  }
+
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
   function reducedMotion() { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
 
@@ -1524,6 +1549,7 @@
       if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
       heading.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
       heading.focus({ preventScroll: true });
+      flashSection(heading, target);
       try { history.replaceState(null, '', url.hash); } catch (err) { /* sandboxed */ }
     }
 
@@ -1546,6 +1572,7 @@
       if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
       heading.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
       heading.focus({ preventScroll: true });
+      flashSection(heading, heading);
     }
 
     /* human help (FR-H1, FR-H2) */

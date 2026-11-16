@@ -35,7 +35,8 @@
     var a = { lang: $('o-lang').value }, theme = radio('theme'), c = colour();
     if ($('o-api').value.trim()) a.api = $('o-api').value.trim();
     if ($('o-content').value.trim()) a.content = $('o-content').value.trim();
-  // Page reading (FR-AD4): only written into the tag when changed from the default.
+  // Page reading (FR-AD4): the install page defaults to "always", which differs from the widget's own default
+  // ("fallback"), so "always" IS written into the tag; only the widget default is left out.
   if ($('o-selector').value.trim()) a['content-selector'] = $('o-selector').value.trim();
   if ($('o-readpage').value !== 'fallback') a['read-page'] = $('o-readpage').value;
     if (theme !== 'auto' && theme !== 'custom') a.theme = theme;
