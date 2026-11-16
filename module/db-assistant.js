@@ -41,6 +41,7 @@
       "dir": "ltr",
       "speechLang": "en-US",
       "title": "SYLY Assistant",
+      "resize": "Resize the assistant panel. Use the left and right arrow keys, Home, End, or Enter to reset.",
       "launcher": "Ask SYLY",
       "close": "Close",
       "language": "Language",
@@ -160,6 +161,7 @@
       "dir": "ltr",
       "speechLang": "am-ET",
       "title": "SYLY ረዳት",
+      "resize": "የረዳቱን ፓነል መጠን ይቀይሩ። የግራና የቀኝ ቀስት ቁልፎችን፣ Home፣ End፣ ወይም ለመመለስ Enter ይጠቀሙ።",
       "launcher": "SYLYን ይጠይቁ",
       "close": "ዝጋ",
       "language": "ቋንቋ",
@@ -279,6 +281,7 @@
       "dir": "rtl",
       "speechLang": "ar-SA",
       "title": "مساعد SYLY",
+      "resize": "غيّر حجم لوحة المساعد. استخدم مفتاحي السهم الأيسر والأيمن أو Home أو End أو Enter للإعادة.",
       "launcher": "اسأل SYLY",
       "close": "إغلاق",
       "language": "اللغة",
@@ -775,6 +778,15 @@
     '.root.pos-start dialog.panel{inset-inline-end:auto;inset-inline-start:0;border-inline-start:0;border-inline-end:1px solid var(--c-border);}',
     'dialog.panel{position:fixed;inset-block:0;inset-inline-end:0;inset-inline-start:auto;margin:0;padding:0;inline-size:min(26rem,100vw);max-inline-size:100vw;block-size:100vh;block-size:100dvh;max-block-size:none;border:0;border-inline-start:1px solid var(--c-border);background:var(--c-bg);color:var(--c-text);flex-direction:column;overflow:hidden;}',
     'dialog.panel[open]{display:flex;}',
+    'dialog.panel{inline-size:min(var(--panel-w,26rem),100vw);}',
+    '.rz{position:absolute;inset-block:0;inset-inline-start:0;inline-size:0.75rem;cursor:col-resize;touch-action:none;z-index:3;display:flex;align-items:center;justify-content:center;}',
+    '.root.pos-start .rz{inset-inline-start:auto;inset-inline-end:0;}',
+    '.root[dir=rtl].pos-start .rz{inset-inline-end:auto;inset-inline-start:0;}',
+    '.rz::before{content:"";inline-size:0.25rem;block-size:3rem;border-radius:999px;background:var(--c-border);transition:background 0.15s,block-size 0.15s;}',
+    '.rz:hover::before,.rz.drag::before{background:var(--c-focus);block-size:5rem;}',
+    '.rz:focus-visible{outline-offset:-3px;}',
+    'dialog.panel.resizing{user-select:none;-webkit-user-select:none;}',
+    '@media (max-width:899.98px){.rz{display:none;}}',
     'dialog.panel::backdrop{background:rgba(0,0,0,0.2);}',
     '@media (max-width:899.98px){dialog.panel{inline-size:100vw;border:0;}}',
     '.head{padding:0.75rem 1rem;border-block-end:1px solid var(--c-border);display:flex;flex-direction:column;gap:0.5rem;}',
@@ -1108,7 +1120,9 @@
           ])
         ])
       ]);
-      this.$dialog = h('dialog', { id: 'panel', class: 'panel', 'aria-labelledby': 'title' }, [head, this.$share, body, this.$status, composer]);
+      this.$rz = h('div', { class: 'rz', role: 'separator', 'aria-orientation': 'vertical', tabindex: '0' });
+      this.$dialog = h('dialog', { id: 'panel', class: 'panel', 'aria-labelledby': 'title' }, [this.$rz, head, this.$share, body, this.$status, composer]);
+      this._initResize();
       this.$dialog.addEventListener('cancel', function (e) { e.preventDefault(); if (self._sharing) self._stopShare(); else self.close(); });
       this.$dialog.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape' || e.defaultPrevented) return;
@@ -1124,6 +1138,55 @@
       });
       wrap.appendChild(this.$launcher);
       wrap.appendChild(this.$dialog);
+    }
+
+    // The learner can drag the panel's inner edge (mouse, touch or pen) or use the arrow keys to make it wider or
+    // narrower. Home/End jump to the limits, Enter or a double click restores the default. The width is remembered.
+    _initResize() {
+      var self = this, d = this.$dialog, rz = this.$rz, DEFAULT = 416, MIN = 320, STEP = 24;
+      function max() { return Math.max(MIN, Math.min(960, Math.round(window.innerWidth * 0.9))); }
+      function clamp(w) { return Math.max(MIN, Math.min(max(), Math.round(w))); }
+      function onRight() { return d.getBoundingClientRect().left > 1; }
+      function set(w, persist) {
+        w = clamp(w);
+        d.style.setProperty('--panel-w', w + 'px');
+        rz.setAttribute('aria-valuemin', String(MIN)); rz.setAttribute('aria-valuemax', String(max())); rz.setAttribute('aria-valuenow', String(w));
+        if (persist) save('panelWidth', w);
+      }
+      var saved = load('panelWidth', null);
+      set(typeof saved === 'number' ? saved : DEFAULT, false);
+      this._rzLabel = function () { rz.setAttribute('aria-label', self._t.resize); };
+      this._rzLabel();
+      var dragging = false;
+      rz.addEventListener('pointerdown', function (e) {
+        if (e.button > 0) return;
+        dragging = true; rz.setPointerCapture(e.pointerId); rz.classList.add('drag'); d.classList.add('resizing'); e.preventDefault();
+      });
+      rz.addEventListener('pointermove', function (e) {
+        if (!dragging) return;
+        set(onRight() ? window.innerWidth - e.clientX : e.clientX, false);
+      });
+      function end(e) {
+        if (!dragging) return;
+        dragging = false; rz.classList.remove('drag'); d.classList.remove('resizing');
+        try { rz.releasePointerCapture(e.pointerId); } catch (x) { /* already released */ }
+        save('panelWidth', clamp(parseInt(rz.getAttribute('aria-valuenow'), 10) || DEFAULT));
+      }
+      rz.addEventListener('pointerup', end);
+      rz.addEventListener('pointercancel', end);
+      rz.addEventListener('dblclick', function () { set(DEFAULT, true); });
+      rz.addEventListener('keydown', function (e) {
+        var cur = parseInt(rz.getAttribute('aria-valuenow'), 10) || DEFAULT, w = null;
+        // the edge being moved is on the inner side: toward the page grows a right-hand panel, shrinks a left-hand one
+        var grow = (e.key === 'ArrowLeft') === onRight();
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') w = cur + (grow ? STEP : -STEP) * (e.shiftKey ? 4 : 1);
+        else if (e.key === 'Home') w = MIN;
+        else if (e.key === 'End') w = max();
+        else if (e.key === 'Enter') w = DEFAULT;
+        if (w === null) return;
+        e.preventDefault(); e.stopPropagation(); set(w, true);
+      });
+      window.addEventListener('resize', function () { set(parseInt(rz.getAttribute('aria-valuenow'), 10) || DEFAULT, false); });
     }
 
     _applyTheme() {
@@ -1172,6 +1235,7 @@
         var v = t[el.getAttribute('data-t')];
         if (v !== undefined) el.textContent = v;
       });
+      if (this._rzLabel) this._rzLabel();
       if (this._recognizer) this._setBtn(this.$mic, 'stop', 'micStop');
       if (this.$langSel) {
         var sel = this.$langSel, cur = this._lang;

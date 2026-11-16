@@ -2,6 +2,7 @@
   "dir": "rtl",
   "speechLang": "ar-SA",
   "title": "مساعد SYLY",
+  "resize": "غيّر حجم لوحة المساعد. استخدم مفتاحي السهم الأيسر والأيمن أو Home أو End أو Enter للإعادة.",
   "launcher": "اسأل SYLY",
   "close": "إغلاق",
   "language": "اللغة",

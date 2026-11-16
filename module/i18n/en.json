@@ -2,6 +2,7 @@
   "dir": "ltr",
   "speechLang": "en-US",
   "title": "SYLY Assistant",
+  "resize": "Resize the assistant panel. Use the left and right arrow keys, Home, End, or Enter to reset.",
   "launcher": "Ask SYLY",
   "close": "Close",
   "language": "Language",
