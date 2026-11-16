@@ -331,5 +331,10 @@
  "dashboard.tabShort": "አጭር",
  "dashboard.tabFull": "ግልጽ",
  "dashboard.tabCdn": "CDN",
- "dashboard.tabNpm": "npm"
+ "dashboard.tabNpm": "npm",
+ "dashboard.fTutor": "የአስጠኚ ኢሜይል አድራሻዎች (አማራጭ፣ በአንድ መስመር አንድ)",
+ "dashboard.fTutorHint": "ተማሪ ሰው ሲጠይቅና ማንም መስመር ላይ ከሌለ፣ ጥያቄው፣ የገጹ አድራሻና ቋንቋው አስጠኚ እንዲመልስ ወደ እነዚህ አድራሻዎች በኢሜይል ይላካሉ። ባዶ ከተዉት ጥያቄው በምትኩ ወደ SYLY ቡድን ይሄዳል። እስከ 5 አድራሻዎች።",
+ "dashboard.errTutorEmail": "«{value}» ትክክለኛ የኢሜይል አድራሻ አይደለም። በአንድ መስመር አንድ አድራሻ ይጻፉ፣ ለምሳሌ tutors@college.example።",
+ "dashboard.errTutorMany": "በጣም ብዙ አድራሻዎች። {max} ወይም ከዚያ ያነሰ ይጠቀሙ።",
+ "privacy.learn5": "ተማሪ ሰው ሲጠይቅና ማንም መስመር ላይ ከሌለ፣ ጥያቄው፣ የገጹ አድራሻና ቋንቋው የድረ ገጹ ገንቢ በዳሽቦርዱ ወደ አስገባቸው የአስጠኚ አድራሻዎች፣ ወይም ገንቢው ምንም ካላስገባ ወደ SYLY ቡድን (እና የቴሌግራም ቡድኑ) በኢሜይል ይላካሉ። ስም፣ ስልክ ቁጥር ወይም ሌላ የመገናኛ መረጃ አይካተትም።"
 }

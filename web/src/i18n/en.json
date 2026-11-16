@@ -331,5 +331,10 @@
  "dashboard.tabShort": "Short",
  "dashboard.tabFull": "Explicit",
  "dashboard.tabCdn": "CDN",
- "dashboard.tabNpm": "npm"
+ "dashboard.tabNpm": "npm",
+ "dashboard.fTutor": "Tutor e-mail addresses (optional, one per line)",
+ "dashboard.fTutorHint": "When a learner asks for a person and nobody is online, the question, the page address and the language are e-mailed to these addresses so a tutor can answer. Leave it empty and the request goes to the SYLY team instead. Up to 5 addresses.",
+ "dashboard.errTutorEmail": "“{value}” is not a valid e-mail address. Write one address per line, for example tutors@college.example.",
+ "dashboard.errTutorMany": "Too many addresses. Use {max} or fewer.",
+ "privacy.learn5": "If a learner asks for a person and nobody is online, the question, the page address and the language are sent by e-mail to the tutor addresses the site's developer entered in the dashboard, or to the SYLY team (and its Telegram group) if the developer entered none. No name, phone number or other contact is included."
 }
