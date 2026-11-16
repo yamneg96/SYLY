@@ -9,6 +9,7 @@ import asyncio
 import logging
 import smtplib
 from email.message import EmailMessage
+from email.utils import formataddr
 
 from config import settings
 
@@ -19,24 +20,26 @@ def configured() -> bool:
     return bool(settings.smtp_host and settings.smtp_user and settings.smtp_pass and settings.sender_email)
 
 
-def _send(to: list[str], subject: str, body: str) -> None:
+def _send(to: list[str], subject: str, body: str, html: str | None = None) -> None:
     msg = EmailMessage()
-    msg["From"] = settings.sender_email
+    msg["From"] = formataddr(("SYLY", settings.sender_email))
     msg["To"] = ", ".join(to)
     msg["Subject"] = subject
     msg.set_content(body)
+    if html:
+        msg.add_alternative(html, subtype="html")  # clients that cannot show HTML show the plain text above
     with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as smtp:
         smtp.starttls()
         smtp.login(settings.smtp_user, settings.smtp_pass)
         smtp.send_message(msg)
 
 
-async def send(to: list[str], subject: str, body: str) -> bool:
+async def send(to: list[str], subject: str, body: str, html: str | None = None) -> bool:
     """True when the relay accepted the message. Any failure is logged without secrets and returns False."""
     if not to or not configured():
         return False
     try:
-        await asyncio.to_thread(_send, to, subject, body)
+        await asyncio.to_thread(_send, to, subject, body, html)
         log.info("email sent to %d tutor address(es)", len(to))
         return True
     except (smtplib.SMTPException, OSError) as e:

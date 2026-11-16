@@ -2,6 +2,7 @@
 // Form error messages are i18n keys with optional parameters, written with msg() and shown with renderIssue().
 import { z } from "zod"
 import { contrastWithWhite, isHex, MIN_CONTRAST } from "@/lib/contrast"
+import { MAX_TUTOR_EMAILS, parseEmails } from "@/lib/emails"
 import { MAX_ORIGINS, originLines, parseOrigin } from "@/lib/origins"
 
 /* ---------------------------------------------------------------- API responses */
@@ -20,6 +21,7 @@ export const siteSettingsSchema = z.object({
   read_page: z.string().default("auto"),
   voice: z.boolean().default(false),
   simple: z.boolean().default(false),
+  tutor_emails: z.array(z.string()).default([]),
 })
 export const siteSchema = z.object({
   id: z.number(),
@@ -70,6 +72,7 @@ export const siteFormSchema = z
     voice: z.boolean(),
     simple: z.boolean(),
     bot: z.string().trim(),
+    tutorEmails: z.string(),
   })
   .superRefine((v, ctx) => {
     const add = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message })
@@ -97,13 +100,16 @@ export const siteFormSchema = z
     }
     if (/[<>{}]/.test(v.selector)) add("selector", msg("dashboard.errSelector"))
     if (v.bot && !/^@?[A-Za-z][A-Za-z0-9_]{3,30}[Bb][Oo][Tt]$/.test(v.bot)) add("bot", msg("dashboard.errBot"))
+    const mail = parseEmails(v.tutorEmails)
+    if (mail.bad !== null) add("tutorEmails", msg("dashboard.errTutorEmail", { value: mail.bad }))
+    else if (mail.emails.length > MAX_TUTOR_EMAILS) add("tutorEmails", msg("dashboard.errTutorMany", { max: MAX_TUTOR_EMAILS }))
   })
 
 export type SiteFormValues = z.infer<typeof siteFormSchema>
 
 export const emptySiteForm: SiteFormValues = {
   name: "", origins: "", lang: "am", mode: "panel", position: "end", theme: "auto", primary: "",
-  source: "api", contentUrl: "", selector: "", readPage: "auto", voice: false, simple: false, bot: "",
+  source: "api", contentUrl: "", selector: "", readPage: "auto", voice: false, simple: false, bot: "", tutorEmails: "",
 }
 
 export function formFromSite(site: Site): SiteFormValues {
@@ -123,6 +129,7 @@ export function formFromSite(site: Site): SiteFormValues {
     voice: s.voice,
     simple: s.simple,
     bot: site.bot_username ? "@" + site.bot_username : "",
+    tutorEmails: s.tutor_emails.join("\n"),
   }
 }
 
@@ -133,12 +140,12 @@ export function toPayload(v: SiteFormValues) {
     allowed_origins: originLines(v.origins),
     lang: v.lang, mode: v.mode, position: v.position, theme: v.theme, primary: v.primary,
     content_source: v.source, content_url: v.contentUrl, content_selector: v.selector, read_page: v.readPage,
-    voice: v.voice, simple: v.simple, bot_username: v.bot,
+    voice: v.voice, simple: v.simple, bot_username: v.bot, tutor_emails: parseEmails(v.tutorEmails).emails,
   }
 }
 
 /** Server field names to form field names, for the messages the server sends back in words. */
 export const SERVER_FIELD: Record<string, keyof SiteFormValues> = {
   name: "name", allowed_origins: "origins", lang: "lang", mode: "mode", position: "position", theme: "theme", primary: "primary",
-  content_source: "source", content_url: "contentUrl", content_selector: "selector", read_page: "readPage", bot_username: "bot",
+  content_source: "source", content_url: "contentUrl", content_selector: "selector", read_page: "readPage", bot_username: "bot", tutor_emails: "tutorEmails",
 }

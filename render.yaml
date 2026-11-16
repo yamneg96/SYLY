@@ -45,6 +45,8 @@ services:
         sync: false
       - key: SMTP_PORT
         value: "587"
+      - key: TELEGRAM_BOT_TOKEN   # our SYLY bot: sends the alert to the tutors' group and the tutors' replies to learners (developers' own bots never come here)
+        sync: false
       - key: PUBLIC_BASE_URL  # the address of the static site (the bot's links point there)
         sync: false
   # The Telegram bot needs a process that never sleeps. On Render that is a paid Background Worker; uncomment to use it.

@@ -103,6 +103,7 @@ class SiteIn(BaseModel):
     voice: Any = False
     simple: Any = False
     bot_username: Any = ""
+    tutor_emails: Any = []
 
 
 def _own_site(db: Session, account: Account, site_id: int) -> Site:

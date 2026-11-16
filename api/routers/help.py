@@ -13,7 +13,7 @@ from config import settings
 from db import decrypt, encrypt, get_db
 from models import HelperPresence, Message, Ticket, Webhook
 from schemas import Created, EscalationIn, ScreenshotIn, EscalationOut, MessageIn, MessageOut, TicketOut, TicketUpdate, WebhookIn
-from services import notify, webhook
+from services import notify, sites, webhook
 from services.i18n import t
 
 router = APIRouter(prefix="/api/v1", tags=["human help"])
@@ -53,7 +53,8 @@ def _learner_or_helper(ticket: Ticket, token: str | None, helper_key: str | None
 
 
 @router.post("/escalations", status_code=201, response_model=EscalationOut, summary="Talk to a person: open a ticket")
-async def create_escalation(body: EscalationIn, tasks: BackgroundTasks, db: Session = Depends(get_db)) -> EscalationOut:
+async def create_escalation(body: EscalationIn, tasks: BackgroundTasks, db: Session = Depends(get_db),
+                            x_site_key: str | None = Header(default=None)) -> EscalationOut:
     if body.screenshot and not body.screenshot.startswith("data:image/"):
         raise HTTPException(400, "The screenshot must be an image data URL (data:image/...).")
     ticket = Ticket(
@@ -78,7 +79,9 @@ async def create_escalation(body: EscalationIn, tasks: BackgroundTasks, db: Sess
     if not online:
         # Nobody is watching the helper page: tell the tutors (Telegram group, email). In the background, so a slow relay never slows the learner.
         question = next((m.text for m in reversed(body.conversation) if m.role == "learner"), "")
-        tasks.add_task(notify.tutors, ticket.id, ticket.language, ticket.page_url, question, bool(body.screenshot))
+        # A site the developer registered may name its own tutor addresses; with none, the SYLY team's own are used.
+        site_name, site_emails = sites.tutor_emails_for(db, x_site_key)
+        tasks.add_task(notify.tutors, ticket.id, ticket.language, ticket.page_url, question, bool(body.screenshot), site_name, site_emails)
     return EscalationOut(ticketId=ticket.id, helper_online=online, token=ticket.access_token, telegram_link=link)
 
 

@@ -9,6 +9,38 @@ from urllib.parse import urlsplit
 
 MAX_SITES = 20
 MAX_ORIGINS = 20
+MAX_TUTOR_EMAILS = 5
+_EMAIL = re.compile(r"^[^@\s,;<>\"']+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$")
+_EMAIL_SPLIT = re.compile(r"[\n,;]+")
+
+
+def parse_emails(raw) -> tuple[list[str], str | None]:  # noqa: ANN001
+    """(addresses, first bad one). One per line, or separated by commas or semicolons. Lower case, no duplicates."""
+    if raw is None:
+        return [], None
+    items = _EMAIL_SPLIT.split(raw) if isinstance(raw, str) else [str(x) for x in raw]
+    out: list[str] = []
+    for item in items:
+        e = item.strip().lower()
+        if not e:
+            continue
+        if len(e) > 254 or not _EMAIL.match(e):
+            return out, item.strip()
+        if e not in out:
+            out.append(e)
+    return out, None
+
+
+def tutor_emails_for(db, key: str | None) -> tuple[str | None, list[str]]:  # noqa: ANN001
+    """(site name, the tutor addresses the developer entered) for a site key. Empty list: use the SYLY team's own."""
+    if not key:
+        return None, []
+    from models import Site
+
+    site = db.query(Site).filter(Site.public_key == key).first()
+    if not site:
+        return None, []
+    return site.name, [e for e in (site.settings or {}).get("tutor_emails", []) if isinstance(e, str)]
 LANGS = ("am", "en", "ar", "om", "ti", "so")
 BETA_LANGS = ("om", "ti", "so")
 _HTTPS = re.compile(r"^https://[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*(:\d{1,5})?$")
@@ -144,6 +176,14 @@ def clean(data: dict) -> dict:
     if bot and not _BOT.match(bot):
         errors["bot_username"] = "A Telegram bot name is 5 to 32 letters, digits or underscores and ends with “bot”, for example MyCollegeHelpBot."
 
+    emails, bad_email = parse_emails(data.get("tutor_emails"))
+    if bad_email is not None:
+        errors["tutor_emails"] = (
+            f"“{bad_email}” is not a valid e-mail address. Write one address per line, for example tutors@college.example."
+        )
+    elif len(emails) > MAX_TUTOR_EMAILS:
+        errors["tutor_emails"] = f"Too many addresses. Use {MAX_TUTOR_EMAILS} or fewer."
+
     if errors:
         raise FieldError(errors)
     return {
@@ -151,6 +191,7 @@ def clean(data: dict) -> dict:
         "allowed_origins": origins,
         "bot_username": bot or None,
         "settings": {
+            "tutor_emails": emails,
             "lang": lang, "mode": mode, "position": position, "theme": theme, "primary": primary,
             "content_source": source, "content_url": content_url if source == "file" else "",
             "content_selector": selector if source == "page" else "", "read_page": read_page,

@@ -16,7 +16,7 @@ import models  # noqa: F401 - registers tables
 from config import settings
 from db import SessionLocal
 from migrate import upgrade_to_head
-from routers import ask, data, help, jobs, portal, sms, voice
+from routers import ask, data, help, jobs, portal, root, sms, voice
 from services import content, sites
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -131,5 +131,5 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-for r in (ask.router, help.router, jobs.router, sms.router, voice.router, data.router, portal.router):
+for r in (root.router, ask.router, help.router, jobs.router, sms.router, voice.router, data.router, portal.router):
     app.include_router(r)
