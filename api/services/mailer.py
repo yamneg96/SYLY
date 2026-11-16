@@ -28,7 +28,8 @@ def _send(to: list[str], subject: str, body: str, html: str | None = None) -> No
     msg.set_content(body)
     if html:
         msg.add_alternative(html, subtype="html")  # clients that cannot show HTML show the plain text above
-    with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as smtp:
+    # a relay can need 15 to 20 seconds on a slow network; callers send in the background
+    with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=45) as smtp:
         smtp.starttls()
         smtp.login(settings.smtp_user, settings.smtp_pass)
         smtp.send_message(msg)

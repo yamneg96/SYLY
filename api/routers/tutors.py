@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -55,13 +55,14 @@ def _me(db: Session, email: str) -> dict:
 
 
 @router.post("/login/request", summary="Ask for a sign-in code by e-mail", dependencies=[Depends(csrf)])
-async def request_code(body: CodeRequestIn, db: Session = Depends(get_db)) -> dict:
-    """The answer is the same whether or not the address is on a tutor list, so nobody can find out who the tutors are."""
+async def request_code(body: CodeRequestIn, tasks: BackgroundTasks, db: Session = Depends(get_db)) -> dict:
+    """The answer is the same whether or not the address is on a tutor list, so nobody can find out who the tutors are.
+    The e-mail goes out after the answer, so a slow relay neither keeps the person waiting nor shows (by timing) that the address is listed."""
     email = tutors.norm(body.email)
     if tutors.is_listed(db, email):
         code = tutors.issue_code(db, email)
         if code:
-            await mailer.send([email], tpl.code_subject(), tpl.code_text(code), tpl.code_html(code))
+            tasks.add_task(mailer.send, [email], tpl.code_subject(), tpl.code_text(code), tpl.code_html(code))
     return {"ok": True, "delivery": mailer.configured(), "message": "If this address is on a tutor list, a code was sent to it. It works for 10 minutes."}
 
 
