@@ -3,7 +3,7 @@
 # The static side (the React portal, the widget, the demo pages) is NOT here: it goes on Vercel or Cloudflare Pages.
 services:
   - type: web
-    name: syly-api            # the address is https://syly-api.onrender.com: the same name is used in vercel.json
+    name: syly-api-v1          # the address is https://syly-api-v1.onrender.com: the same name is used in vercel.json
     runtime: docker
     dockerfilePath: ./Dockerfile.render
     dockerContext: .
@@ -42,7 +42,7 @@ services:
   #   plan: starter
   #   envVars:
   #     - key: API_URL
-  #       value: https://syly-api.onrender.com
+  #       value: https://syly-api-v1.onrender.com
   #     - key: TELEGRAM_BOT_TOKEN
   #       sync: false
   #     - key: PUBLIC_BASE_URL
