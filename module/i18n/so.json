@@ -33,6 +33,7 @@
   "notFoundOffer": "Qof ayaa ku caawin kara. Taabo “La hadal qof”.",
   "noAdvice": "Ma bixin karo talo caafimaad, sharci ama socdaal. Qof ayaa ku caawin kara.",
   "emptyIntro": "Weydii su'aal ku saabsan casharkan. Waxaan ka jawaabaa koorsada oo keliya, waxaanan muujiyaa halka jawaab kasta ka timid.",
+  "exampleAbout": "Ii sheeg wax ku saabsan {title}",
   "examplesTitle": "Isku day mid kuwan ka mid ah:",
   "example1": "Ma beddeli doonaa AI caawiyayaasha dhijitaalka?",
   "example2": "Xirfadahee ayay macaamiishu qiimeeyaan?",

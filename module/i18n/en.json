@@ -33,6 +33,7 @@
   "notFoundOffer": "A person can help you. Press “Talk to a person”.",
   "noAdvice": "I cannot give medical, legal or immigration advice. A person can help you.",
   "emptyIntro": "Ask a question about this lesson. I answer only from the course and show where each answer came from.",
+  "exampleAbout": "Tell me about {title}",
   "examplesTitle": "Try one of these:",
   "example1": "Will AI replace virtual assistants?",
   "example2": "What skills will clients value?",

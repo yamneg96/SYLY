@@ -89,7 +89,7 @@ Or generate them on `demo/install.html` (live preview, contrast check for a cust
 | `mode` | `panel` (pill on the side edge opens a full-height side panel) or `inline` (ask box in the page flow) | `panel` |
 | `position` | `end` (right edge, vertically centred; left in Arabic) or `start` (other edge) | `end` |
 | `content-selector` | CSS selector of the lesson on the page, for page reading, e.g. `#lesson` | `main`, `article`, `[role=main]`, then `body` |
-| `read-page` | empty (fallback), `always` (page sections added to the file), `off` | fallback |
+| `read-page` | empty or `always` (the page is read and added to any content file), `fallback` (only when there is no other content), `off` | always |
 
 Events (all `bubbles: true, composed: true`):
 
@@ -122,7 +122,7 @@ Limits:
 - An English page cannot be matched by an Amharic question offline (there is no Amharic text). The learner then gets "I could not find this in the course" and "Talk to a person". Online, after "Allow online answers", the AI receives the English sections and answers in Amharic.
 - Page sections are sent to the server only after the learner allows online answers, and the server never stores them.
 - Very short pages (one or two sections) can fall under the search threshold, which was tuned on full lessons.
-- `read-page="off"` turns it off; `read-page="always"` adds the page to the content file.
+- `read-page="off"` turns it off; `read-page="fallback"` reads the page only when there is no other content. The "Try one of these" questions come from the headings of the page being read.
 
 Try it: `/demo/page-reading.html` (test content, no content file).
 

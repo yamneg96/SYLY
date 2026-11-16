@@ -102,11 +102,13 @@ test('root: content-selector, else main, article, [role=main], else body', () =>
 
 test('fallback order (2.1): file, then server sections for this page, then page reading', () => {
   // default (no read-page attribute)
-  assert.equal(decidePageReading('', true, 'unreachable'), false, 'file loaded: no page reading');
-  assert.equal(decidePageReading('', false, 'hasSections'), false, 'server has this page: no page reading');
-  assert.equal(decidePageReading('', false, 'noSections'), true);
-  assert.equal(decidePageReading('', false, 'unreachable'), true);
-  assert.equal(decidePageReading('', false, 'none'), true);
+  assert.equal(decidePageReading('fallback', true, 'unreachable'), false, 'fallback, file loaded: no page reading');
+  assert.equal(decidePageReading('fallback', false, 'hasSections'), false, 'fallback, server has this page: no page reading');
+  assert.equal(decidePageReading('fallback', false, 'noSections'), true);
+  assert.equal(decidePageReading('fallback', false, 'unreachable'), true);
+  assert.equal(decidePageReading('fallback', false, 'none'), true);
+  // the default (no attribute, or "auto" from the portal) reads the page whatever else exists
+  for (const m of ['', 'auto']) for (const f of [true, false]) for (const sv of ['none', 'unreachable', 'hasSections', 'noSections']) assert.equal(decidePageReading(m, f, sv), true, `default ${m}/${f}/${sv}`);
   // read-page="off" never; read-page="always" always (alongside the file)
   for (const f of [true, false]) for (const sv of ['none', 'unreachable', 'hasSections', 'noSections']) {
     assert.equal(decidePageReading('off', f, sv), false);

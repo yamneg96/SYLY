@@ -72,6 +72,7 @@
       "notFoundOffer": "A person can help you. Press “Talk to a person”.",
       "noAdvice": "I cannot give medical, legal or immigration advice. A person can help you.",
       "emptyIntro": "Ask a question about this lesson. I answer only from the course and show where each answer came from.",
+      "exampleAbout": "Tell me about {title}",
       "examplesTitle": "Try one of these:",
       "example1": "Will AI replace virtual assistants?",
       "example2": "What skills will clients value?",
@@ -197,6 +198,7 @@
       "notFoundOffer": "ሰው ሊረዳዎት ይችላል። “ከሰው ጋር ይነጋገሩ” የሚለውን ይጫኑ።",
       "noAdvice": "የሕክምና፣ የሕግ ወይም የኢሚግሬሽን ምክር መስጠት አልችልም። ሰው ሊረዳዎት ይችላል።",
       "emptyIntro": "ስለዚህ ትምህርት ጥያቄ ይጠይቁ። የምመልሰው ከትምህርቱ ብቻ ነው፤ እያንዳንዱ መልስ ከየት እንደመጣም አሳያለሁ።",
+      "exampleAbout": "ስለ {title} ንገረኝ",
       "examplesTitle": "ከእነዚህ አንዱን ይሞክሩ፦",
       "example1": "AI ምናባዊ ረዳቶችን ይተካል?",
       "example2": "ደንበኞች ምን ዓይነት ክህሎቶችን ያደንቃሉ?",
@@ -322,6 +324,7 @@
       "notFoundOffer": "يمكن لشخص أن يساعدك. اضغط «تحدّث مع شخص».",
       "noAdvice": "لا أستطيع تقديم نصائح طبية أو قانونية أو متعلقة بالهجرة. يمكن لشخص أن يساعدك.",
       "emptyIntro": "اطرح سؤالًا عن هذا الدرس. أجيب من الدورة فقط وأبيّن مصدر كل إجابة.",
+      "exampleAbout": "أخبرني عن {title}",
       "examplesTitle": "جرّب أحد هذه الأسئلة:",
       "example1": "هل سيحل الذكاء الاصطناعي محل المساعدين الافتراضيين؟",
       "example2": "ما المهارات التي سيقدّرها العملاء؟",
@@ -760,8 +763,8 @@
   // server: 'none' (no api attribute) | 'unreachable' | 'hasSections' | 'noSections'
   function decidePageReading(mode, fileOk, server) {
     if (mode === 'off') return false;
-    if (mode === 'always') return true;
-    if (fileOk) return false;
+    if (mode !== 'fallback') return true; // the default: read the page, unless the developer turned it off
+    if (fileOk) return false; // "fallback": only when nothing else is available
     return server !== 'hasSections';
   }
   // A page section in the search index's bilingual shape (Amharic page text goes to the _am fields).
@@ -973,7 +976,7 @@
       // Content sources (FR-AD4): 1. content file, 2. server sections for this page, 3. page reading.
       Promise.all([this._loadContent(), this._loadConfig()]).then(function (r) {
         var mode = (self.getAttribute('read-page') || '').toLowerCase();
-        if (decidePageReading(mode, r[0], r[1])) self._startPageReading(mode !== 'always');
+        if (decidePageReading(mode, r[0], r[1])) self._startPageReading(mode === 'fallback');
       });
     }
 
@@ -989,18 +992,15 @@
     /* page reading (FR-AD4, SDS 1.8) */
     _startPageReading(pageOnly) {
       var self = this;
-      this._pageOnly = pageOnly; // fallback: the page is the only local content; "always": added to the file
-      var root = pageRoot(document, this.getAttribute('content-selector'));
-      var read = function () {
-        self._pageSections = readPage(root, { doc: document, win: window, loc: location });
-        self._rebuildIndex();
-      };
-      read();
+      this._pageOnly = pageOnly; // "fallback": the page is the only local content; otherwise it is added to the file
+      this._pageReading = true;
+      this._readPageNow();
       if (!window.MutationObserver) return;
       var own = function (n) {
         var el = n && (n.nodeType === 1 ? n : n.parentElement);
         return !!el && (el === self || self.contains(el) || !!(el.closest && el.closest('db-assistant, #db-assistant-skip')));
       };
+      var firstChange = 0;
       this._pageObserver = new MutationObserver(function (list) {
         var relevant = list.some(function (m) {
           if (own(m.target)) return false;
@@ -1008,15 +1008,55 @@
           return !nodes.length || !nodes.every(own);
         });
         if (!relevant) return;
+        // Single-page apps (React ...) draw the lesson after this script starts: re-read soon after a change,
+        // but never wait more than 4 seconds even if the page keeps changing (carousels, animations).
         clearTimeout(self._pageTimer);
-        self._pageTimer = setTimeout(read, 3000); // debounced re-read
+        if (!firstChange) firstChange = Date.now();
+        var wait = Math.max(0, Math.min(800, 4000 - (Date.now() - firstChange)));
+        self._pageTimer = setTimeout(function () { firstChange = 0; self._readPageNow(); }, wait);
       });
-      this._pageObserver.observe(root, { childList: true, subtree: true, characterData: true });
+      // The whole body, not only the root found now: <main> may not exist yet.
+      this._pageObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+    }
+    // Reads the page as it is now (the root is looked up again each time: it can appear later).
+    _readPageNow() {
+      if (!this._pageReading) return;
+      var root = pageRoot(document, this.getAttribute('content-selector'));
+      this._pageSections = readPage(root, { doc: document, win: window, loc: location });
+      this._rebuildIndex();
     }
     _rebuildIndex() {
       var file = this._pageOnly ? [] : (this._fileSections || []);
       var page = (this._pageSections || []).map(pageToIndex);
       this._index = new Index(file.concat(page));
+      this._renderExamples();
+    }
+
+    // "Try one of these": built from the headings of the page being read (or, without page reading, from the content
+    // file), so they always match what is really there and change when the page changes.
+    _renderExamples() {
+      if (!this.$examples) return;
+      var self = this, t = this._t, lang = this._lang;
+      var secs = this._pageSections && this._pageSections.length
+        ? this._pageSections.map(function (s) { return s.title; })
+        : (this._fileSections || []).map(function (s) { return (lang === 'am' && s.title_am) || s.title_en || s.title_am || s.title; });
+      var titles = [], seen = {};
+      secs.forEach(function (ti) {
+        ti = String(ti || '').replace(/\s+/g, ' ').trim();
+        if (ti.length < 3 || seen[ti.toLowerCase()]) return;
+        seen[ti.toLowerCase()] = 1;
+        titles.push(ti.length > 70 ? ti.slice(0, ti.lastIndexOf(' ', 70) > 20 ? ti.lastIndexOf(' ', 70) : 70).trim() : ti);
+      });
+      var pick = titles.length <= 3 ? titles : [0, 1, 2].map(function (i) { return titles[Math.round(i * (titles.length - 1) / 2)]; });
+      var questions = pick.map(function (ti) { return /[?؟፧]$/.test(ti) ? ti : fmt(t.exampleAbout || '{title}', { title: ti }); });
+      var key = lang + '|' + questions.join('|');
+      if (key === this._exKey) return;
+      this._exKey = key;
+      this.$examples.textContent = '';
+      questions.forEach(function (q) {
+        self.$examples.appendChild(h('li', null, [h('button', { type: 'button', class: 'btn', text: q, onclick: function () { self.$q.value = q; self._submit(); } })]));
+      });
+      this.$exTitle.hidden = !questions.length;
     }
 
     attributeChangedCallback(name, oldV, newV) {
@@ -1033,6 +1073,7 @@
         this.$launcher.hidden = true;
         if (MODAL_ALWAYS || window.innerWidth < MODAL_BELOW_PX) d.showModal(); else d.show();
       }
+      this._readPageNow();
       if (this._needsConsent() && !this.$consent.hidden) this.$consentTitle.focus();
       else this.$q.focus();
     }
@@ -1100,14 +1141,14 @@
       ]);
 
       // intro + examples
-      var examples = h('ul', { class: 'examples' }, ['example1', 'example2', 'example3'].map(function (k) {
-        return h('li', null, [h('button', tx(k, { type: 'button', class: 'btn', onclick: function () { self.$q.value = self.getText(k); self._submit(); } }))]);
-      }));
+      this.$examples = h('ul', { class: 'examples' });
+      this.$exTitle = h('p', { hidden: true }, [emoji('💡'), h('span', tx('examplesTitle'))]);
       this.$intro = h('div', { class: 'intro' }, [
         h('p', null, [emoji('👋'), h('span', tx('emptyIntro'))]),
-        h('p', null, [emoji('💡'), h('span', tx('examplesTitle'))]),
-        examples
+        this.$exTitle,
+        this.$examples
       ]);
+      this._renderExamples();
 
       // consent card (NFR-S2)
       this.$consentTitle = h('h3', { tabindex: '-1', id: 'consent-title' }, [emoji('🔒'), h('span', tx('consentTitle'))]);
@@ -1291,6 +1332,7 @@
         if (v !== undefined) el.textContent = v;
       });
       if (this._rzLabel) this._rzLabel();
+      this._renderExamples();
       if (this._recognizer || this._recording) this._setBtn(this.$mic, 'stop', 'micStop');
       if (this.$langSel) {
         var sel = this.$langSel, cur = this._lang;
@@ -1435,6 +1477,7 @@
         this.$consentTitle.focus();
         return;
       }
+      this._readPageNow(); // the page may have changed since it was last read
       var local = this._index ? this._index.search(text) : null;
       if (NO_ADVICE.test(text)) { this._addMessage({ role: 'bot', text: this._t.noAdvice, offerHelp: true }); return; }
 
