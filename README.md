@@ -3,9 +3,43 @@
 Team SYLY: Lemi, Saron, Yabets, Yamlak. Co-designer: to be confirmed (Sunday 09:00).
 Digital Bridge Accessibility Hackathon, ALX, 14 to 15 Nov 2026.
 
+## Live demo and links
+
+Checked on **16 Nov 2026**: every address marked Live answered with HTTP 200.
+
+| What | Link | Status |
+| --- | --- | --- |
+| **Walkthrough video** | **https://youtu.be/REPLACE-WITH-THE-VIDEO-LINK** | **Placeholder: the real link will be added here** |
+| **The site** (home, docs, sign-in, dashboard) | https://syly-web-v1.vercel.app | Live (Vercel) |
+| **Try the assistant** on a lesson page | https://syly-web-v1.vercel.app/pages/concept-with-navigation.html | Live |
+| Jobs page (JobPosting, job answers, alerts) | https://syly-web-v1.vercel.app/pages/jobs.html | Live |
+| Install page (build the two lines, live preview) | https://syly-web-v1.vercel.app/demo/install.html | Live |
+| Docs for developers | https://syly-web-v1.vercel.app/documentation | Live |
+| Tutor helper page | https://syly-web-v1.vercel.app/demo/helper.html | Live; tutors need the helper key |
+| **API** (front page) | https://syly-api-v1.onrender.com | Live (Render, free plan: the first request after 15 idle minutes takes about a minute) |
+| API documentation (Swagger) | https://syly-api-v1.onrender.com/docs (also https://syly-web-v1.vercel.app/docs) | Live |
+| API health check | https://syly-api-v1.onrender.com/api/v1/health (also https://syly-web-v1.vercel.app/api/v1/health) | Live |
+| Source code (public) | https://github.com/yamneg96/SYLY | Live |
+| Accessibility statement | https://github.com/yamneg96/SYLY/blob/main/CONFORMANCE.md | Draft: manual tests pending |
+| Widget from a CDN | `https://cdn.jsdelivr.net/gh/yamneg96/SYLY@main/module/db-assistant.js` | Live (follows `main`). The pinned `@v1.0.0` address works after the tag is pushed |
+| npm package `syly-db-assistant` | not published yet | Ready; the team lead publishes it |
+| Telegram bot | not deployed on a server | Runs from this repository (`docker compose up -d bot`); needs an always-on host |
+| Pitch deck | *to be added* | |
+
+**Try it in two minutes:** open the lesson page above, press **Ask SYLY**, ask `Will AI replace virtual assistants?` (or `AI ምናባዊ ረዳቶችን ይተካል?`), read the answer and press its source link, press **Listen**, then press **Talk to a person**. Change the language in the list at the top of the panel (Afaan Oromoo, Tigrinya and Somali are beta drafts). With no tutor online the panel says so and tells you that you can come back later.
+
+**Put it on any page** (two lines; the same code the install page builds):
+
+```html
+<script src="https://syly-web-v1.vercel.app/module/db-assistant.js" defer></script>
+<db-assistant lang="en" api="https://syly-api-v1.onrender.com/api" content="https://syly-web-v1.vercel.app/demo/data/content.json"></db-assistant>
+```
+
+What was checked on the deployed site: all the pages and files above answer 200, the portal forwards `/api` and `/docs` to the API, the widget script and demo content are readable from other sites (CORS), and the API reports six languages and Google sign-in as configured. **Not checked on the deployed site yet:** signing in with Google (the portal address must be an authorized origin in Google Cloud), the tutor email and Telegram alerts sent from Render, the Telegram bot, and a person with TalkBack or NVDA.
+
 ## What it does
 
-A learner asks a question about the lesson they are reading, in Amharic, English or Arabic, by typing or speaking, on the web page, in Telegram or by text message. The assistant answers only from the course, links every answer to the lesson section it came from, and reads it aloud, even on a phone with no Amharic voice. One button, always visible, reaches a real person, and the same parts serve a small career gateway: job answers, job alerts and interview-support requests that go to a person, never straight to the employer.
+A learner asks a question about the lesson they are reading, in Amharic, English or Arabic (and, in beta, Afaan Oromo, Tigrinya and Somali), by typing or speaking, on the web page, in Telegram or by text message. The assistant answers only from the course, links every answer to the lesson section it came from, and reads it aloud, even on a phone with no Amharic voice. One button, always visible, reaches a real person, and the same parts serve a small career gateway: job answers, job alerts and interview-support requests that go to a person, never straight to the employer.
 
 ## The main task we tested
 
@@ -52,7 +86,7 @@ Without Docker, module only: `python api/scripts/dev_static.py` (same layout on 
 
 ### Publish it (Vercel or Cloudflare Pages + Render + Neon)
 
-No server to manage: the static side (portal, widget, demo pages) goes on **Vercel** (or Cloudflare Pages), the API on **Render** (Docker, `render.yaml`), the data in **Neon** (`DATABASE_URL`). `vercel.json` forwards `/api`, `/sms` and `/docs` to Render so the sign-in cookie works. The Telegram bot needs an always-on process (a paid Render worker, a VPS, or a team laptop). Step by step: `docs/deployment.md`, option D. **Not deployed yet**, and the Cloudflare Pages path is untested.
+No server to manage: the static side (portal, widget, demo pages) goes on **Vercel** (or Cloudflare Pages), the API on **Render** (Docker, `render.yaml`), the data in **Neon** (`DATABASE_URL`). `vercel.json` forwards `/api`, `/sms` and `/docs` to Render so the sign-in cookie works. The Telegram bot needs an always-on process (a paid Render worker, a VPS, or a team laptop). Step by step: `docs/deployment.md`, option D. **Deployed:** the portal on Vercel (https://syly-web-v1.vercel.app) and the API on Render (https://syly-api-v1.onrender.com); see "Live demo and links" above. The Cloudflare Pages path is untested.
 
 ### Deploy on a server
 
