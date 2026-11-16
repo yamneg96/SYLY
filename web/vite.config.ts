@@ -1,14 +1,38 @@
-import { resolve } from "node:path"
+import { createReadStream, existsSync, statSync } from "node:fs"
+import { extname, join, normalize, resolve } from "node:path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vitest/config"
+import { defineConfig, type Plugin } from "vitest/config"
 
-// The portal is served by the same nginx as the module and the API (docker-compose.yml): /module, /demo, /api,
-// /sms and /docs are not part of this app. In `npm run dev` they are forwarded to the running stack on :8080.
-const STACK = process.env.STACK_URL ?? "http://localhost:8080"
+// In production one nginx serves the portal, /module, /demo and proxies /api (docker-compose.yml). In `npm run dev`
+// the module and demo files are served straight from this repository, so the portal works without Docker.
+// Only /api and /sms need a running API: `cd api; python -m uvicorn main:app --port 8000` (or STACK_URL=... for a stack).
+const API = process.env.STACK_URL ?? "http://localhost:8000"
+const TYPES: Record<string, string> = {
+  ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json", ".html": "text/html; charset=utf-8", ".css": "text/css",
+  ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".ico": "image/x-icon", ".mp3": "audio/mpeg", ".txt": "text/plain",
+}
+function repoStatic(): Plugin {
+  const root = resolve(import.meta.dirname, "..")
+  return {
+    name: "syly-repo-static",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const url = decodeURIComponent((req.url ?? "").split("?")[0])
+        const m = /^\/(module|demo)\//.exec(url)
+        if (!m || /^\/module\/(node_modules|tests|scripts|package)/.test(url)) return next()
+        const file = normalize(join(root, url))
+        if (!file.startsWith(join(root, m[1])) || !existsSync(file) || !statSync(file).isFile()) return next()
+        res.setHeader("Content-Type", TYPES[extname(file).toLowerCase()] ?? "application/octet-stream")
+        res.setHeader("Access-Control-Allow-Origin", "*")
+        createReadStream(file).pipe(res)
+      })
+    },
+  }
+}
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [repoStatic(), react(), tailwindcss()],
   resolve: {
     alias: {
       "@": resolve(import.meta.dirname, "./src"),
@@ -20,12 +44,8 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api": STACK,
-      "/sms": STACK,
-      "/module": STACK,
-      "/demo": STACK,
-      "/pages": STACK,
-      "/assets": STACK,
+      "/api": API,
+      "/sms": API,
     },
   },
   test: {
