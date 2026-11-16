@@ -73,9 +73,11 @@
             <p class="meta" data-t="presenceNote"></p>
             <p id="mates" class="meta"></p>
           </div>
-          <form id="start-form">
+          <div id="name-row">
             <label for="helper-name" data-t="nameLabel">Your first name</label>
-            <input id="helper-name" autocomplete="given-name" required>
+            <input id="helper-name" autocomplete="given-name">
+          </div>
+          <form id="start-form">
             <details><summary data-t="teamKey">Team helper key</summary>
             <label for="helper-key" data-t="keyLabel">Helper key</label>
             <input id="helper-key" type="password" autocomplete="off"></details>
@@ -130,6 +132,7 @@
     var LANGS = { am: 'አማርኛ / Amharic', en: 'English', ar: 'العربية / Arabic' };
     try { state.name = sessionStorage.getItem('helper-name') || ''; state.key = sessionStorage.getItem('helper-key') || ''; } catch (e) {}
     $('helper-name').value = state.name;
+    $('helper-name').addEventListener('input', function () { state.name = $('helper-name').value.trim(); });
 
     function say(msg, isError) { var s = $('status'); s.textContent = msg; s.className = 'status' + (isError ? ' error' : ''); }
     function api(path, opts) {
@@ -143,10 +146,11 @@
       });
     }
 
-    function showSignin() { $('signin').hidden = false; $('signed').hidden = true; }
+    function showSignin() { $('signin').hidden = false; $('signed').hidden = true; $('start-form').hidden = false; }
     function showSigned(tutor) {
       state.tutor = tutor; state.name = tutor.name || state.name;
       $('signin').hidden = true; $('signed').hidden = false;
+      $('start-form').hidden = true; /* a signed-in tutor never needs the team key */
       $('who').textContent = t('signedAs', { email: tutor.email });
       if (!$('helper-name').value) $('helper-name').value = tutor.name || tutor.email.split('@')[0];
       state.available = tutor.status === 'available' && state.available;

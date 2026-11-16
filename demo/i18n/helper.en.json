@@ -5,7 +5,7 @@
   "language": "Page language",
   "you": "About you",
   "nameLabel": "Your first name (learners see it)",
-  "keyLabel": "Helper key (only if the server sets HELPER_KEY)",
+  "keyLabel": "Team helper key (only for the SYLY team; tutors sign in with their e-mail above)",
   "start": "Start helping",
   "online": "You are online as {name}.",
   "waitingHeading": "Waiting learners",
@@ -61,6 +61,6 @@
   "presenceNote": "You count as available only while this tab is visible and you use the page at least every 2 minutes. After that you are shown as away by yourself.",
   "onlineList": "Tutors available now: {names}",
   "onlineNone": "No tutor is available right now.",
-  "teamKey": "SYLY team helper key",
+  "teamKey": "SYLY team: use the helper key instead",
   "system_no_tutor_yet": "No tutor had picked this request up after 10 minutes. The tutors were reminded."
 }
