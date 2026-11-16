@@ -9,13 +9,12 @@ Checked on **16 Nov 2026**: every address marked Live answered with HTTP 200.
 
 | What | Link | Status |
 | --- | --- | --- |
-| **Walkthrough video** | **https://youtu.be/REPLACE-WITH-THE-VIDEO-LINK** | **Placeholder: the real link will be added here** |
 | **The site** (home, docs, sign-in, dashboard) | https://syly-web-v1.vercel.app | Live (Vercel) |
 | **Try the assistant** on a lesson page | https://syly-web-v1.vercel.app/pages/concept-with-navigation.html | Live |
 | Jobs page (JobPosting, job answers, alerts) | https://syly-web-v1.vercel.app/pages/jobs.html | Live |
 | Install page (build the two lines, live preview) | https://syly-web-v1.vercel.app/demo/install.html | Live |
 | Docs for developers | https://syly-web-v1.vercel.app/documentation | Live |
-| Tutor helper page | https://syly-web-v1.vercel.app/demo/helper.html | Live; tutors need the helper key |
+| Tutor helper page | https://syly-web-v1.vercel.app/demo/helper.html | Live; tutors sign in with a code sent to their e-mail address (the team can also use the helper key) |
 | **API** (front page) | https://syly-api-v1.onrender.com | Live (Render, free plan: the first request after 15 idle minutes takes about a minute) |
 | API documentation (Swagger) | https://syly-api-v1.onrender.com/docs (also https://syly-web-v1.vercel.app/docs) | Live |
 | API health check | https://syly-api-v1.onrender.com/api/v1/health (also https://syly-web-v1.vercel.app/api/v1/health) | Live |
