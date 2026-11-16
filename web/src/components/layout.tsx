@@ -9,6 +9,7 @@ import { ScrollProgress } from "@/components/motion"
 import { NativeSelect } from "@/components/native-select"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
+import { useAuthConfig, useMe } from "@/hooks/use-portal"
 import { useT } from "@/i18n"
 import { useAnnounce } from "@/store/announce"
 import { useLang, type Lang } from "@/store/lang"
@@ -34,6 +35,9 @@ function ThemeToggle() {
 function Header() {
   const t = useT()
   const { lang, setLang } = useLang()
+  const cfg = useAuthConfig()
+  const me = useMe(cfg.data?.enabled === true)
+  const signedIn = cfg.data?.enabled === true && !!me.data
   const link = ({ isActive }: { isActive: boolean }) =>
     `inline-flex min-h-11 items-center rounded-lg px-3 text-[0.9375rem] font-semibold text-[#E6EEF8] transition-colors hover:bg-white/15 hover:text-white ${isActive ? "bg-white/15 text-white shadow-[inset_0_-3px_0_#F5A300]" : ""}`
   return (
@@ -47,7 +51,11 @@ function Header() {
           <NavLink to="/" end className={link}>{t("common.navHome")}</NavLink>
           <NavLink to="/documentation" className={link}>{t("common.navDocs")}</NavLink>
           <a href="/demo/install.html" className={link({ isActive: false })}>{t("common.navInstall")}</a>
-          <NavLink to="/signin" className={link}>{t("common.navSignin")}</NavLink>
+          {signedIn ? (
+            <NavLink to="/dashboard" className={link}>{t("common.navDashboard")}</NavLink>
+          ) : (
+            <NavLink to="/signin" className={link}>{t("common.navSignin")}</NavLink>
+          )}
         </nav>
         <div className="flex items-center gap-2">
           <label htmlFor="page-lang" className="inline-flex items-center gap-1.5 text-[0.9375rem] font-semibold text-white">

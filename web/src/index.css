@@ -177,3 +177,4 @@ body {
 .marquee { display: flex; width: max-content; animation: marquee 38s linear infinite; }
 .marquee:hover { animation-play-state: paused; }
 @keyframes marquee { to { transform: translateX(-50%); } }
+.dash-bg { background: radial-gradient(60rem 28rem at 85% -5%, rgba(59,141,255,0.10), transparent 60%), radial-gradient(48rem 24rem at 0% 30%, rgba(245,163,0,0.07), transparent 60%); }

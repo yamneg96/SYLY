@@ -1,6 +1,8 @@
 ﻿// Add or edit a site. React Hook Form + Zod: one labelled field per row, errors in words next to the field,
 // the first field with an error gets focus, no time-outs. The server's own checks are shown the same way.
 import { useId } from "react"
+import { SaveIcon } from "lucide-react"
+import { Reveal } from "@/components/motion"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm, type Control } from "react-hook-form"
 import { NativeSelect } from "@/components/native-select"
@@ -33,7 +35,7 @@ const describedBy = (id: string, hint?: boolean) => (hint ? `${id}-hint ${id}-er
 function Choice({ legend, name, control, options }: { legend: string; name: "mode" | "position" | "theme" | "source"; control: Control<SiteFormValues>; options: [string, string][] }) {
   const uid = useId()
   return (
-    <fieldset className="mb-5">
+    <fieldset className="mb-5 rounded-2xl border bg-muted/30 px-4 py-3">
       <legend id={`${uid}-legend`} className="mb-1.5 text-base font-bold text-foreground">{legend}</legend>
       <Controller
         control={control}
@@ -122,9 +124,11 @@ export function SiteForm({ site, headingRef, onSaved, onCancel }: { site?: Site;
   const rootMessage = formState.errors.root?.message
 
   return (
-    <form onSubmit={submit} noValidate aria-labelledby="form-h">
-      <h2 id="form-h" ref={headingRef} tabIndex={-1} className="mb-3 text-2xl font-bold text-foreground">{t(site ? "dashboard.editH" : "dashboard.newH")}</h2>
-      <p className="mb-3 font-bold text-destructive" role="alert">{rootMessage ?? (invalid ? t("dashboard.fixFields") : "")}</p>
+    <Reveal>
+    <form onSubmit={submit} noValidate aria-labelledby="form-h" className="mt-8 rounded-3xl border bg-card p-5 shadow-sm sm:p-8">
+      <div aria-hidden="true" className="amber-bar mb-3" />
+      <h2 id="form-h" ref={headingRef} tabIndex={-1} className="mb-4 text-2xl font-extrabold tracking-tight text-foreground">{t(site ? "dashboard.editH" : "dashboard.newH")}</h2>
+      <p className="mb-3 font-bold text-destructive empty:hidden" role="alert">{rootMessage ?? (invalid ? t("dashboard.fixFields") : "")}</p>
 
       <Field id="f-name" label={t("dashboard.fName")} hint={t("dashboard.fNameHint")} error={err("name")}>
         <Input id="f-name" maxLength={80} autoComplete="off" aria-invalid={!!err("name")} aria-describedby={describedBy("f-name", true)} {...register("name")} />
@@ -184,11 +188,12 @@ export function SiteForm({ site, headingRef, onSaved, onCancel }: { site?: Site;
       <CheckField name="voice" label={t("dashboard.fVoice")} hint={t("dashboard.fVoiceHint")} control={control} />
       <CheckField name="simple" label={t("dashboard.fSimple")} control={control} />
 
-      <div className="flex flex-wrap gap-3">
-        <Button type="submit" size="lg" disabled={save.isPending}>{t("dashboard.save")}</Button>
+      <div className="mt-2 flex flex-wrap gap-3 border-t pt-5">
+        <Button type="submit" size="lg" className="shine" disabled={save.isPending}><SaveIcon aria-hidden="true" />{t("dashboard.save")}</Button>
         <Button type="button" size="lg" variant="outline" onClick={onCancel}>{t("dashboard.cancel")}</Button>
       </div>
     </form>
+    </Reveal>
   )
 }
 

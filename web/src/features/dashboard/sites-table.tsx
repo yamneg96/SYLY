@@ -26,15 +26,15 @@ export function SitesTable({ sites, onCode, onEdit, onDelete }: { sites: Site[] 
 
   const columns = useMemo(
     () => [
-      col.accessor("name", { id: "name", header: () => t("dashboard.colName"), cell: (c) => <span className="font-bold text-foreground">{c.getValue()}</span> }),
-      col.accessor("public_key", { id: "key", header: () => t("dashboard.colKey"), enableSorting: false, cell: (c) => <code className="break-all">{c.getValue()}</code> }),
+      col.accessor("name", { id: "name", header: () => t("dashboard.colName"), cell: (c) => <span className="flex items-center gap-2 font-bold text-foreground"><span aria-hidden="true" className="size-2 rounded-full bg-[#F5A300]" />{c.getValue()}</span> }),
+      col.accessor("public_key", { id: "key", header: () => t("dashboard.colKey"), enableSorting: false, cell: (c) => <code className="break-all rounded-md bg-muted px-1.5 py-0.5 text-[0.85em]">{c.getValue()}</code> }),
       col.accessor((s) => s.allowed_origins.join("\n"), {
         id: "origins",
         header: () => t("dashboard.colOrigins"),
         enableSorting: false,
         cell: (c) => (
-          <ul className="list-none space-y-0.5">
-            {c.row.original.allowed_origins.map((o) => <li key={o} className="break-all">{o}</li>)}
+          <ul className="list-none space-y-1">
+            {c.row.original.allowed_origins.map((o) => <li key={o} className="w-fit rounded-full border bg-muted/50 px-2.5 py-0.5 text-sm break-all">{o}</li>)}
           </ul>
         ),
       }),
@@ -64,7 +64,7 @@ export function SitesTable({ sites, onCode, onEdit, onDelete }: { sites: Site[] 
   return (
     <>
       {/* medium screens and up: a table */}
-      <div className="hidden md:block">
+      <div className="hidden overflow-hidden rounded-2xl border md:block">
         <Table>
           <TableCaption className="mb-2 text-start font-bold text-foreground">{t("dashboard.tableCaption")}</TableCaption>
           <TableHeader>
@@ -91,7 +91,7 @@ export function SitesTable({ sites, onCode, onEdit, onDelete }: { sites: Site[] 
           </TableHeader>
           <TableBody>
             {rows.map((r) => (
-              <TableRow key={r.id}>
+              <TableRow key={r.id} className="transition-colors hover:bg-[#F5A300]/5">
                 {r.getVisibleCells().map((c, i) =>
                   i === 0 ? (
                     <TableHead key={c.id} scope="row" className="whitespace-normal">{flexRender(c.column.columnDef.cell, c.getContext())}</TableHead>
@@ -128,7 +128,7 @@ export function SitesTable({ sites, onCode, onEdit, onDelete }: { sites: Site[] 
           {rows.map((r) => {
             const s = r.original
             return (
-              <li key={r.id} className="grid gap-2 rounded-xl border bg-card p-4">
+              <li key={r.id} className="card-lift grid gap-2 rounded-2xl border bg-card p-4">
                 <h3 className="text-lg font-bold text-foreground">{s.name}</h3>
                 <p className="text-sm text-muted-foreground">{t("dashboard.created", { date: fmt(s.created_at) })}</p>
                 <p className="text-sm">{t("dashboard.siteKey")}: <code className="break-all">{s.public_key}</code></p>
