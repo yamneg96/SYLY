@@ -2,6 +2,7 @@
 
     python scripts/voice_roundtrip.py              # all six languages
     python scripts/voice_roundtrip.py ar so ti     # some of them
+    python scripts/voice_roundtrip.py om ti --pause=8   # wait between sentences: the free Gemini voice has a per-minute limit
 
 For each language it takes the test sentences (scripts/stt_sentences.json), makes speech with the same code the
 server uses for "Listen" (api/services/tts.py), sends that audio through the same speech-to-text router the
@@ -53,7 +54,7 @@ def accuracy(expected: str, got: str) -> float:
     return max(0.0, 1 - d[len(b)] / len(a))
 
 
-async def main(langs: list[str]) -> int:
+async def main(langs: list[str], pause: float = 0.0) -> int:
     os.environ["DATA_DIR"] = tempfile.mkdtemp(prefix="roundtrip-")
     load_env()
     sys.path.insert(0, str(ROOT / "api"))
@@ -65,12 +66,15 @@ async def main(langs: list[str]) -> int:
         print(f"\n{lang}  voice: {tts.VOICES.get(lang) or ('(Addis AI only)' if lang == 'om' else 'none')}")
         spoken, scores = 0, []
         for sentence in SENTENCES[lang]:
+            if pause:
+                await asyncio.sleep(pause)  # the free Gemini voice has a per-minute limit
             path = await tts.synthesize(sentence, lang)
             if not path:
                 print(f"  no voice: {sentence[:40]!r}")
                 continue
             spoken += 1
-            out = await router.transcribe(path.read_bytes(), "audio/mpeg", lang)
+            mime = "audio/wav" if path.suffix == ".wav" else "audio/mpeg"
+            out = await router.transcribe(path.read_bytes(), mime, lang)
             acc = accuracy(sentence, out["text"])
             scores.append(acc)
             print(f"  {acc:4.0%}  {out['engine']:<6} said {sentence[:34]!r}  heard {out['text'][:40]!r}")
@@ -83,4 +87,6 @@ async def main(langs: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    asyncio.run(main(sys.argv[1:] or LANGS))
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    pause = next((float(a.split("=")[1]) for a in sys.argv[1:] if a.startswith("--pause=")), 0.0)
+    asyncio.run(main(args or LANGS, pause))

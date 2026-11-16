@@ -116,5 +116,10 @@
   "shareFailed": "Screen sharing could not start in this browser. You can send a screenshot instead.",
   "screenshotFailed": "The screenshot could not be sent. Check your connection and try again.",
   "dataDeleteFailed": "Your conversation was deleted from this phone, but the server could not be reached. Please try “Delete my conversation” again when you are online.",
-  "genericError": "Something went wrong on this page. Please try again. If it keeps happening, press “Talk to a person”."
+  "genericError": "Something went wrong on this page. Please try again. If it keeps happening, press “Talk to a person”.",
+  "langBeta": "beta",
+  "micRecording": "Recording. Press Stop when you finish.",
+  "micTranscribing": "Turning your voice into text…",
+  "micNeedsConsent": "Voice in this language needs an online service. Press “Online answers” to allow it, or type your question.",
+  "micServerFailed": "I could not turn your voice into text. Please try again, or type your question."
 }

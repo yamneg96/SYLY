@@ -1,0 +1,18 @@
+{
+  "fromSection": "ካብ ክፋል “{title}”፦",
+  "notFound": "እዚ ኣብቲ ኮርስ ኣይረኸብክዎን።",
+  "noAdvice": "ናይ ሕክምና፣ ሕጊ ወይ ስደት ምኽሪ ክህብ ኣይክእልን። ሰብ ክሕግዘኩም ይኽእል።",
+  "jobTrust": "ኣብ ናይቲ ወሃቢ ስራሕ ናይ ገዛእ ርእሱ መርበብ ኣረጋግጹ። ንምምልካት ፈጺምኩም ኣይትኽፈሉ።",
+  "jobDeadline": "ቅድሚ {date} ኣመልክቱ።",
+  "jobDeadlinePassed": "ናይዚ ስራሕ ዕለት ሕልፍ ኢሉ ({date})።",
+  "smsUsage": "ASK ምስ ሕቶ፣ JOBS ምስ ቃል፣ ALERT ምስ ቃል፣ ንሰብ HELP፣ ወይ STOP ስደዱ።",
+  "smsNotFound": "ኣብቲ ኮርስ ኣይተረኽበን። ምስ ሰብ ንምዝራብ HELP ስደዱ።",
+  "smsSource": "ክፋል ትምህርቲ {n}",
+  "smsHelpOpened": "ሕቶ {id} ተኸፊቱ። መምህር ብጽሑፍ ክምልስ እዩ።",
+  "smsJobs": "{n} ስራሓት፦ {list}። ንሓበሬታ ALERT ምስ ቃል ስደዱ።",
+  "smsNoJobs": "ክፉት ስራሕ የለን። ድሕሪ ሕጂ ንምፍላጥ ALERT ምስ ቃል ስደዱ።",
+  "smsAlertOn": "ሓበሬታ ን{keyword} ተኸፊቱ። ንምቁራጽ STOP ስደዱ።",
+  "smsStopped": "ካብዚ ንየው ካብና መልእኽቲ ኣይርከብን።",
+  "alertJob": "ሓዱሽ ስራሕ፦ {title}፣ {place}፣ ቅድሚ {date} ኣመልክቱ። {url}",
+  "helperReply": "መልሲ መምህር (ሕቶ {id})፦ {text}"
+}

@@ -1,0 +1,18 @@
+{
+  "fromSection": "Qaybta “{title}”:",
+  "notFound": "Tan kama helin koorsada.",
+  "noAdvice": "Ma bixin karo talo caafimaad, sharci ama socdaal. Qof ayaa ku caawin kara.",
+  "jobTrust": "Ka hubi bogga loo-shaqeeyaha. Waligaa lacag ha bixin si aad u codsato.",
+  "jobDeadline": "Codso ka hor {date}.",
+  "jobDeadlinePassed": "Waqtigii shaqadan wuu dhammaaday ({date}).",
+  "smsUsage": "Dir ASK iyo su'aal, JOBS iyo eray, ALERT iyo eray, HELP si aad qof u hesho, ama STOP.",
+  "smsNotFound": "Koorsada kuma jirto. Dir HELP si aad qof ula hadasho.",
+  "smsSource": "Qaybta casharka {n}",
+  "smsHelpOpened": "Codsiga {id} waa la furay. Macallin ayaa ku jawaabi doona qoraal.",
+  "smsJobs": "{n} shaqo: {list}. Dir ALERT iyo eray si laguu ogeysiiyo.",
+  "smsNoJobs": "Ma jiraan shaqooyin furan. Dir ALERT iyo eray si aad dambe u ogaato.",
+  "smsAlertOn": "Ogeysiisyada {keyword} waa shidan yihiin. Dir STOP si aad u joojiso.",
+  "smsStopped": "Fariimo kale nooga helin maysid.",
+  "alertJob": "Shaqo cusub: {title}, {place}, codso ka hor {date}. {url}",
+  "helperReply": "Jawaabta macallinka (codsiga {id}): {text}"
+}

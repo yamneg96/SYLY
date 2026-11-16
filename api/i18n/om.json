@@ -1,0 +1,18 @@
+{
+  "fromSection": "Kutaa “{title}” irraa:",
+  "notFound": "Kana koorsii keessatti hin arganne.",
+  "noAdvice": "Gorsa fayyaa, seeraa ykn godaansaa kennuu hin danda'u. Nama tokko si gargaaruu danda'a.",
+  "jobTrust": "Marsariitii hojjechiisaa mataa isaa irratti mirkaneessi. Galmaa'uuf gonkumaa hin kaffalin.",
+  "jobDeadline": "Hanga {date} galmaa'i.",
+  "jobDeadlinePassed": "Yeroon hojii kanaa darbeera ({date}).",
+  "smsUsage": "ASK fi gaaffii, JOBS fi jecha, ALERT fi jecha, nama barbaaduuf HELP, ykn STOP ergi.",
+  "smsNotFound": "Koorsii keessatti hin argamne. Nama waliin dubbachuuf HELP ergi.",
+  "smsSource": "Kutaa barnootaa {n}",
+  "smsHelpOpened": "Gaaffiin {id} banameera. Barsiisaan barreeffamaan deebisa.",
+  "smsJobs": "Hojiiwwan {n}: {list}. Beeksisaaf ALERT fi jecha ergi.",
+  "smsNoJobs": "Hojiin banaan hin jiru. Booda beekuuf ALERT fi jecha ergi.",
+  "smsAlertOn": "Beeksisni {keyword}f banameera. Dhaabuuf STOP ergi.",
+  "smsStopped": "Ergaan biraa nu irraa si hin ga'u.",
+  "alertJob": "Hojii haaraa: {title}, {place}, hanga {date} galmaa'i. {url}",
+  "helperReply": "Deebii barsiisaa (gaaffii {id}): {text}"
+}
