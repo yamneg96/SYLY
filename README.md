@@ -348,6 +348,26 @@ import 'syly-db-assistant/db-assistant.js';   // import on the client only; the 
 
 or `<script src="/node_modules/syly-db-assistant/db-assistant.js" defer></script>`. Publishing needs the team lead's npm account: from `module/`, run `npm pack --dry-run` to see the files (72 files, 1.9 MB with the audio), then `npm publish`.
 
+## Talk to a person, also when nobody is online
+
+One button, always visible, opens a request for a person. What happens next depends on whether a tutor has the helper page open (a heartbeat every few seconds):
+
+| | A tutor is online | Nobody is online |
+| --- | --- | --- |
+| The learner reads | "A tutor is joining. Stay on this page" | "A tutor will answer here. It may take until morning. **You can close this page. When you open it again on this phone, the answer will be here.**" and the request number |
+| Tools in the panel | **Share my screen** (live, for a tutor who is watching) and **Send a screenshot** | **Send a screenshot** only. A live screen share nobody watches is useless (frames are kept in memory for 10 seconds), so it is not offered; it appears if a tutor later asks to see the screen |
+| The tutors are told | they see it on the helper page | **a Telegram group message and/or an email to the team inbox**, with the request number, language, the page, the learner's question and a link to the helper page. The screenshot is mentioned, never attached; no contact detail or key is in the message |
+| The learner is reached | in the panel | in the panel when they come back (the request number and key stay on the phone for 14 days and the reply is fetched on return); on Telegram if they tapped "Also get the reply on Telegram". **No email address or phone number is collected from learners** |
+
+Setting it up (all optional, each channel works alone; `.env.example` has the names):
+
+- **Email:** `SENDER_EMAIL`, `SMTP_HOST`, `SMTP_PORT` (587, STARTTLS), `SMTP_USER`, `SMTP_PASS`, and the team inbox in `TUTOR_EMAILS` (comma separated). Tested with a Brevo relay (smtp-relay.brevo.com); the sender address must be allowed by the relay.
+- **Telegram group:** add the bot to the tutors' group and put the group's chat id (a negative number) in `TUTOR_TELEGRAM_CHAT`. The same bot token as the learners' bot is used. Untested against real Telegram: this laptop's network blocks it.
+- `PUBLIC_BASE_URL` gives the link to the helper page in the message.
+- `python scripts/tutor_alert_check.py` sends one clearly-labelled test alert and prints which channels worked.
+
+An alert that cannot be sent is logged (never with a password) and **never fails the learner's request**. Not built: a reminder when a request is still waiting after some hours; replying to the learner by email.
+
 ## Languages
 
 All interface text is in JSON: `module/i18n/{en,am,ar}.json` (widget; inlined in `db-assistant.js` so one script tag works anywhere), `api/i18n/*.json` (text route, alerts, job notes), `bot/i18n/*.json` (Telegram), `demo/i18n/*.json` (helper and install pages). Tests check that every language has every key. To add a language to the widget: add `module/i18n/<code>.json` with the same keys and use `lang="<code>"` (it is fetched next to the script); run `npm --prefix module run i18n` to refresh the inlined copies after editing en/am/ar.

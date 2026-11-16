@@ -55,6 +55,15 @@ class Settings:
     seed_jobs: Path = field(
         default_factory=lambda: _first_existing(_env("SEED_JOBS"), str(REPO_DIR / "demo/data/jobs.json"))
     )
+    # Telling the tutors that a request is waiting (nobody online): email through an SMTP relay and/or a Telegram group.
+    sender_email: str = field(default_factory=lambda: _env("SENDER_EMAIL"))
+    smtp_host: str = field(default_factory=lambda: _env("SMTP_HOST"))
+    smtp_port: int = field(default_factory=lambda: int(_env("SMTP_PORT", "587")))
+    smtp_user: str = field(default_factory=lambda: _env("SMTP_USER"))
+    smtp_pass: str = field(default_factory=lambda: _env("SMTP_PASS"))
+    tutor_emails: list[str] = field(default_factory=lambda: [e.strip() for e in _env("TUTOR_EMAILS").split(",") if e.strip()])
+    tutor_telegram_chat: str = field(default_factory=lambda: _env("TUTOR_TELEGRAM_CHAT"))
+    public_base_url: str = field(default_factory=lambda: _env("PUBLIC_BASE_URL").rstrip("/"))
     database_url: str = field(default_factory=lambda: _env("DATABASE_URL"))
     google_client_id: str = field(default_factory=lambda: _env("GOOGLE_CLIENT_ID"))
     session_secret: str = field(default_factory=lambda: _env("SESSION_SECRET"))

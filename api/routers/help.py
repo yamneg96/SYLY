@@ -74,7 +74,12 @@ async def create_escalation(body: EscalationIn, tasks: BackgroundTasks, db: Sess
     tasks.add_task(webhook.fire, "ticket.opened", {"ticketId": ticket.id, "page_url": ticket.page_url, "language": ticket.language})
     username = await notify.bot_username()
     link = f"https://t.me/{username}?start=t{ticket.id}_{ticket.access_token}" if username and body.channel == "web" else None
-    return EscalationOut(ticketId=ticket.id, helper_online=helper_online(db), token=ticket.access_token, telegram_link=link)
+    online = helper_online(db)
+    if not online:
+        # Nobody is watching the helper page: tell the tutors (Telegram group, email). In the background, so a slow relay never slows the learner.
+        question = next((m.text for m in reversed(body.conversation) if m.role == "learner"), "")
+        tasks.add_task(notify.tutors, ticket.id, ticket.language, ticket.page_url, question, bool(body.screenshot))
+    return EscalationOut(ticketId=ticket.id, helper_online=online, token=ticket.access_token, telegram_link=link)
 
 
 @router.get("/escalations", response_model=list[TicketOut], summary="Helper page: tickets by status",

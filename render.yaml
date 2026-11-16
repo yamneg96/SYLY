@@ -31,6 +31,20 @@ services:
         sync: false
       - key: ADDIS_AI_API_KEY
         sync: false
+      - key: SENDER_EMAIL
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: TUTOR_EMAILS
+        sync: false
+      - key: TUTOR_TELEGRAM_CHAT
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
       - key: PUBLIC_BASE_URL  # the address of the static site (the bot's links point there)
         sync: false
   # The Telegram bot needs a process that never sleeps. On Render that is a paid Background Worker; uncomment to use it.
