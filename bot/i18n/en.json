@@ -104,5 +104,6 @@
   "cmd_voice": "Voice replies on or off",
   "cmd_consent": "Allow or stop online answers",
   "cmd_mydata": "What is stored about you",
-  "cmd_delete": "Delete your data"
+  "cmd_delete": "Delete your data",
+  "voiceUnavailable": "I could not make a voice message for this answer. It is shown as text."
 }

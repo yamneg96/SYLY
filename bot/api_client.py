@@ -6,6 +6,8 @@ import os
 
 import httpx
 
+# Every language the API accepts: the bot passes the chat's own language, so answers come back in it (om, ti, so are beta).
+API_LANGS = ("am", "en", "ar", "om", "ti", "so")
 API = os.getenv("API_URL", "http://localhost:8000").rstrip("/")
 
 
@@ -17,13 +19,13 @@ async def _json(method: str, path: str, timeout: float = 30, **kw) -> object:
 
 
 async def ask(question: str, language: str, allow_ai: bool, cid: str, simple: bool) -> dict:
-    return await _json("POST", "/api/v1/ask", json={"question": question, "language": language if language in ("am", "en", "ar") else "en",
+    return await _json("POST", "/api/v1/ask", json={"question": question, "language": language if language in API_LANGS else "en",
                                                      "allow_ai": allow_ai, "conversation_id": cid, "simple": simple})
 
 
 async def escalate(history: list, language: str, chat_id: str, cid: str) -> dict:
     return await _json("POST", "/api/v1/escalations", timeout=15, json={
-        "conversation": history, "language": language if language in ("am", "en", "ar") else "en", "channel": "telegram",
+        "conversation": history, "language": language if language in API_LANGS else "en", "channel": "telegram",
         "notify_telegram_chat": chat_id, "conversation_id": cid})
 
 
@@ -53,7 +55,7 @@ async def jobs() -> list[dict]:
 async def subscribe(chat_id: str, keyword: str, location: str, language: str) -> None:
     await _json("POST", "/api/v1/alerts", timeout=10, json={
         "channel": "telegram", "address": chat_id, "keyword": keyword, "location": location,
-        "language": language if language in ("am", "en", "ar") else "en"})
+        "language": language if language in API_LANGS else "en"})
 
 
 async def alerts(chat_id: str) -> list[dict]:
@@ -72,7 +74,7 @@ async def stop_all(chat_id: str) -> None:
 async def accommodate(job_id: str, needs: list[str], note: str | None, chat_id: str, language: str) -> dict:
     return await _json("POST", "/api/v1/accommodations", timeout=15, json={
         "job_id": job_id, "needs": needs, "note": note, "contact_channel": "telegram", "contact": chat_id,
-        "language": language if language in ("am", "en", "ar") else "en"})
+        "language": language if language in API_LANGS else "en"})
 
 
 async def transcribe(audio: bytes, language: str) -> dict:

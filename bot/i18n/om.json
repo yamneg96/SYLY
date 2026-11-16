@@ -104,5 +104,6 @@
   "cmd_voice": "Deebii sagalee bani ykn cufi",
   "cmd_consent": "Deebii interneetii hayyami ykn dhaabi",
   "cmd_mydata": "Wanta waa'ee kee olkaa'ame",
-  "cmd_delete": "Daataa kee haqi"
+  "cmd_delete": "Daataa kee haqi",
+  "voiceUnavailable": "Deebii kanaaf ergaa sagalee hojjechuu hin dandeenye. Barreeffamaan agarsiifameera."
 }

@@ -104,5 +104,6 @@
   "cmd_voice": "Jawaabo cod ah shid ama dami",
   "cmd_consent": "Oggolow ama jooji jawaabaha internetka",
   "cmd_mydata": "Waxa lagaa keydiyay",
-  "cmd_delete": "Tirtir xogtaada"
+  "cmd_delete": "Tirtir xogtaada",
+  "voiceUnavailable": "Jawaabtan ma samayn karin fariin cod ah. Waxaa lagu muujiyay qoraal."
 }

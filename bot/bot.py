@@ -147,14 +147,15 @@ async def voice_reply(m: Message, c: dict, text: str, language: str) -> None:
     try:
         res = await api.speak(text, language)
     except httpx.HTTPError:
-        return
-    if not res:
+        res = None
+    if not res:  # no voice for this language right now: say so in words, the text was already sent
+        await m.answer(t(c, "voiceUnavailable"))
         return
     audio, ctype = res
     if "ogg" in ctype:
         await m.answer_voice(BufferedInputFile(audio, filename="answer.ogg"))
     else:
-        await m.answer_audio(BufferedInputFile(audio, filename="answer.mp3"))
+        await m.answer_audio(BufferedInputFile(audio, filename="answer.wav" if "wav" in ctype else "answer.mp3"))
 
 
 def abs_url(url: str) -> str:

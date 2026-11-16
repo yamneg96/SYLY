@@ -224,3 +224,73 @@ def test_menu_buttons_are_recognised_in_every_language():
     for lang, d in bot.TEXT.items():
         if d.get("menuLesson"):
             assert intents.match(d["menuLesson"]) == "lesson", lang
+
+
+# ---------------------------------------------------------------- every language the API knows (om, ti, so beside en, am, ar)
+@pytest.mark.parametrize("lang", ["am", "en", "ar", "om", "ti", "so"])
+def test_questions_are_sent_in_the_chats_own_language(monkeypatch, lang):
+    sent = {}
+
+    async def fake_ask(question, language, allow_ai, cid, simple):
+        sent["language"] = language
+        return {"answer": "x", "sources": [{"title": "t", "url": "/u"}]}
+
+    monkeypatch.setattr(api_client, "ask", fake_ask)
+    m = FakeMsg(900)
+    c = bot.chat(m)
+    c.update(lang=lang, consent="yes")
+    run(bot.ask_api(m, c, "a question"))
+    assert sent["language"] == lang
+
+
+@pytest.mark.parametrize("lang", ["am", "en", "ar", "om", "ti", "so"])
+def test_the_api_client_never_turns_a_chat_language_into_english(monkeypatch, lang):
+    bodies = []
+
+    async def fake_json(method, path, **kw):
+        bodies.append(kw.get("json", {}))
+        return {}
+
+    monkeypatch.setattr(api_client, "_json", fake_json)
+    run(api_client.ask("q", lang, False, "cid", False))
+    run(api_client.escalate([], lang, "1", "cid"))
+    assert [b["language"] for b in bodies] == [lang, lang]
+
+
+@pytest.mark.parametrize("lang", ["ar", "so", "om", "ti"])
+def test_voice_reply_sends_audio_or_says_why_not(monkeypatch, lang):
+    m = FakeMsg(901)
+    c = bot.chat(m)
+    c.update(lang=lang, consent="yes", voice=True)
+
+    async def with_voice(text, language):
+        assert language == lang
+        return b"OggS....", "audio/ogg"
+
+    monkeypatch.setattr(api_client, "speak", with_voice)
+    run(bot.voice_reply(m, c, "answer", lang))
+    assert m.sent and m.sent[-1][0] == "voice"
+
+    async def no_voice(text, language):
+        return None
+
+    monkeypatch.setattr(api_client, "speak", no_voice)
+    m2 = FakeMsg(902)
+    c2 = bot.chat(m2)
+    c2.update(lang=lang, consent="yes", voice=True)
+    run(bot.voice_reply(m2, c2, "answer", lang))
+    assert m2.texts() == [bot.TEXT[lang]["voiceUnavailable"]], "never silent: the learner is told it is shown as text"
+
+
+def test_wav_voice_from_the_gemini_voice_is_sent_as_a_wav_file(monkeypatch):
+    m = FakeMsg(903)
+    c = bot.chat(m)
+    c.update(lang="om", consent="yes", voice=True)
+
+    async def wav(text, language):
+        return b"RIFF....WAVE", "audio/wav"  # the API had no ffmpeg to make OGG
+
+    monkeypatch.setattr(api_client, "speak", wav)
+    run(bot.voice_reply(m, c, "answer", "om"))
+    kind, doc, _ = m.sent[-1]
+    assert kind == "audio" and doc.filename == "answer.wav"
