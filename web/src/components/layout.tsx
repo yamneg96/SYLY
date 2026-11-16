@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import { Link, NavLink, Outlet, useLocation } from "react-router"
 import type { ComponentType } from "react"
-import { AccessibilityIcon, ArrowUpIcon, BookOpenIcon, DownloadIcon, CodeIcon, LanguagesIcon, MoonIcon, RocketIcon, ShieldCheckIcon, SunIcon } from "lucide-react"
+import { AccessibilityIcon, ArrowUpIcon, BookOpenIcon, DownloadIcon, CodeIcon, LanguagesIcon, MoonIcon, RocketIcon, SendIcon, ShieldCheckIcon, SunIcon } from "lucide-react"
 import { LiveRegion } from "@/components/live-region"
 import { ScrollProgress } from "@/components/motion"
 import { NativeSelect } from "@/components/native-select"
@@ -83,6 +83,7 @@ function Footer() {
     { icon: AccessibilityIcon, label: t("common.footAccess"), href: `${REPO}/blob/main/CONFORMANCE.md` },
     { icon: CodeIcon, label: t("common.footRepo"), href: REPO },
     { icon: RocketIcon, label: t("common.footStarter"), href: "/starter" },
+    { icon: SendIcon, label: t("common.footBot"), href: "https://t.me/syly_assistant_bot" },
   ]
   return (
     <footer className="relative isolate mt-16 overflow-hidden bg-[linear-gradient(180deg,#061A33,#030D1E)] pt-14 pb-8 text-[#DCE6F2]">
