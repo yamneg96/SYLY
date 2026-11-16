@@ -118,6 +118,7 @@
       "sharing": "You are sharing your screen with the tutor.",
       "shareStopped": "Screen sharing stopped.",
       "shareAsked": "The tutor asks to see your screen. You choose: share it, or send a screenshot.",
+      "noTutorYet": "No tutor has picked this up yet. Your request is still saved: you can leave and come back, and the reply will be shown here.",
       "sendScreenshot": "Send a screenshot",
       "screenshotSent": "Screenshot sent to the tutor.",
       "screenshotTooBig": "This picture is too big. Please choose a smaller screenshot.",
@@ -257,6 +258,7 @@
       "sharing": "ስክሪንዎን ለአስጠኚው እያጋሩ ነው።",
       "shareStopped": "ስክሪን ማጋራት ቆሟል።",
       "shareAsked": "አስጠኚው ስክሪንዎን ማየት ይፈልጋል። እርስዎ ይምረጡ፦ ስክሪንዎን ያጋሩ ወይም የስክሪን ምስል ይላኩ።",
+      "noTutorYet": "እስካሁን ማንም አስጠኚ ጥያቄዎን አልተቀበለም። ጥያቄዎ ተቀምጧል፤ ወጥተው መመለስ ይችላሉ፣ መልሱ እዚህ ይታያል።",
       "sendScreenshot": "የስክሪን ምስል ላክ",
       "screenshotSent": "የስክሪን ምስሉ ለአስጠኚው ተልኳል።",
       "screenshotTooBig": "ይህ ምስል በጣም ትልቅ ነው። እባክዎ አነስ ያለ የስክሪን ምስል ይምረጡ።",
@@ -396,6 +398,7 @@
       "sharing": "أنت تشارك شاشتك مع المعلّم.",
       "shareStopped": "توقفت مشاركة الشاشة.",
       "shareAsked": "يطلب المعلّم رؤية شاشتك. أنت تختار: شارك الشاشة أو أرسل لقطة شاشة.",
+      "noTutorYet": "لم يتسلّم أي معلّم طلبك بعد. طلبك ما زال محفوظًا: يمكنك المغادرة والعودة وسيظهر الرد هنا.",
       "sendScreenshot": "إرسال لقطة شاشة",
       "screenshotSent": "أُرسلت لقطة الشاشة إلى المعلّم.",
       "screenshotTooBig": "هذه الصورة كبيرة جدًا. يرجى اختيار لقطة شاشة أصغر.",
@@ -1910,6 +1913,10 @@
           self._afterId = Math.max(self._afterId, m.id || 0);
           if (m.author === 'system' && m.text === 'screen_request') {
             self._addMessage({ role: 'bot', text: self._t.shareAsked, extra: self._helpTools(true) });
+            return;
+          }
+          if (m.author === 'system' && m.text === 'no_tutor_yet') {
+            self._addMessage({ role: 'bot', text: self._t.noTutorYet });
             return;
           }
           if (m.author !== 'helper') return;

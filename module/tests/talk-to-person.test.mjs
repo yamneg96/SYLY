@@ -70,6 +70,15 @@ test('a tutor who comes online later and asks to see the screen brings the share
   assert.ok(buttons(el).some((x) => /Share my screen/.test(x)), 'now someone is watching: share is offered');
 });
 
+test('after ten minutes with no tutor, the learner is told honestly that nobody has picked it up', async () => {
+  const w = newWindow((url) => (url.includes('/escalations/16/messages') ? ok([{ id: 1, author: 'system', text: 'no_tutor_yet' }]) : quiet(url)));
+  const el = await mount(w);
+  el._ticketOpened({ ticketId: 16, token: 'tok', helper_online: false });
+  el._pollTicket();
+  await tick(50);
+  assert.match(logText(el), /No tutor has picked this up yet/);
+});
+
 test('the request is kept on the phone, and a new visit shows it again and fetches the reply', async () => {
   const w = newWindow((url) => (url.includes('/escalations/15/messages') ? ok([{ id: 7, author: 'helper', name: 'Selam', text: 'Here is the answer', lang: 'en' }]) : quiet(url)));
   const first = await mount(w);
