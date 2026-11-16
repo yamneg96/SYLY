@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
-Lang = Literal["am", "en", "ar"]
+Lang = Literal["am", "en", "ar", "om", "ti", "so"]  # om, ti, so: beta (drafts; needs a native reader check)
 
 
 class Source(BaseModel):

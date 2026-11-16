@@ -1,4 +1,4 @@
-"""Gemini audio input used as speech to text. Quality for am/om/ti/so is [unverified]: see scripts/stt_check.py."""
+"""Gemini audio input used as speech to text (model: GEMINI_STT_MODEL). Quality for am/om/ti/so is weak or [unverified]: see scripts/stt_check.py."""
 
 from __future__ import annotations
 
@@ -29,9 +29,9 @@ async def transcribe(audio: bytes, mime: str, language: str | None) -> str | Non
         ]}],
         "generationConfig": {"temperature": 0},
     }
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.gemini_model}:generateContent"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.gemini_stt_model}:generateContent"
     async with httpx.AsyncClient(timeout=settings.stt_timeout) as client:
-        r = await client.post(url, params={"key": settings.gemini_key}, json=body)
+        r = await client.post(url, headers={"x-goog-api-key": settings.gemini_key}, json=body)  # a header, never the URL: URLs end up in logs
         r.raise_for_status()
         data = r.json()
     parts = (data.get("candidates") or [{}])[0].get("content", {}).get("parts", [])

@@ -7,7 +7,7 @@ from functools import cache
 from pathlib import Path
 
 DIR = Path(__file__).resolve().parents[1] / "i18n"
-LANGS = ("en", "am", "ar")
+LANGS = ("en", "am", "ar", "om", "ti", "so")
 
 
 @cache

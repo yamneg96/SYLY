@@ -14,7 +14,8 @@ from pathlib import Path
 from config import settings
 
 log = logging.getLogger("syly")
-# Somali voice exists in the online read-aloud voice list [unverified until tested]; om/ti have none (om: Addis AI).
+# Voices in the online read-aloud list: Amharic, English, Arabic and Somali (all tested 16 Nov). Oromo and Tigrinya have none there:
+# they are read by the Gemini voice (services/gemini_tts.py), which reads about 70 languages; Addis AI is the last fallback.
 VOICES = {"am": "am-ET-MekdesNeural", "en": "en-US-AriaNeural", "ar": "ar-SA-ZariyahNeural", "so": "so-SO-UbaxNeural"}
 
 
@@ -41,6 +42,14 @@ async def synthesize(text: str, language: str, out: Path | None = None) -> Path 
         log.warning("edge-tts failed: %s", type(e).__name__)
         if path.exists():
             path.unlink(missing_ok=True)
+    # Second voice: Gemini text to speech. It reads Oromo and Tigrinya, which edge-tts cannot. Needs GEMINI_API_KEY.
+    from services import gemini_tts
+
+    wav = path.with_suffix(".wav")
+    if wav.exists() and wav.stat().st_size > 0:
+        return wav
+    if await gemini_tts.speak(text, language, wav):
+        return wav
     # Fallback (SDS 2.4): Addis AI, only when ADDIS_AI_API_KEY is set (paid per use).
     from services import addis
 

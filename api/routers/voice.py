@@ -23,7 +23,7 @@ async def speak(body: SpeakIn) -> Response:
         ogg = await conv.to_ogg_opus(path.read_bytes())
         if ogg:
             return Response(ogg, media_type="audio/ogg")
-    return FileResponse(path, media_type="audio/mpeg")
+    return FileResponse(path, media_type="audio/wav" if path.suffix == ".wav" else "audio/mpeg")
 
 
 @router.post("/transcribe", summary="Speech to text through the router (Addis AI, Gemini audio, Groq Whisper). Sends audio online: consent first")

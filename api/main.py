@@ -20,6 +20,8 @@ from routers import ask, data, help, jobs, portal, sms, voice
 from services import content, sites
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+for noisy in ("httpx", "httpcore"):  # these log every request URL at INFO: keep URLs (and anything in them) out of the logs
+    logging.getLogger(noisy).setLevel(logging.WARNING)
 log = logging.getLogger("syly")
 
 

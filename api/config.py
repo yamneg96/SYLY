@@ -32,6 +32,10 @@ class Settings:
     gemini_key: str = field(default_factory=lambda: _env("GEMINI_API_KEY"))
     gemini_model: str = field(default_factory=lambda: _env("GEMINI_MODEL", "gemini-3.5-flash-lite"))
     groq_key: str = field(default_factory=lambda: _env("GROQ_API_KEY"))
+    gemini_stt_model: str = field(default_factory=lambda: _env("GEMINI_STT_MODEL", "gemini-3.5-flash"))
+    # One or more models, comma separated, tried in order: each has its own free quota, so a used-up one is skipped for a while.
+    gemini_tts_model: str = field(default_factory=lambda: _env("GEMINI_TTS_MODEL", "gemini-3.8-flash-tts,gemini-3.8-flash-lite-tts,gemini-3.1-flash-tts-preview,gemini-2.5-flash-preview-tts"))
+    gemini_tts_voice: str = field(default_factory=lambda: _env("GEMINI_TTS_VOICE", "Kore"))
     groq_model: str = field(default_factory=lambda: _env("GROQ_MODEL", "openai/gpt-oss-120b"))
     groq_stt_model: str = field(default_factory=lambda: _env("GROQ_STT_MODEL", "whisper-large-v3"))
     ollama_url: str = field(default_factory=lambda: _env("OLLAMA_URL").rstrip("/"))

@@ -21,7 +21,7 @@ async def complete(system: str, user: str) -> str:
         "generationConfig": {"temperature": 0.2, "responseMimeType": "application/json"},
     }
     async with httpx.AsyncClient(timeout=settings.provider_timeout) as client:
-        r = await client.post(url, params={"key": settings.gemini_key}, json=body)
+        r = await client.post(url, headers={"x-goog-api-key": settings.gemini_key}, json=body)  # a header, never the URL: URLs end up in logs
         r.raise_for_status()
         data = r.json()
     return "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
