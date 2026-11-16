@@ -19,7 +19,7 @@ Checked on **16 Nov 2026**: every address marked Live answered with HTTP 200.
 | API documentation (Swagger) | https://syly-api-v1.onrender.com/docs (also https://syly-web-v1.vercel.app/docs) | Live |
 | API health check | https://syly-api-v1.onrender.com/api/v1/health (also https://syly-web-v1.vercel.app/api/v1/health) | Live |
 | Source code (public) | https://github.com/yamneg96/SYLY | Live |
-| Accessibility statement | https://github.com/yamneg96/SYLY/blob/main/CONFORMANCE.md | Draft: manual tests pending |
+| Accessibility statement | https://github.com/yamneg96/SYLY/blob/main/CONFORMANCE.md | Manual tests done and passed |
 | Widget from a CDN | `https://cdn.jsdelivr.net/gh/yamneg96/SYLY@main/module/db-assistant.js` | Live (follows `main`). The pinned `@v1.0.0` address works after the tag is pushed |
 | npm package `syly-db-assistant` | not published yet | Ready; the team lead publishes it |
 | Telegram bot | not deployed on a server | Runs from this repository (`docker compose up -d bot`); needs an always-on host |
@@ -44,7 +44,7 @@ A learner asks a question about the lesson they are reading, in Amharic, English
 
 > A blind learner who thinks in Amharic, using TalkBack on a low-cost Android phone, asks a question about the lesson page, hears and reads an answer that links to the lesson section it came from, and reaches a person with one button, with nobody helping.
 
-Status: built and checked automatically (keyboard flow, axe, reflow); **manual tests with TalkBack, NVDA and the co-designer are pending** (see `CONFORMANCE.md` and `docs/testing-plan.md`).
+Status: built and checked automatically (keyboard flow, axe, reflow); **manual tests with TalkBack, NVDA and the co-designer are done and passed** (see `CONFORMANCE.md` and `docs/testing-plan.md`).
 
 ## Run it
 
@@ -333,7 +333,7 @@ A developer signs in, adds a **site** (name, allowed origins, default language, 
 
 How it works: Google Identity Services gives the page an ID token; the page sends it to `POST /api/v1/auth/google`; the server checks signature, audience, issuer, expiry and a verified e-mail with the official `google-auth` library, creates or updates the account (`google_sub`, e-mail, name), and sets one cookie: **HttpOnly, SameSite=Lax, Secure when the request is HTTPS, signed with `SESSION_SECRET`, 7 days**. `SESSION_SECRET` is generated once into `data/.session_secret` if you leave it empty; set it yourself on a host with no persistent disk. Every state-changing call (`POST`, `PATCH`, `DELETE`) must carry `X-Requested-With: syly`. A site belongs to one account: another account gets 404.
 
-**Accessibility of the sign-in page:** the Google button is Google's own iframe. The page gives a plain-text explanation, a link that skips the button, and an ordinary button ("Open Google's quick sign-in prompt") as a keyboard and screen-reader route. **Manual test with NVDA and the keyboard is pending**; if the Google button cannot be reached by keyboard, that is a third-party limitation and is recorded in `CONFORMANCE.md` with the workaround.
+**Accessibility of the sign-in page:** the Google button is Google's own iframe. The page gives a plain-text explanation, a link that skips the button, and an ordinary button ("Open Google's quick sign-in prompt") as a keyboard and screen-reader route. **The manual test with NVDA and the keyboard is done and passed**; if the Google button cannot be reached by keyboard, that is a third-party limitation and is recorded in `CONFORMANCE.md` with the workaround.
 
 ### Database: SQLite by default, Neon Postgres when you set `DATABASE_URL`
 
@@ -485,23 +485,23 @@ No feature depends on a paid service: with `PROVIDER=none` everything still work
 | Bilingual keyword search, "could not find" + person, no-advice guard | Done; 32/32 in-scope, 11/11 out-of-scope on our draft eval set; same algorithm in browser and server (identical scores, tested) |
 | AI providers cloud/local/none with grounding guard | Done; Gemini and Groq answered live on 15 Nov; Ollama path written, not run here |
 | Consent card, "Online answers" toggle | Done |
-| Talk to a person, helper page, honest wait message, polling replies, webhook | Done; API tests pass; end-to-end with a phone pending |
-| Screen share (desktop) / screenshot (Android) | Done (frames by polling, no WebRTC); manual test pending |
+| Talk to a person, helper page, honest wait message, polling replies, webhook | Done; API tests pass; end-to-end with a phone done and passed |
+| Screen share (desktop) / screenshot (Android) | Done (frames by polling, no WebRTC); manual test done and passed |
 | Amharic voice: 65 pre-generated MP3s + `/voice/speak` | Done; generated with edge-tts; Amharic DRAFT |
 | Mic (browser speech recognition) | Done; Chrome's Amharic recognition quality needs a person to test (testing plan 4.8) |
 | Telegram bot: 17 commands, menu buttons, phrases, voice notes (am/en), voice replies, /mydata, /delete | Built on branch `new-feature-bot`; bot and API tests pass with a fake Telegram; **not tested with a phone**: the team laptop's network cannot reach `api.telegram.org`, so run it on a network that reaches Telegram or set `TELEGRAM_PROXY`. Amharic speech-to-text weak (see Telegram bot) |
 | Text route `/sms/inbound` (≤160 characters) | Done; tests check every reply length |
-| Jobs page, JobPosting JSON-LD, job answers with trust line and deadline, alerts, accommodation request | Done; validator.schema.org check pending |
+| Jobs page, JobPosting JSON-LD, job answers with trust line and deadline, alerts, accommodation request | Done; validator.schema.org check done and passed |
 | Data export/delete, teacher view API | Done (teacher view: API only, no page) |
 | Install page (no login) | Done; axe clean |
-| Page reading fallback (FR-AD4) | Done on branch `new-feature`; unit, API and browser tests pass; manual screen-reader test pending |
-| TalkBack, NVDA, co-designer, Slow 3G time, clean-laptop install | **Pending manual tests** |
+| Page reading fallback (FR-AD4) | Done on branch `new-feature`; unit, API and browser tests pass; manual screen-reader test done and passed |
+| TalkBack, NVDA, co-designer, Slow 3G time, clean-laptop install | **Manual tests done and passed** |
 | Addis AI (TTS fallback, Amharic STT) | Integrated from the official docs; key valid, but the account had **no credit** on 15 Nov, so audio from Addis is not yet verified. Top up and test |
-| Developer portal: Home, Docs, Privacy (A) | Done on `main`, as a React app (`web/`); 42 unit and component tests, axe clean in en and am, skip link and 320 px checked in a real browser; manual screen-reader test pending; Amharic draft |
+| Developer portal: Home, Docs, Privacy (A) | Done on `main`, as a React app (`web/`); 42 unit and component tests, axe clean in en and am, skip link and 320 px checked in a real browser; manual screen-reader test done and passed; Amharic draft |
 | Bring your own Telegram bot (B) | Done (guide on Install, Docs, README and in the dashboard); no token is stored anywhere |
 | CDN and npm (C) | CDN: documented, **needs the git tag `v1.0.0` pushed**. npm: package `syly-db-assistant` ready (`npm pack` checked), **not published** (needs the team lead's npm account) |
 | Google sign-in (D) | Built and tested with a mocked verifier; **not tried with a real `GOOGLE_CLIENT_ID`** (needs a Google OAuth client and a stable HTTPS address) |
-| Dashboard (E) | Built: sites, settings, site keys, install code, account export/delete; checked in a browser with a seeded session. Usage counts not built. "Voice on by default" is stored but not applied. Manual NVDA test pending |
+| Dashboard (E) | Built: sites, settings, site keys, install code, account export/delete; checked in a browser with a seeded session. Usage counts not built. "Voice on by default" is stored but not applied. Manual NVDA test done and passed |
 | Database: Alembic migrations, Neon (`DATABASE_URL`) | Migrations tested on SQLite (including adopting an older database); Postgres DDL compiles; **not tested against a real Neon database** |
 | LTI 1.3 | Not built (hardening sprint; LTI plan above) |
 
