@@ -69,6 +69,20 @@ class AskOut(BaseModel):
     audio: list[str] = Field(default_factory=list, description="Pre-generated audio paths under /module/audio/")
 
 
+class TranslateIn(BaseModel):
+    text: str = Field(min_length=1, max_length=4000, examples=["The Frontend course teaches HTML, CSS and React."])
+    target: Lang = Field(description="Language to translate into")
+    source: Lang | None = Field(default=None, description="Language of the text, if known")
+    allow_ai: bool = Field(default=False, description="Learner consented to online AI (NFR-S2). Without it nothing is sent to a model")
+
+
+class TranslateOut(BaseModel):
+    text: str | None = Field(description="The translation; null when it could not be made (see reason)")
+    language: str
+    provider: str = Field(description="gemini | groq | ollama | none")
+    reason: Literal["consent", "unavailable", "failed"] | None = None
+
+
 class SectionIn(BaseModel):
     model_config = ConfigDict(extra="allow")
     id: str = Field(min_length=1, max_length=200)

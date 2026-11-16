@@ -197,3 +197,33 @@ def test_ask_page_sections_are_truncated_and_sanitised(client):
 def test_config_counts_sections_for_the_page(client):
     assert client.get("/api/v1/config", params={"page_url": "http://localhost:8080/pages/concept-with-navigation.html"}).json()["page_sections"] == 5
     assert client.get("/api/v1/config", params={"page_url": "https://nydl.example/lesson"}).json()["page_sections"] == 0
+
+
+def test_translate_needs_consent_and_uses_the_model(client, monkeypatch):
+    from config import settings
+    from services import answer as answer_mod
+
+    body = {"text": "The Frontend course teaches React.", "target": "am", "source": "en"}
+    r = client.post("/api/v1/translate", json=body).json()
+    assert r["text"] is None and r["reason"] == "consent"  # no consent: nothing leaves the server
+
+    class Fake:
+        NAME = "fake"
+
+        @staticmethod
+        async def complete(system, user):
+            assert "Amharic" in system and "React" in user
+            return '{"text": "ፊት ለፊት ኮርስ React ያስተምራል።"}'
+
+    monkeypatch.setattr(answer_mod, "chain", lambda: [Fake])
+    monkeypatch.setattr(settings, "provider", "cloud")
+    monkeypatch.setattr(settings, "gemini_key", "test")
+    ok = client.post("/api/v1/translate", json={**body, "allow_ai": True}).json()
+    assert ok["text"].endswith("ያስተምራል።") and ok["provider"] == "fake" and ok["reason"] is None
+
+    same = client.post("/api/v1/translate", json={**body, "target": "en", "allow_ai": True}).json()
+    assert same["text"] == body["text"]  # nothing to do
+
+    monkeypatch.setattr(answer_mod, "chain", lambda: [])
+    none = client.post("/api/v1/translate", json={**body, "allow_ai": True}).json()
+    assert none["text"] is None and none["reason"] == "failed"

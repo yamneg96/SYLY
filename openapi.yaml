@@ -47,6 +47,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/translate:
+    post:
+      tags:
+      - assistant
+      summary: Translate an answer into the learner's language (needs consent)
+      operationId: translate_text_api_v1_translate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TranslateIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslateOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/content:
     get:
       tags:
@@ -992,6 +1017,253 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/config:
+    get:
+      tags:
+      - developer portal
+      summary: Is Google sign-in set up? The client id is public
+      operationId: auth_config_api_v1_auth_config_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Auth Config Api V1 Auth Config Get
+  /api/v1/auth/google:
+    post:
+      tags:
+      - developer portal
+      summary: 'Sign in: verify the Google ID token and set a session cookie'
+      operationId: auth_google_api_v1_auth_google_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Auth Google Api V1 Auth Google Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - developer portal
+      summary: Sign out
+      operationId: auth_logout_api_v1_auth_logout_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Auth Logout Api V1 Auth Logout Post
+  /api/v1/me:
+    get:
+      tags:
+      - developer portal
+      summary: The signed-in developer
+      operationId: me_api_v1_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Me Api V1 Me Get
+  /api/v1/sites:
+    get:
+      tags:
+      - developer portal
+      summary: Your sites
+      operationId: list_sites_api_v1_sites_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response List Sites Api V1 Sites Get
+    post:
+      tags:
+      - developer portal
+      summary: Add a site
+      operationId: create_site_api_v1_sites_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Create Site Api V1 Sites Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sites/{site_id}:
+    get:
+      tags:
+      - developer portal
+      summary: One of your sites
+      operationId: get_site_api_v1_sites__site_id__get
+      parameters:
+      - name: site_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Site Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Site Api V1 Sites  Site Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - developer portal
+      summary: Change a site
+      operationId: edit_site_api_v1_sites__site_id__patch
+      parameters:
+      - name: site_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Site Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Edit Site Api V1 Sites  Site Id  Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - developer portal
+      summary: Delete a site
+      operationId: delete_site_api_v1_sites__site_id__delete
+      parameters:
+      - name: site_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Site Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/sites/{key}/config:
+    get:
+      tags:
+      - developer portal
+      summary: Public widget settings for a site key (cacheable, nothing private)
+      operationId: site_config_api_v1_sites__key__config_get
+      parameters:
+      - name: key
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Site Config Api V1 Sites  Key  Config Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/account/export:
+    get:
+      tags:
+      - developer portal
+      summary: Download my data (JSON)
+      operationId: export_account_api_v1_account_export_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Export Account Api V1 Account Export Get
+  /api/v1/account:
+    delete:
+      tags:
+      - developer portal
+      summary: Delete my account and sites
+      operationId: delete_account_api_v1_account_delete
+      responses:
+        '204':
+          description: Successful Response
 components:
   schemas:
     AccommodationIn:
@@ -1039,6 +1311,9 @@ components:
           - am
           - en
           - ar
+          - om
+          - ti
+          - so
           title: Language
           default: am
       type: object
@@ -1076,6 +1351,9 @@ components:
           - am
           - en
           - ar
+          - om
+          - ti
+          - so
           title: Language
           default: am
       type: object
@@ -1098,6 +1376,9 @@ components:
           - am
           - en
           - ar
+          - om
+          - ti
+          - so
           title: Language
           default: am
         page_url:
@@ -1314,6 +1595,9 @@ components:
           - am
           - en
           - ar
+          - om
+          - ti
+          - so
           title: Language
           default: am
         conversation_id:
@@ -1369,6 +1653,18 @@ components:
       - helper_online
       - token
       title: EscalationOut
+    GoogleIn:
+      properties:
+        credential:
+          type: string
+          maxLength: 4096
+          minLength: 20
+          title: Credential
+          description: The ID token from Sign in with Google
+      type: object
+      required:
+      - credential
+      title: GoogleIn
     HTTPValidationError:
       properties:
         detail:
@@ -1602,6 +1898,54 @@ components:
       - title_en
       - text_en
       title: SectionIn
+    SiteIn:
+      properties:
+        name:
+          title: Name
+          default: ''
+        allowed_origins:
+          title: Allowed Origins
+          default: []
+        lang:
+          title: Lang
+          default: en
+        mode:
+          title: Mode
+          default: panel
+        position:
+          title: Position
+          default: end
+        theme:
+          title: Theme
+          default: auto
+        primary:
+          title: Primary
+          default: ''
+        content_source:
+          title: Content Source
+          default: api
+        content_url:
+          title: Content Url
+          default: ''
+        content_selector:
+          title: Content Selector
+          default: ''
+        read_page:
+          title: Read Page
+          default: auto
+        voice:
+          title: Voice
+          default: false
+        simple:
+          title: Simple
+          default: false
+        bot_username:
+          title: Bot Username
+          default: ''
+      type: object
+      title: SiteIn
+      description: 'Loose types on purpose: the rules and the messages in words live
+        in services/sites.py.'
     SmsIn:
       properties:
         from:
@@ -1737,6 +2081,80 @@ components:
       required:
       - status
       title: TicketUpdate
+    TranslateIn:
+      properties:
+        text:
+          type: string
+          maxLength: 4000
+          minLength: 1
+          title: Text
+          examples:
+          - The Frontend course teaches HTML, CSS and React.
+        target:
+          type: string
+          enum:
+          - am
+          - en
+          - ar
+          - om
+          - ti
+          - so
+          title: Target
+          description: Language to translate into
+        source:
+          anyOf:
+          - type: string
+            enum:
+            - am
+            - en
+            - ar
+            - om
+            - ti
+            - so
+          - type: 'null'
+          title: Source
+          description: Language of the text, if known
+        allow_ai:
+          type: boolean
+          title: Allow Ai
+          description: Learner consented to online AI (NFR-S2). Without it nothing
+            is sent to a model
+          default: false
+      type: object
+      required:
+      - text
+      - target
+      title: TranslateIn
+    TranslateOut:
+      properties:
+        text:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Text
+          description: The translation; null when it could not be made (see reason)
+        language:
+          type: string
+          title: Language
+        provider:
+          type: string
+          title: Provider
+          description: gemini | groq | ollama | none
+        reason:
+          anyOf:
+          - type: string
+            enum:
+            - consent
+            - unavailable
+            - failed
+          - type: 'null'
+          title: Reason
+      type: object
+      required:
+      - text
+      - language
+      - provider
+      title: TranslateOut
     ValidationError:
       properties:
         loc:

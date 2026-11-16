@@ -12,9 +12,9 @@ from config import settings
 from db import get_db
 from models import Question, Section
 from routers.help import helper_online
-from schemas import AskIn, AskOut, ConfigOut, ContentIn, ContentOut, Created
+from schemas import AskIn, AskOut, ConfigOut, ContentIn, ContentOut, Created, TranslateIn, TranslateOut
 from services import content, notify
-from services.answer import answer
+from services.answer import answer, translate
 from services.content import same_page
 from services.retrieval import Index
 
@@ -52,6 +52,21 @@ async def ask(body: AskIn, db: Session = Depends(get_db)) -> AskOut:
         reason=out.reason,
         audio=out.audio,
     )
+
+
+@router.post("/translate", response_model=TranslateOut, summary="Translate an answer into the learner's language (needs consent)")
+async def translate_text(body: TranslateIn) -> TranslateOut:
+    # Only text the learner already sees is sent, and only after "Allow online answers" (NFR-S2). Nothing is stored.
+    if not body.allow_ai:
+        return TranslateOut(text=None, language=body.target, provider="none", reason="consent")
+    if not settings.ai_enabled:
+        return TranslateOut(text=None, language=body.target, provider="none", reason="unavailable")
+    if body.source == body.target:
+        return TranslateOut(text=body.text, language=body.target, provider="none")
+    out, provider = await translate(body.text.strip(), body.target, body.source)
+    if not out:
+        return TranslateOut(text=None, language=body.target, provider="none", reason="failed")
+    return TranslateOut(text=out, language=body.target, provider=provider)
 
 
 @router.post("/content", status_code=201, response_model=Created, summary="Host sends its lessons to be indexed")

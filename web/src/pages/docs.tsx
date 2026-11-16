@@ -22,7 +22,7 @@ document.addEventListener('db-assistant:escalated', e => console.log(e.detail));
 document.addEventListener('db-assistant:language',  e => console.log(e.detail)); // {language}`
 
 const ATTRS: [string, string, string, Key][] = [
-  ["lang", "am, en, ar, CODE", "en", "docs.a_lang"],
+  ["lang", "am, en, ar, CODE", "am", "docs.a_lang"],
   ["api", "https://…/api", "", "docs.a_api"],
   ["content", "https://…/content.json", "", "docs.a_content"],
   ["site", "pk_…", "", "docs.a_site"],

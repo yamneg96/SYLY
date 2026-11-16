@@ -82,7 +82,7 @@ Or generate them on `demo/install.html` (live preview, contrast check for a cust
 
 | Attribute | Values | Default |
 | --- | --- | --- |
-| `lang` | `am`, `en`, `ar`, or any `module/i18n/<code>.json` | `en` |
+| `lang` | `am`, `en`, `ar`, or any `module/i18n/<code>.json` | `am` |
 | `api` | Server base URL. Empty = works alone with keyword search in the browser | empty |
 | `content` | URL of a bilingual `content.json` (sections with `id`, `url`, `title_en/am`, `text_en/am`, `keywords_en/am`) | server content |
 | `theme` | `auto` (uses the host's `--bs-primary` only if it passes 4.5:1 with white, else `#002B56`), `light`, `dark` | `auto` |
@@ -144,6 +144,9 @@ B=http://localhost:8080
 # Ask (answer + sources; answer is null with reason "not_found" when the course does not cover it)
 curl -X POST $B/api/v1/ask -H "Content-Type: application/json" \
   -d '{"question":"Will AI replace virtual assistants?","language":"en","allow_ai":false}'
+
+# Translate an answer into the learner's language (needs allow_ai: true, the learner's consent; reason "consent" without it)
+curl -X POST $B/api/v1/translate -H "Content-Type: application/json"   -d '{"text":"The Frontend course teaches React.","target":"am","source":"en","allow_ai":true}'
 
 # Send your lessons to be indexed (bilingual sections)
 curl -X POST $B/api/v1/content -H "Content-Type: application/json" \
