@@ -83,6 +83,7 @@
       "translateNeedsConsent": "To translate, first turn on online answers.",
       "translateHint": "Online answers are off, so this answer stays in its own language. Turn them on to read it in {language}.",
       "noAnswerToTranslate": "There is no answer to translate yet. Ask a question first.",
+      "needsTranslation": "This page is in English and your question is in another language. Turn on online answers so SYLY can translate your question.",
       "examplesTitle": "Try one of these:",
       "example1": "Will AI replace virtual assistants?",
       "example2": "What skills will clients value?",
@@ -221,6 +222,7 @@
       "translateNeedsConsent": "ለመተርጎም መጀመሪያ የመስመር ላይ መልሶችን ያብሩ።",
       "translateHint": "የመስመር ላይ መልሶች ጠፍተዋል፣ ስለዚህ መልሱ በራሱ ቋንቋ ነው። በ{language} ለማንበብ ያብሩዋቸው።",
       "noAnswerToTranslate": "ለመተርጎም መልስ የለም። መጀመሪያ ጥያቄ ይጠይቁ።",
+      "needsTranslation": "ይህ ገጽ በእንግሊዝኛ ነው፣ ጥያቄዎ ደግሞ በሌላ ቋንቋ ነው። SYLY ጥያቄዎን እንዲተረጉም የመስመር ላይ መልሶችን ያብሩ።",
       "examplesTitle": "ከእነዚህ አንዱን ይሞክሩ፦",
       "example1": "AI ምናባዊ ረዳቶችን ይተካል?",
       "example2": "ደንበኞች ምን ዓይነት ክህሎቶችን ያደንቃሉ?",
@@ -359,6 +361,7 @@
       "translateNeedsConsent": "للترجمة، شغّل الإجابات عبر الإنترنت أولاً.",
       "translateHint": "الإجابات عبر الإنترنت متوقفة، لذلك تبقى هذه الإجابة بلغتها. شغّلها لقراءتها بـ{language}.",
       "noAnswerToTranslate": "لا توجد إجابة للترجمة بعد. اطرح سؤالاً أولاً.",
+      "needsTranslation": "هذه الصفحة بالإنجليزية وسؤالك بلغة أخرى. شغّل الإجابات عبر الإنترنت ليتمكن SYLY من ترجمة سؤالك.",
       "examplesTitle": "جرّب أحد هذه الأسئلة:",
       "example1": "هل سيحل الذكاء الاصطناعي محل المساعدين الافتراضيين؟",
       "example2": "ما المهارات التي سيقدّرها العملاء؟",
@@ -1595,7 +1598,7 @@
           if (res && res.reason === 'no_advice') { self._addMessage({ role: 'bot', text: self._t.noAdvice, offerHelp: true }); return; }
           // Server found nothing, but the browser's own search did (page read without consent): answer locally.
           if ((!res || !res.answer || !sources.length) && local && local.found) { self._answerLocal(text, local, forceLang); return; }
-          if (!res || !res.answer || !sources.length) { self._notFound(); return; } // FR-T5: no source, no answer
+          if (!res || !res.answer || !sources.length) { self._notFound(text); return; } // FR-T5: no source, no answer
           var pageUrls = (self._pageSections || []).map(function (ps) { return ps.url; });
           sources = sources.map(function (src) {
             return { title: src.title, url: pageUrls.indexOf(src.url) >= 0 ? src.url : absUrl(src.url, self._apiOrigin()) };
@@ -1621,7 +1624,7 @@
           this._enqueue({ type: 'ask', text: text });
           this._addMessage({ role: 'bot', text: this._t.queued });
         }
-        this._notFound();
+        this._notFound(text);
         return;
       }
       var s = local.best.section;
@@ -1741,8 +1744,19 @@
       return '\n' + notes.join(' ');
     }
 
-    _notFound() {
-      this._addMessage({ role: 'bot', emoji: '🔍', text: this._t.notFound + '\n' + this._t.notFoundOffer, offerHelp: true,
+    // Nothing found. When the page is in English only and the question is in another language, say that, and offer
+    // online answers (the server's AI translates the question).
+    _notFound(text) {
+      var self = this, t = this._t;
+      var qLang = detectLang(text || '', this._lang);
+      var haveAm = !!(this._index && this._index.sections.some(function (s) { return s.text_am; }));
+      var foreign = qLang === 'ar' || (qLang === 'am' && !haveAm);
+      if (foreign && this._apiBase() && !this._canTranslate()) {
+        var allow = h('button', { type: 'button', class: 'btn primary', onclick: function () { self._setConsent('yes', true); self._ask(text, true); } }, iconText('online', { 'data-t': 'consentAllow', text: t.consentAllow }));
+        this._addMessage({ role: 'bot', emoji: '\uD83C\uDF10', text: t.needsTranslation, offerHelp: true, extra: [allow] });
+        return;
+      }
+      this._addMessage({ role: 'bot', emoji: '\uD83D\uDD0D', text: t.notFound + '\n' + t.notFoundOffer, offerHelp: true,
         audio: this._lang === 'am' ? ['phrases/notFound.am.mp3', 'phrases/notFoundOffer.am.mp3'] : [] });
     }
 
