@@ -2,10 +2,24 @@
   "name": "syly-db-assistant",
   "version": "1.0.0",
   "description": "SYLY <db-assistant>: an accessible, multilingual course assistant as one web component. No dependencies, no build step.",
-  "keywords": ["accessibility", "a11y", "web-component", "assistant", "amharic", "education", "telegram"],
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "web-component",
+    "assistant",
+    "amharic",
+    "education",
+    "telegram"
+  ],
   "homepage": "https://github.com/yamneg96/SYLY#readme",
-  "repository": { "type": "git", "url": "git+https://github.com/yamneg96/SYLY.git", "directory": "module" },
-  "bugs": { "url": "https://github.com/yamneg96/SYLY/issues" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yamneg96/SYLY.git",
+    "directory": "module"
+  },
+  "bugs": {
+    "url": "https://github.com/yamneg96/SYLY/issues"
+  },
   "license": "SEE LICENSE IN LICENSE",
   "main": "db-assistant.js",
   "jsdelivr": "db-assistant.js",
@@ -18,14 +32,23 @@
     "./audio/*": "./audio/*",
     "./package.json": "./package.json"
   },
-  "files": ["db-assistant.js", "i18n/", "audio/", "README.md", "LICENSE"],
-  "publishConfig": { "access": "public" },
+  "files": [
+    "db-assistant.js",
+    "i18n/",
+    "audio/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "i18n": "node scripts/sync-i18n.mjs",
-    "test": "node --test tests/i18n.test.mjs tests/search.test.mjs tests/page-reading.test.mjs tests/site-config.test.mjs tests/site-content.test.mjs",
+    "test": "node --test tests/i18n.test.mjs tests/search.test.mjs tests/page-reading.test.mjs tests/site-config.test.mjs tests/site-content.test.mjs tests/voice-languages.test.mjs",
     "axe": "node scripts/axe.mjs",
     "site": "node scripts/site-check.mjs",
-    "icons": "node scripts/sync-icons.mjs"
+    "icons": "node scripts/sync-icons.mjs",
+    "voice": "node scripts/voice-check.mjs"
   },
   "devDependencies": {
     "axe-core": "^4.10.2",

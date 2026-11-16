@@ -155,7 +155,12 @@
       "shareFailed": "Screen sharing could not start in this browser. You can send a screenshot instead.",
       "screenshotFailed": "The screenshot could not be sent. Check your connection and try again.",
       "dataDeleteFailed": "Your conversation was deleted from this phone, but the server could not be reached. Please try “Delete my conversation” again when you are online.",
-      "genericError": "Something went wrong on this page. Please try again. If it keeps happening, press “Talk to a person”."
+      "genericError": "Something went wrong on this page. Please try again. If it keeps happening, press “Talk to a person”.",
+      "langBeta": "beta",
+      "micRecording": "Recording. Press Stop when you finish.",
+      "micTranscribing": "Turning your voice into text…",
+      "micNeedsConsent": "Voice in this language needs an online service. Press “Online answers” to allow it, or type your question.",
+      "micServerFailed": "I could not turn your voice into text. Please try again, or type your question."
     },
     "am": {
       "dir": "ltr",
@@ -275,7 +280,12 @@
       "shareFailed": "በዚህ ብራውዘር ስክሪን ማጋራት መጀመር አልተቻለም። በምትኩ የስክሪን ምስል መላክ ይችላሉ።",
       "screenshotFailed": "የስክሪን ምስሉ ሊላክ አልቻለም። ግንኙነትዎን አረጋግጠው እንደገና ይሞክሩ።",
       "dataDeleteFailed": "ውይይትዎ ከዚህ ስልክ ተሰርዟል፤ ነገር ግን ሰርቨሩን ማግኘት አልተቻለም። መስመር ላይ ሲሆኑ “ውይይቴን ሰርዝ”ን እንደገና ይሞክሩ።",
-      "genericError": "በዚህ ገጽ ላይ ችግር ተፈጥሯል። እባክዎ እንደገና ይሞክሩ። ችግሩ ከቀጠለ “ከሰው ጋር ይነጋገሩ” የሚለውን ይጫኑ።"
+      "genericError": "በዚህ ገጽ ላይ ችግር ተፈጥሯል። እባክዎ እንደገና ይሞክሩ። ችግሩ ከቀጠለ “ከሰው ጋር ይነጋገሩ” የሚለውን ይጫኑ።",
+      "langBeta": "ሙከራ",
+      "micRecording": "በመቅዳት ላይ። ሲጨርሱ «ቀረጻውን አቁም» ይጫኑ።",
+      "micTranscribing": "ድምፅዎን ወደ ጽሑፍ በመቀየር ላይ…",
+      "micNeedsConsent": "በዚህ ቋንቋ የድምፅ ግብዓት የመስመር ላይ አገልግሎት ይፈልጋል። ለመፍቀድ «የመስመር ላይ መልሶች»ን ይጫኑ፣ ወይም ጥያቄዎን ይጻፉ።",
+      "micServerFailed": "ድምፅዎን ወደ ጽሑፍ መቀየር አልቻልኩም። እባክዎ እንደገና ይሞክሩ፣ ወይም ጥያቄዎን ይጻፉ።"
     },
     "ar": {
       "dir": "rtl",
@@ -395,7 +405,12 @@
       "shareFailed": "تعذّر بدء مشاركة الشاشة في هذا المتصفح. يمكنك إرسال لقطة شاشة بدلًا من ذلك.",
       "screenshotFailed": "تعذّر إرسال لقطة الشاشة. تحقّق من اتصالك وحاول مرة أخرى.",
       "dataDeleteFailed": "حُذفت محادثتك من هذا الهاتف، لكن تعذّر الوصول إلى الخادم. حاول «حذف محادثتي» مرة أخرى عندما تكون متصلًا.",
-      "genericError": "حدث خطأ في هذه الصفحة. يرجى المحاولة مرة أخرى. إذا تكرر ذلك، اضغط «تحدّث مع شخص»."
+      "genericError": "حدث خطأ في هذه الصفحة. يرجى المحاولة مرة أخرى. إذا تكرر ذلك، اضغط «تحدّث مع شخص».",
+      "langBeta": "تجريبي",
+      "micRecording": "جارٍ التسجيل. اضغط «إيقاف التسجيل» عند الانتهاء.",
+      "micTranscribing": "جارٍ تحويل صوتك إلى نص…",
+      "micNeedsConsent": "الإدخال الصوتي بهذه اللغة يحتاج إلى خدمة عبر الإنترنت. اضغط «الإجابات عبر الإنترنت» للسماح بذلك، أو اكتب سؤالك.",
+      "micServerFailed": "لم أستطع تحويل صوتك إلى نص. حاول مرة أخرى، أو اكتب سؤالك."
     }
   };
   /* I18N:END */
@@ -770,6 +785,21 @@
     });
     return out;
   }
+
+  /* voice input routes (FR-T7). The browser's own recognition (Chrome, free, needs the network) is used for the languages it
+     handles; Afaan Oromo, Tigrinya and any language the browser refuses are recorded and sent to the server's speech-to-text
+     (Addis AI, Gemini, Groq: POST /v1/voice/transcribe), which needs the learner's consent because audio leaves the phone. */
+  var NATIVE_NAMES = { en: 'English', am: 'አማርኛ', ar: 'العربية', om: 'Afaan Oromoo', ti: 'ትግርኛ', so: 'Soomaali' };
+  var BETA_LANGS = ['om', 'ti', 'so']; // interface text is a draft that needs a native reader check
+  var BROWSER_STT = { en: 'en-US', am: 'am-ET', ar: 'ar-SA', so: 'so-SO' };
+  var RECORD_MAX_MS = 30000;
+  function micRoute(lang, hasBrowser, hasRecorder, hasApi) {
+    if (hasBrowser && BROWSER_STT[lang]) return 'browser';
+    if (hasRecorder && hasApi) return 'server';
+    return 'none';
+  }
+  // Browser errors that mean "this browser cannot recognise this language or reach its service": use the server instead.
+  function browserCannot(error) { return error === 'language-not-supported' || error === 'network' || error === 'service-not-allowed'; }
 
   /* --------------------------------------------------------------- styles */
   var CSS = [
@@ -1261,14 +1291,14 @@
         if (v !== undefined) el.textContent = v;
       });
       if (this._rzLabel) this._rzLabel();
-      if (this._recognizer) this._setBtn(this.$mic, 'stop', 'micStop');
+      if (this._recognizer || this._recording) this._setBtn(this.$mic, 'stop', 'micStop');
       if (this.$langSel) {
         var sel = this.$langSel, cur = this._lang;
-        var langs = Object.keys(I18N);
+        var langs = ['en', 'am', 'ar', 'om', 'ti', 'so'];
         if (langs.indexOf(cur) < 0) langs.push(cur);
         sel.textContent = '';
         langs.forEach(function (l) {
-          sel.appendChild(h('option', { value: l, lang: l, selected: l === cur, text: t['langName_' + l] || l }));
+          sel.appendChild(h('option', { value: l, lang: l, selected: l === cur, text: (NATIVE_NAMES[l] || l) + (BETA_LANGS.indexOf(l) >= 0 ? ' (' + t.langBeta + ')' : '') }));
         });
       }
       this._setStatusNetwork();
@@ -1848,11 +1878,21 @@
 
     /* voice: input (FR-T7) */
     _toggleMic() {
-      if (this._recognizer) { this._stopMic(); return; }
+      if (this._recognizer || this._recording) { this._stopMic(); return; }
       var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { this._status(this._t.micUnsupported); return; }
-      var self = this, rec = new SR(), base = this.$q.value ? this.$q.value.trim() + ' ' : '';
-      rec.lang = this._t.speechLang || 'en-US';
+      var canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+      var route = micRoute(this._lang, !!SR, canRecord, !!this._apiBase());
+      if (route === 'browser') this._micBrowser(SR);
+      else if (route === 'server') this._micServer();
+      else this._status(this._t.micUnsupported);
+    }
+    _micReset() {
+      this.$mic.setAttribute('aria-pressed', 'false');
+      this._setBtn(this.$mic, 'mic', 'mic');
+    }
+    _micBrowser(SR) {
+      var self = this, rec = new SR(), base = this.$q.value ? this.$q.value.trim() + ' ' : '', retried = false;
+      rec.lang = BROWSER_STT[this._lang] || this._t.speechLang || 'en-US';
       rec.interimResults = true;
       rec.continuous = false;
       rec.onresult = function (e) {
@@ -1861,13 +1901,16 @@
         self.$q.value = base + text;
       };
       rec.onerror = function (e) {
-        var denied = e && (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture');
+        var code = e && e.error;
+        // This browser cannot do this language (or cannot reach its service): the server can, if the learner allowed it.
+        if (browserCannot(code) && self._apiBase() && window.MediaRecorder && !retried) { retried = true; self._retryOnServer = true; return; }
+        var denied = code === 'not-allowed' || code === 'service-not-allowed' || code === 'audio-capture';
         self._status(denied ? self._t.micDenied : self._t.micError);
       };
       rec.onend = function () {
         self._recognizer = null;
-        self.$mic.setAttribute('aria-pressed', 'false');
-        self._setBtn(self.$mic, 'mic', 'mic');
+        self._micReset();
+        if (self._retryOnServer) { self._retryOnServer = false; self._micServer(); return; }
         if (self.$q.value.trim()) self._status(self._t.micDone);
         self.$q.focus();
       };
@@ -1877,7 +1920,52 @@
       this._setBtn(this.$mic, 'stop', 'micStop');
       this._status(this._t.micListening);
     }
-    _stopMic() { if (this._recognizer) { try { this._recognizer.stop(); } catch (e) { /* already stopped */ } } }
+    // Record, then send to the server's speech to text. Audio leaves the phone, so only with consent (NFR-S2).
+    _micServer() {
+      var self = this, t = this._t;
+      if (this._consent !== 'yes') { this._status(t.micNeedsConsent); return; }
+      if (!navigator.onLine) { this._status(t.micError); return; }
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+        var rec = new MediaRecorder(stream), chunks = [], timer = null;
+        var release = function () { stream.getTracks().forEach(function (tr) { tr.stop(); }); };
+        rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        rec.onerror = function () { release(); clearTimeout(timer); self._recording = null; self._micReset(); self._status(t.micError); };
+        rec.onstop = function () {
+          release(); clearTimeout(timer);
+          self._recording = null;
+          self._micReset();
+          if (!chunks.length) { self._status(t.micError); self.$q.focus(); return; }
+          self._transcribe(new Blob(chunks, { type: rec.mimeType || 'audio/webm' }));
+        };
+        rec.start();
+        timer = setTimeout(function () { if (rec.state === 'recording') rec.stop(); }, RECORD_MAX_MS);
+        self._recording = rec;
+        self.$mic.setAttribute('aria-pressed', 'true');
+        self._setBtn(self.$mic, 'stop', 'micStop');
+        self._status(t.micRecording);
+      }).catch(function () { self._status(t.micDenied); });
+    }
+    _transcribe(blob) {
+      var self = this, t = this._t, base = this.$q.value ? this.$q.value.trim() + ' ' : '';
+      var form = new FormData();
+      form.append('file', blob, 'voice.' + (/mp4/.test(blob.type) ? 'm4a' : /ogg/.test(blob.type) ? 'ogg' : 'webm'));
+      form.append('language', this._lang);
+      this._status(t.micTranscribing);
+      fetch(this._apiBase() + '/v1/voice/transcribe', { method: 'POST', headers: this._keyed({}), body: form })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (res) {
+          var text = res && res.text ? String(res.text).trim() : '';
+          if (!text) { self._status(t.micServerFailed); self.$q.focus(); return; }
+          self.$q.value = base + text; // not sent: the learner checks it first
+          self._status(t.micDone);
+          self.$q.focus();
+        })
+        .catch(function () { self._status(t.micServerFailed); self.$q.focus(); });
+    }
+    _stopMic() {
+      if (this._recognizer) { try { this._recognizer.stop(); } catch (e) { /* already stopped */ } }
+      if (this._recording) { try { this._recording.stop(); } catch (e) { /* already stopped */ } }
+    }
 
     /* voice: output (FR-T8) pre-generated audio -> system voice -> server TTS -> text only */
     _stopVoice() {
@@ -1961,6 +2049,6 @@
   }
 
   // Exposed for tests only through the element class (no globals).
-  DbAssistant._internals = { readPage: readPage, pageRoot: pageRoot, decidePageReading: decidePageReading, pageToIndex: pageToIndex, textFragment: textFragment, formatDate: formatDate, Index: Index, splitSentences: splitSentences, detectLang: detectLang, NO_ADVICE: NO_ADVICE, parseColor: parseColor, contrast: contrast, applySite: applySite, I18N: I18N };
+  DbAssistant._internals = { readPage: readPage, pageRoot: pageRoot, decidePageReading: decidePageReading, pageToIndex: pageToIndex, textFragment: textFragment, formatDate: formatDate, Index: Index, splitSentences: splitSentences, detectLang: detectLang, NO_ADVICE: NO_ADVICE, parseColor: parseColor, contrast: contrast, applySite: applySite, micRoute: micRoute, browserCannot: browserCannot, BROWSER_STT: BROWSER_STT, I18N: I18N };
   customElements.define('db-assistant', DbAssistant);
 })();
