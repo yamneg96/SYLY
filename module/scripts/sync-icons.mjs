@@ -14,7 +14,7 @@ const version = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).vers
 
 // name used in our code -> Lucide icon file
 export const MODULE_ICONS = {
-  close: 'x', language: 'languages', simple: 'text', online: 'globe', data: 'shield-check',
+  close: 'x', refresh: 'refresh-cw', language: 'languages', simple: 'text', online: 'globe', data: 'shield-check',
   send: 'send', mic: 'mic', stop: 'square', talk: 'headset', listen: 'volume-2', sources: 'book-open',
   share: 'screen-share', shareOff: 'screen-share-off', screenshot: 'image', download: 'download',
   trash: 'trash-2', next: 'arrow-right', back: 'arrow-left', check: 'check',

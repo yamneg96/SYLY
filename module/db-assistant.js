@@ -73,6 +73,16 @@
       "noAdvice": "I cannot give medical, legal or immigration advice. A person can help you.",
       "emptyIntro": "Ask a question about this lesson. I answer only from the course and show where each answer came from.",
       "exampleAbout": "Tell me about {title}",
+      "refresh": "Refresh",
+      "refreshedPage": "The page was read again.",
+      "refreshedChat": "The page was read again. A new conversation started.",
+      "translateLabel": "Show this answer in",
+      "translating": "Translating…",
+      "translatedNote": "Translated by AI from {from}. Check the original through the source link.",
+      "translateFailed": "Could not translate now. The answer is shown in its original language.",
+      "translateNeedsConsent": "To translate, first turn on online answers.",
+      "translateHint": "Online answers are off, so this answer stays in its own language. Turn them on to read it in {language}.",
+      "noAnswerToTranslate": "There is no answer to translate yet. Ask a question first.",
       "examplesTitle": "Try one of these:",
       "example1": "Will AI replace virtual assistants?",
       "example2": "What skills will clients value?",
@@ -199,6 +209,16 @@
       "noAdvice": "የሕክምና፣ የሕግ ወይም የኢሚግሬሽን ምክር መስጠት አልችልም። ሰው ሊረዳዎት ይችላል።",
       "emptyIntro": "ስለዚህ ትምህርት ጥያቄ ይጠይቁ። የምመልሰው ከትምህርቱ ብቻ ነው፤ እያንዳንዱ መልስ ከየት እንደመጣም አሳያለሁ።",
       "exampleAbout": "ስለ {title} ንገረኝ",
+      "refresh": "አድስ",
+      "refreshedPage": "ገጹ እንደገና ተነብቧል።",
+      "refreshedChat": "ገጹ እንደገና ተነብቧል። አዲስ ውይይት ተጀምሯል።",
+      "translateLabel": "ይህን መልስ በዚህ ቋንቋ አሳይ",
+      "translating": "በመተርጎም ላይ…",
+      "translatedNote": "በAI ከ{from} ተተርጉሟል። ዋናውን በምንጭ አገናኙ ይመልከቱ።",
+      "translateFailed": "አሁን መተርጎም አልተቻለም። መልሱ በዋናው ቋንቋ ነው።",
+      "translateNeedsConsent": "ለመተርጎም መጀመሪያ የመስመር ላይ መልሶችን ያብሩ።",
+      "translateHint": "የመስመር ላይ መልሶች ጠፍተዋል፣ ስለዚህ መልሱ በራሱ ቋንቋ ነው። በ{language} ለማንበብ ያብሩዋቸው።",
+      "noAnswerToTranslate": "ለመተርጎም መልስ የለም። መጀመሪያ ጥያቄ ይጠይቁ።",
       "examplesTitle": "ከእነዚህ አንዱን ይሞክሩ፦",
       "example1": "AI ምናባዊ ረዳቶችን ይተካል?",
       "example2": "ደንበኞች ምን ዓይነት ክህሎቶችን ያደንቃሉ?",
@@ -325,6 +345,16 @@
       "noAdvice": "لا أستطيع تقديم نصائح طبية أو قانونية أو متعلقة بالهجرة. يمكن لشخص أن يساعدك.",
       "emptyIntro": "اطرح سؤالًا عن هذا الدرس. أجيب من الدورة فقط وأبيّن مصدر كل إجابة.",
       "exampleAbout": "أخبرني عن {title}",
+      "refresh": "تحديث",
+      "refreshedPage": "أُعيدت قراءة الصفحة.",
+      "refreshedChat": "أُعيدت قراءة الصفحة وبدأت محادثة جديدة.",
+      "translateLabel": "اعرض هذه الإجابة بلغة",
+      "translating": "جارٍ الترجمة…",
+      "translatedNote": "ترجمها الذكاء الاصطناعي من {from}. راجع الأصل عبر رابط المصدر.",
+      "translateFailed": "تعذرت الترجمة الآن. تظهر الإجابة بلغتها الأصلية.",
+      "translateNeedsConsent": "للترجمة، شغّل الإجابات عبر الإنترنت أولاً.",
+      "translateHint": "الإجابات عبر الإنترنت متوقفة، لذلك تبقى هذه الإجابة بلغتها. شغّلها لقراءتها بـ{language}.",
+      "noAnswerToTranslate": "لا توجد إجابة للترجمة بعد. اطرح سؤالاً أولاً.",
       "examplesTitle": "جرّب أحد هذه الأسئلة:",
       "example1": "هل سيحل الذكاء الاصطناعي محل المساعدين الافتراضيين؟",
       "example2": "ما المهارات التي سيقدّرها العملاء؟",
@@ -422,6 +452,7 @@
   // Lucide 0.460.0 (ISC licence, https://lucide.dev), copied by scripts/sync-icons.mjs.
   var ICONS = {
     "close": "<path d=\"M18 6 6 18\" /><path d=\"m6 6 12 12\" />",
+    "refresh": "<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\" /><path d=\"M21 3v5h-5\" /><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\" /><path d=\"M8 16H3v5\" />",
     "language": "<path d=\"m5 8 6 6\" /><path d=\"m4 14 6-6 2-3\" /><path d=\"M2 5h12\" /><path d=\"M7 2h1\" /><path d=\"m22 22-5-10-5 10\" /><path d=\"M14 18h6\" />",
     "simple": "<path d=\"M17 6.1H3\" /><path d=\"M21 12.1H3\" /><path d=\"M15.1 18H3\" />",
     "online": "<circle cx=\"12\" cy=\"12\" r=\"10\" /><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\" /><path d=\"M2 12h20\" />",
@@ -504,6 +535,50 @@
   function save(key, value) {
     try { localStorage.setItem(STORE + key, JSON.stringify(value)); } catch (e) { /* private mode: keep in memory */ }
   }
+  /* "reply in Amharic", "translate to Arabic", በአማርኛ መልስ, ترجم إلى العربية ...: the learner names the language of the reply.
+     Returns { lang, text, only } or null. text = the question without the instruction; only = nothing else was asked. */
+  var REQ_NAME_EN = '(amharic|english|arabic|afaan oromo|oromo|oromiffa|tigrinya|tigrigna|somali)';
+  var REQ_CODE = { amharic: 'am', english: 'en', arabic: 'ar', 'afaan oromo': 'om', oromo: 'om', oromiffa: 'om', tigrinya: 'ti', tigrigna: 'ti', somali: 'so',
+    'አማርኛ': 'am', 'እንግሊዝኛ': 'en', 'አረብኛ': 'ar', 'ኦሮምኛ': 'om', 'ትግርኛ': 'ti', 'ሶማሊኛ': 'so',
+    'الأمهرية': 'am', 'الامهرية': 'am', 'العربية': 'ar', 'الإنجليزية': 'en', 'الانجليزية': 'en',
+    'الأورومية': 'om', 'التغرينية': 'ti', 'الصومالية': 'so' };
+  var REQ_AM = '(አማርኛ|እንግሊዝኛ|አረብኛ|ኦሮምኛ|ትግርኛ|ሶማሊኛ)';
+  var REQ_AR = '(الأمهرية|الامهرية|العربية|الإنجليزية|الانجليزية|الأورومية|التغرينية|الصومالية)';
+  function parseLangRequest(text) {
+    var s = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!s) return null;
+    var m, lang = null, rest = null;
+    // a bare language name: "in Amharic", "Amharic please"
+    m = new RegExp('^(?:please\\s+)?(?:in\\s+|to\\s+)?' + REQ_NAME_EN + '(?:\\s+(?:please|language))?[\\s.!?]*$', 'i').exec(s);
+    if (m) return { lang: REQ_CODE[m[1].toLowerCase()], text: '', only: true };
+    // English: "... in Amharic", with a verb before it or a comma / the start of the message
+    m = new RegExp('(^|[\\s,;:])(?:in|into|to)\\s+' + REQ_NAME_EN + '(?:\\s+(?:please|language))?(?=[\\s.,;:!?]|$)', 'i').exec(s);
+    if (m) {
+      var before = s.slice(0, m.index);
+      if (!before.trim() || /[,;:]\s*$/.test(before) || /\b(reply|respond|answer|say|write|explain|tell|speak|translate|give|show|describe|summari[sz]e|list)\b/i.test(before)) {
+        lang = REQ_CODE[m[2].toLowerCase()];
+        rest = (before + ' ' + s.slice(m.index + m[0].length)).replace(/\s+/g, ' ').trim();
+      }
+    }
+    // Amharic: በአማርኛ መልስ / ወደ አማርኛ ተርጉም
+    if (!lang) {
+      m = new RegExp('(?:በ|ወደ\\s*)' + REQ_AM + '(?:\\s*(?:መልስ|ተርጉም|ንገር|አስረዳ|ጻፍ|አቅርብ)\\S*)?').exec(s);
+      if (m) { lang = REQ_CODE[m[1]]; rest = (s.slice(0, m.index) + ' ' + s.slice(m.index + m[0].length)).replace(/\s+/g, ' ').trim(); }
+    }
+    // Arabic: بالعربية / أجب بالعربية / ترجم إلى العربية
+    if (!lang) {
+      m = new RegExp('(?:(?:أجب|رد|اشرح|ترجم|قل|اكتب)\\S*\\s+)?(?:ب|إلى\\s+|الى\\s+)' + REQ_AR).exec(s);
+      if (m) { lang = REQ_CODE[m[1]]; rest = (s.slice(0, m.index) + ' ' + s.slice(m.index + m[0].length)).replace(/\s+/g, ' ').trim(); }
+    }
+    if (!lang) return null;
+    // drop a leading or trailing instruction verb that is left over ("... Reply", "Please answer, ...")
+    rest = rest.replace(/^(?:please\s*[,:]?\s*)?(?:reply|respond|answer|translate(?: this| it| that)?|say(?: it)?)\s*(?:me|us)?\s*[,:]?\s*(?=\S)/i, '')
+      .replace(/[\s,;:.-]*\b(?:please\s+)?(?:reply|respond|answer|say it|write|explain|translate(?: this| it| that)?|tell me|give me|show me|speak)\s*[.!?]*$/i, '')
+      .replace(/^[\s,;:.-]+|[\s,;:-]+$/g, '').trim();
+    var core = rest.replace(/\b(please|reply|respond|answer|say|write|explain|translate|tell|give|show|speak|me|us|it|this|that|again|back|the|your|in|into|to)\b/ig, ' ').replace(/[^\p{L}\p{N}]+/gu, '');
+    return { lang: lang, text: core === '' ? '' : rest, only: core === '' };
+  }
+
   // After a source link scrolls to a section, tint that section for about 3 seconds with a heartbeat (two soft beats a
   // second, so nothing flashes more than 3 times a second). Uses the Web Animations API: nothing is added to the host
   // page's markup or styles, and the tint is gone by itself. With reduced motion the tint stays steady instead of pulsing.
@@ -874,6 +949,10 @@
     '.sources li{margin-block:0.25rem;}',
     '.note{font-size:0.875rem;margin:0.25rem 0 0.5rem;}',
     '.actions{display:flex;flex-wrap:wrap;gap:0.5rem;margin-block-start:0.5rem;}',
+    '.head-btns{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:flex-end;}',
+    '.trans{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;margin-block:0.5rem;font-size:0.875rem;}',
+    '.trans label{display:inline-flex;align-items:center;gap:0.375rem;font-weight:600;}',
+    '.trans select{min-block-size:2.75rem;max-inline-size:100%;padding:0.25rem 0.5rem;border:2px solid var(--c-border);border-radius:0.5rem;background:var(--c-bg);color:var(--c-text);font-size:1rem;}',
     '.status{margin:0;padding:0.5rem 1rem;font-size:0.9375rem;border-block-start:1px solid var(--c-border);}',
     '.status:empty{display:none;}',
     '.consent{border:2px solid var(--c-border);border-radius:0.75rem;padding:1rem;}',
@@ -971,7 +1050,7 @@
       this._applyTheme();
       window.addEventListener('online', this._onOnline);
       window.addEventListener('offline', this._onOffline);
-      this._setLang(this.getAttribute('lang') || 'en', true);
+      this._setLang(this.getAttribute('lang') || 'am', true);
       var self = this;
       // Content sources (FR-AD4): 1. content file, 2. server sections for this page, 3. page reading.
       Promise.all([this._loadContent(), this._loadConfig()]).then(function (r) {
@@ -1201,7 +1280,10 @@
       var head = h('div', { class: 'head' }, [
         h('div', { class: 'head-row' }, [
           h('h2', { id: 'title' }, [logoEl(), h('span', tx('title'))]),
-          h('button', { type: 'button', class: 'btn', onclick: function () { self.close(); } }, iconText('close', tx('close')))
+          h('div', { class: 'head-btns' }, [
+            h('button', { type: 'button', class: 'btn', onclick: function () { self._refresh(); } }, iconText('refresh', tx('refresh'))),
+            h('button', { type: 'button', class: 'btn', onclick: function () { self.close(); } }, iconText('close', tx('close')))
+          ])
         ]),
         h('div', { class: 'tools' }, [
           h('span', { class: 'field' }, [h('label', { for: 'lang' }, iconText('language', tx('language'))), this.$langSel]),
@@ -1387,7 +1469,9 @@
       if (!fromToggle) this.$q.focus();
       var pending = this._pending;
       this._pending = null;
-      if (pending) this._ask(pending, true);
+      var pendingLang = this._pendingLang;
+      this._pendingLang = null;
+      if (pending) this._ask(pending, true, pendingLang);
     }
 
     /* content */
@@ -1466,14 +1550,23 @@
       this._ask(text);
     }
 
-    _ask(text, resumed) {
+    _ask(text, resumed, forceLang) {
       var self = this;
       if (!resumed) {
         this._addMessage({ role: 'you', text: text, lang: detectLang(text, this._lang) });
         this._emit('question', { text: text, language: this._lang });
+        // "reply in Amharic", "translate to Arabic": the learner names the language of the reply
+        var req = parseLangRequest(text);
+        if (req) {
+          forceLang = req.lang;
+          if (req.only) { this._translateLast(req.lang); return; }
+          text = req.text;
+        }
       }
+      var replyLang = forceLang || this._lang;
       if (this._showConsentIfNeeded()) {
         this._pending = text;
+        this._pendingLang = forceLang || null;
         this.$consentTitle.focus();
         return;
       }
@@ -1484,7 +1577,7 @@
       if (this._apiBase() && navigator.onLine) {
         this._status(this._t.statusSending);
         this._fetchJson('/v1/ask', { method: 'POST', body: JSON.stringify({
-          question: text, language: this._lang, page_url: location.href, conversation_id: this._sessionId,
+          question: text, language: replyLang, page_url: location.href, conversation_id: this._sessionId,
           allow_ai: this._consent === 'yes', simple: this._simple,
           // Page sections leave the browser only after "Allow online answers" (FR-AD4, NFR-S2).
           sections: this._consent === 'yes' && this._pageSections && this._pageSections.length ? this._pageSections : undefined
@@ -1493,24 +1586,24 @@
           var sources = (res && res.sources || []).filter(function (s) { return s && s.url; });
           if (res && res.reason === 'no_advice') { self._addMessage({ role: 'bot', text: self._t.noAdvice, offerHelp: true }); return; }
           // Server found nothing, but the browser's own search did (page read without consent): answer locally.
-          if ((!res || !res.answer || !sources.length) && local && local.found) { self._answerLocal(text, local); return; }
+          if ((!res || !res.answer || !sources.length) && local && local.found) { self._answerLocal(text, local, forceLang); return; }
           if (!res || !res.answer || !sources.length) { self._notFound(); return; } // FR-T5: no source, no answer
           var pageUrls = (self._pageSections || []).map(function (ps) { return ps.url; });
           sources = sources.map(function (src) {
             return { title: src.title, url: pageUrls.indexOf(src.url) >= 0 ? src.url : absUrl(src.url, self._apiOrigin()) };
           });
-          self._addMessage({ role: 'bot', text: res.answer, lang: res.language || self._lang, sources: sources,
-            note: res.provider && res.provider !== 'none' ? self._t.answeredAi : self._t.answeredLocal, ai: res.provider && res.provider !== 'none', audio: res.audio || [] });
+          self._deliver({ role: 'bot', text: res.answer, lang: res.language || replyLang, sources: sources,
+            note: res.provider && res.provider !== 'none' ? self._t.answeredAi : self._t.answeredLocal, ai: res.provider && res.provider !== 'none', audio: res.audio || [] }, replyLang);
         }).catch(function () {
           self._setStatusNetwork();
-          self._answerLocal(text, local);
+          self._answerLocal(text, local, forceLang);
         });
         return;
       }
-      this._answerLocal(text, local);
+      this._answerLocal(text, local, forceLang);
     }
 
-    _answerLocal(text, local) {
+    _answerLocal(text, local, forceLang) {
       if (!this._index && this._contentFailed) {
         this._addMessage({ role: 'bot', emoji: '⚠️', text: this._t.contentUnavailable, offerHelp: true });
         return;
@@ -1535,14 +1628,98 @@
       var audio = lang === 'am' && s.type !== 'job' && s.type !== 'page'
         ? ['sections/' + s.id + '/title.am.mp3'].concat(idx.map(function (i) { return 'sections/' + s.id + '/' + i + '.am.mp3'; }))
         : [];
-      this._addMessage({
+      this._deliver({
         role: 'bot', lang: lang,
         text: fmt(this.getText('fromSection', lang), { title: title }) + '\n' + body + this._jobNotes(s, lang),
         sources: [{ title: title, url: s.source === 'page' ? s.url : absUrl(s.url, this._contentBase) }],
         note: this.getText('answeredLocal', lang),
         audio: audio,
         section: s.id
+      }, forceLang || this._lang);
+    }
+
+    /* translation of answers (needs "Allow online answers": the text goes to the server's AI) */
+    _canTranslate() { return !!this._apiBase() && navigator.onLine && this._consent === 'yes'; }
+    _translate(text, target, source) {
+      return this._fetchJson('/v1/translate', { method: 'POST', body: JSON.stringify({ text: text, target: target, source: source || null, allow_ai: true }) })
+        .then(function (res) { if (!res || !res.text) throw new Error('no translation'); return res.text; });
+    }
+    _langName(code) { return this._t['langName_' + code] || code; }
+    // Shows an answer in the wanted language: as it is, or translated first when the text is in another language.
+    _deliver(spec, target) {
+      var self = this, t = this._t;
+      spec.canTranslate = true;
+      if (!spec.lang || spec.lang === target || spec.role !== 'bot') { this._addMessage(spec); return; }
+      if (!this._canTranslate()) {
+        spec.note = (spec.note ? spec.note + ' ' : '') + fmt(t.translateHint, { language: this._langName(target) });
+        this._addMessage(spec);
+        return;
+      }
+      this._status(t.translating);
+      this._translate(spec.text, target, spec.lang).then(function (tr) {
+        self._status('');
+        self._addMessage(Object.assign({}, spec, { text: tr, lang: target, orig: { text: spec.text, lang: spec.lang, audio: spec.audio || [] }, audio: [],
+          note: fmt(t.translatedNote, { from: self._langName(spec.lang) }), ai: true }));
+      }, function () {
+        self._status(t.translateFailed);
+        self._addMessage(spec);
       });
+    }
+    // "translate to Amharic" on its own: the last answer again, in that language.
+    _translateLast(target) {
+      var last = this._lastAnswer;
+      if (!last) { this._addMessage({ role: 'bot', text: this._t.noAnswerToTranslate }); return; }
+      var m = last.m, src = m.orig || m;
+      if (!this._canTranslate() && src.lang !== target) { this._addMessage({ role: 'bot', text: this._t.translateNeedsConsent }); return; }
+      this._deliver({ role: 'bot', text: src.text, lang: src.lang, sources: m.sources, note: m.orig ? '' : m.note, audio: src.audio || [], section: m.section }, target);
+    }
+    // The dropdown under an answer.
+    _translateMessage(m, li, target, sel) {
+      var self = this, t = this._t;
+      var orig = m.orig || (m.orig = { text: m.text, lang: m.lang, audio: m.audio || [] });
+      var box = li.querySelector('.txt');
+      var show = function (text, lang, audio, translated) {
+        m.text = text; m.lang = lang; m.audio = audio;
+        li.setAttribute('lang', lang);
+        box.textContent = '';
+        String(text).split(/\n+/).forEach(function (para) { if (para.trim()) box.appendChild(h('p', { dir: 'auto', text: para })); });
+        var old = li.querySelector('.trnote');
+        if (old) old.remove();
+        if (translated) box.insertAdjacentElement('afterend', h('p', { class: 'note trnote' }, [icon('ai'), h('span', { text: fmt(t.translatedNote, { from: self._langName(orig.lang) }) })]));
+      };
+      if (target === orig.lang) { show(orig.text, orig.lang, orig.audio, false); self._status(''); return; }
+      if (!this._canTranslate()) { sel.value = m.lang; this._status(t.translateNeedsConsent); return; }
+      this._status(t.translating);
+      sel.disabled = true;
+      this._translate(orig.text, target, orig.lang).then(function (tr) {
+        show(tr, target, [], true);
+        self._status('');
+      }, function () {
+        sel.value = m.lang;
+        self._status(t.translateFailed);
+      }).then(function () { sel.disabled = false; });
+    }
+
+    /* the reload button: read the page again and start a fresh conversation */
+    _refresh() {
+      var t = this._t;
+      this._stopVoice();
+      this._readPageNow();
+      this._loadContent();
+      if (this._ticket) { this._status(t.refreshedPage); return; } // a person is helping: keep the conversation
+      this.$log.textContent = '';
+      this._history = [];
+      this._lastSection = null;
+      this._lastAnswer = null;
+      this._pending = null;
+      this._sessionId = uid();
+      save('cid', this._sessionId);
+      this.$intro.hidden = false;
+      this._exKey = null;
+      this._renderExamples();
+      this._status(t.refreshedChat);
+      this.$body.scrollTo({ top: 0 });
+      this.$q.focus();
     }
 
     _jobNotes(s, lang) {
@@ -1573,7 +1750,9 @@
       var li = h('li', { class: 'msg ' + m.role, lang: m.lang, dir: 'auto' });
       li.appendChild(h('p', { class: 'who' }, [icon(m.role === 'you' ? 'you' : m.role === 'tutor' ? 'tutor' : 'bot'), h('strong', { text: who, dir: 'auto' }), h('time', { datetime: m.ts.toISOString(), text: formatTime(m.ts, this._lang) })]));
       if (m.emoji) li.appendChild(emoji(m.emoji));
-      String(m.text).split(/\n+/).forEach(function (para) { if (para.trim()) li.appendChild(h('p', { dir: 'auto', text: para })); });
+      var txtBox = h('div', { class: 'txt' });
+      String(m.text).split(/\n+/).forEach(function (para) { if (para.trim()) txtBox.appendChild(h('p', { dir: 'auto', text: para })); });
+      li.appendChild(txtBox);
 
       if (m.sources && m.sources.length) {
         var ul = h('ul');
@@ -1585,7 +1764,15 @@
         li.appendChild(h('div', { class: 'sources' }, [h('h3', null, [icon('sources'), h('span', { text: this.getText('sources', m.lang) })]), ul]));
       }
       if (m.link) li.appendChild(h('p', null, [h('a', { href: m.link.href, target: '_blank', rel: 'noopener', text: m.link.text })]));
-      if (m.note) li.appendChild(h('p', { class: 'note' }, [icon(m.ai ? 'ai' : 'check'), h('span', { text: m.note })]));
+      if (m.note) li.appendChild(h('p', { class: 'note trnote' }, [icon(m.ai ? 'ai' : 'check'), h('span', { text: m.note })]));
+      if (m.canTranslate) {
+        var selId = 'tr' + uid();
+        var sel = h('select', { id: selId });
+        ['en', 'am', 'ar', 'om', 'ti', 'so'].forEach(function (l) { sel.appendChild(h('option', { value: l, lang: l, selected: l === m.lang, text: self._langName(l) })); });
+        sel.addEventListener('change', safe(function () { self._translateMessage(m, li, sel.value, sel); }));
+        li.appendChild(h('div', { class: 'trans' }, [h('label', { for: selId }, [icon('language'), h('span', { 'data-t': 'translateLabel', text: t.translateLabel })]), sel]));
+        this._lastAnswer = { m: m, li: li };
+      }
       if (m.role !== 'you') {
         var actions = h('div', { class: 'actions' });
         var listen = h('button', { type: 'button', class: 'btn', 'aria-pressed': 'false' }, iconText('listen', { 'data-t': 'listen', text: t.listen }));
@@ -2092,6 +2279,6 @@
   }
 
   // Exposed for tests only through the element class (no globals).
-  DbAssistant._internals = { readPage: readPage, pageRoot: pageRoot, decidePageReading: decidePageReading, pageToIndex: pageToIndex, textFragment: textFragment, formatDate: formatDate, Index: Index, splitSentences: splitSentences, detectLang: detectLang, NO_ADVICE: NO_ADVICE, parseColor: parseColor, contrast: contrast, applySite: applySite, micRoute: micRoute, browserCannot: browserCannot, BROWSER_STT: BROWSER_STT, I18N: I18N };
+  DbAssistant._internals = { parseLangRequest: parseLangRequest, readPage: readPage, pageRoot: pageRoot, decidePageReading: decidePageReading, pageToIndex: pageToIndex, textFragment: textFragment, formatDate: formatDate, Index: Index, splitSentences: splitSentences, detectLang: detectLang, NO_ADVICE: NO_ADVICE, parseColor: parseColor, contrast: contrast, applySite: applySite, micRoute: micRoute, browserCannot: browserCannot, BROWSER_STT: BROWSER_STT, I18N: I18N };
   customElements.define('db-assistant', DbAssistant);
 })();
