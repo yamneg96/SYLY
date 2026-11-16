@@ -1,4 +1,4 @@
-"""Tutor e-mail addresses per site (the developer enters them in the dashboard), the fallback to the SYLY team, the HTML email,
+﻿"""Tutor e-mail addresses per site (the developer enters them in the dashboard), the fallback to the SYLY team, the HTML email,
 and the limit on alerts."""
 
 import asyncio
@@ -85,7 +85,7 @@ def test_a_request_from_a_site_with_addresses_goes_to_them(client, monkeypatch):
         told.append(args)
 
     monkeypatch.setattr(notify, "tutors", record)
-    monkeypatch.setattr(help_router, "helper_online", lambda db: False)
+    monkeypatch.setattr(help_router, "helper_online", lambda db, site_key=None: False)
     r = client.post("/api/v1/escalations", json=ESCALATION, headers={"X-Site-Key": "pk_site_with_mail_0000000001"})
     assert r.status_code == 201
     assert told[-1][5:] == ("Addis College", ["tutors@college.example"])
@@ -99,7 +99,7 @@ def test_a_site_without_addresses_or_a_request_without_a_key_uses_the_team(clien
         told.append(args)
 
     monkeypatch.setattr(notify, "tutors", record)
-    monkeypatch.setattr(help_router, "helper_online", lambda db: False)
+    monkeypatch.setattr(help_router, "helper_online", lambda db, site_key=None: False)
     client.post("/api/v1/escalations", json=ESCALATION, headers={"X-Site-Key": "pk_site_no_mail_000000000001"})
     assert told[-1][5:] == ("No Mail College", [])
     client.post("/api/v1/escalations", json=ESCALATION)

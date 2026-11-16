@@ -1,4 +1,4 @@
-"""Talk to a person with nobody online: the tutors are told (Telegram group, email); the learner's request never fails because of it."""
+﻿"""Talk to a person with nobody online: the tutors are told (Telegram group, email); the learner's request never fails because of it."""
 
 import asyncio
 import logging
@@ -29,12 +29,12 @@ def test_tutors_are_told_only_when_nobody_is_online(client, monkeypatch):
         told.append((ticket_id, language, page_url, question, has_screenshot))
 
     monkeypatch.setattr(notify, "tutors", record)
-    monkeypatch.setattr(help_router, "helper_online", lambda db: False)
+    monkeypatch.setattr(help_router, "helper_online", lambda db, site_key=None: False)
     r = client.post("/api/v1/escalations", json=ESCALATION)
     assert r.status_code == 201 and r.json()["helper_online"] is False
     assert told == [(r.json()["ticketId"], "en", "https://college.example/lesson.html", "Will AI replace virtual assistants?", False)]
 
-    monkeypatch.setattr(help_router, "helper_online", lambda db: True)
+    monkeypatch.setattr(help_router, "helper_online", lambda db, site_key=None: True)
     r = client.post("/api/v1/escalations", json=ESCALATION)
     assert r.json()["helper_online"] is True and len(told) == 1, "a tutor is already watching the helper page: no extra alert"
 
@@ -46,7 +46,7 @@ def test_a_screenshot_sent_with_the_request_is_mentioned(client, monkeypatch):
         told.append(args)
 
     monkeypatch.setattr(notify, "tutors", record)
-    monkeypatch.setattr(help_router, "helper_online", lambda db: False)
+    monkeypatch.setattr(help_router, "helper_online", lambda db, site_key=None: False)
     client.post("/api/v1/escalations", json={**ESCALATION, "screenshot": "data:image/jpeg;base64,AAAA"})
     assert told[-1][4] is True  # has_screenshot
 
@@ -59,7 +59,7 @@ def test_the_request_succeeds_even_if_every_alert_channel_breaks(client, monkeyp
     monkeypatch.setattr(settings, "tutor_emails", ["tutors@college.example"])
     monkeypatch.setattr(notify, "telegram", boom)
     monkeypatch.setattr(mailer, "send", boom)
-    monkeypatch.setattr(help_router, "helper_online", lambda db: False)
+    monkeypatch.setattr(help_router, "helper_online", lambda db, site_key=None: False)
     r = client.post("/api/v1/escalations", json=ESCALATION)
     assert r.status_code == 201 and r.json()["ticketId"]
 

@@ -120,3 +120,37 @@ def html_body(ticket_id: int, language: str, page_url: str | None, question: str
 </body>
 </html>
 """
+
+
+# ---------------------------------------------------------------- the sign-in code for a tutor
+def code_subject() -> str:
+    return "SYLY: your sign-in code"
+
+
+def code_text(code: str) -> str:
+    return chr(10).join([
+        f"Your SYLY tutor sign-in code is {code}.",
+        "It works for 10 minutes and only once. Type it on the helper page.",
+        "If you did not ask for it, ignore this message: nobody can sign in without the code.",
+    ])
+
+
+CODE_PAGE = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark"><title>SYLY sign-in code</title>
+<style>@media (prefers-color-scheme: dark) { .canvas{background:#0B1220 !important;} .card{background:#111B2E !important;} .ink{color:#F2F2F2 !important;} .muted{color:#CBD5E1 !important;} .code{background:#1B2A44 !important;color:#FFFFFF !important;} }</style>
+</head>
+<body style="margin:0;padding:0;background:#F5F7FB;" class="canvas">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="canvas" style="background:#F5F7FB;"><tr><td align="center" style="padding:24px 12px;">
+<table role="presentation" width="480" cellpadding="0" cellspacing="0" border="0" style="width:480px;max-width:100%;">
+<tr><td style="background:#002B56;border-radius:16px 16px 0 0;padding:20px 26px;border-bottom:4px solid #F5A300;"><div style="font:800 22px/1.2 Arial,Helvetica,sans-serif;color:#FFFFFF;">SYLY</div><div style="font:400 14px/1.4 Arial,Helvetica,sans-serif;color:#C9D6E8;margin-top:4px;">Tutor sign-in</div></td></tr>
+<tr><td class="card" style="background:#FFFFFF;border-radius:0 0 16px 16px;padding:26px;font-family:Arial,Helvetica,sans-serif;">
+<div class="ink" style="font:400 16px/1.6 Arial,Helvetica,sans-serif;color:#111111;">Type this code on the helper page:</div>
+<div class="code" style="margin:16px 0;padding:16px;border-radius:10px;background:#F2F6FC;text-align:center;font:800 34px/1 Consolas,Menlo,monospace;letter-spacing:8px;color:#002B56;">__CODE__</div>
+<div class="muted" style="font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#4A5568;">It works for 10 minutes and only once. If you did not ask for it, ignore this message: nobody can sign in without the code.</div>
+</td></tr></table></td></tr></table></body></html>
+"""
+
+
+def code_html(code: str) -> str:
+    return CODE_PAGE.replace("__CODE__", _e(code))

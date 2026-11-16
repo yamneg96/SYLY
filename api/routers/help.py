@@ -14,25 +14,26 @@ from db import decrypt, encrypt, get_db
 from models import HelperPresence, Message, Ticket, Webhook
 from schemas import Created, EscalationIn, ScreenshotIn, EscalationOut, MessageIn, MessageOut, TicketOut, TicketUpdate, WebhookIn
 from services import notify, sites, webhook
+from services import tutors as tutor_svc
+from services import session
 from services.i18n import t
 
 router = APIRouter(prefix="/api/v1", tags=["human help"])
-ONLINE_WINDOW = timedelta(seconds=90)
+ONLINE_WINDOW = tutor_svc.ONLINE_WINDOW
+principal = tutor_svc.principal
 
 
-def require_helper(x_helper_key: str | None = Header(default=None)) -> None:
-    """Helper-only endpoints. Open when HELPER_KEY is not set (demo); set it in production."""
-    if settings.helper_key and not secrets.compare_digest(x_helper_key or "", settings.helper_key):
-        raise HTTPException(401, "Helper key missing or wrong. Send it in the X-Helper-Key header.")
+def require_helper(who: tutor_svc.Principal = Depends(principal)) -> None:
+    """Team-level helper endpoints (adding jobs, interview-support requests, the text outbox): the team's helper key, or a signed-in
+    tutor from the SYLY team list. Open when HELPER_KEY is not set and nobody is signed in (the local demo)."""
+    if who.admin or (who.email and tutor_svc.norm(who.email) in tutor_svc.team_emails()):
+        return
+    raise HTTPException(403, "This is only for the SYLY team.")
 
 
-def helper_online(db: Session) -> bool:
-    since = datetime.now(timezone.utc) - ONLINE_WINDOW
-    for p in db.scalars(select(HelperPresence)).all():
-        seen = p.seen_at if p.seen_at.tzinfo else p.seen_at.replace(tzinfo=timezone.utc)
-        if seen >= since:
-            return True
-    return False
+def helper_online(db: Session, site_key: str | None = None) -> bool:
+    """Is a tutor really there for a request from this site? (an available, signed-in tutor on that site's list, or the team's helper page)"""
+    return tutor_svc.helper_online(db, site_key)
 
 
 def _ticket(db: Session, ticket_id: int) -> Ticket:
@@ -42,14 +43,34 @@ def _ticket(db: Session, ticket_id: int) -> Ticket:
     return ticket
 
 
-def _learner_or_helper(ticket: Ticket, token: str | None, helper_key: str | None) -> None:
+def _learner_or_helper(ticket: Ticket, token: str | None, helper_key: str | None, request: Request | None = None, db: Session | None = None) -> None:
+    """The learner (their ticket key), the team's helper key, or a signed-in tutor of this ticket's site."""
     if token and secrets.compare_digest(token, ticket.access_token):
         return
     if settings.helper_key and helper_key and secrets.compare_digest(helper_key, settings.helper_key):
         return
+    if request is not None and db is not None and session.read_tutor(request.cookies.get(session.TUTOR_COOKIE)):
+        who = tutor_svc.principal(request, helper_key)
+        if tutor_svc.can_access(db, who, ticket):
+            return
     if not settings.helper_key and not token:
         return  # demo mode: helper page without a key
     raise HTTPException(404, f"Ticket {ticket.id} not found.")
+
+
+def _helper_ticket(db: Session, ticket_id: int, who: tutor_svc.Principal) -> Ticket:
+    """A ticket this helper may see; another site's ticket looks exactly like a missing one."""
+    ticket = _ticket(db, ticket_id)
+    if not tutor_svc.can_access(db, who, ticket):
+        raise HTTPException(404, f"Ticket {ticket_id} not found.")
+    return ticket
+
+
+def _mark_accepted(ticket: Ticket, who: tutor_svc.Principal | None, status: str) -> None:
+    """Remember who took a request and when (the first time), so we can see that tutors really answer."""
+    if status == "active" and ticket.accepted_at is None:
+        ticket.accepted_at = datetime.now(timezone.utc)
+        ticket.helper_email = who.email if who and who.email else ticket.helper_email
 
 
 @router.post("/escalations", status_code=201, response_model=EscalationOut, summary="Talk to a person: open a ticket")
@@ -66,6 +87,7 @@ async def create_escalation(body: EscalationIn, tasks: BackgroundTasks, db: Sess
         screenshot=body.screenshot,
         notify_enc=encrypt(body.notify_telegram_chat),
         access_token=secrets.token_urlsafe(24),
+        site_key=x_site_key if x_site_key and sites.tutor_emails_for(db, x_site_key)[0] is not None else None,
     )
     db.add(ticket)
     db.flush()
@@ -75,7 +97,7 @@ async def create_escalation(body: EscalationIn, tasks: BackgroundTasks, db: Sess
     tasks.add_task(webhook.fire, "ticket.opened", {"ticketId": ticket.id, "page_url": ticket.page_url, "language": ticket.language})
     username = await notify.bot_username()
     link = f"https://t.me/{username}?start=t{ticket.id}_{ticket.access_token}" if username and body.channel == "web" else None
-    online = helper_online(db)
+    online = helper_online(db, ticket.site_key)
     if not online:
         # Nobody is watching the helper page: tell the tutors (Telegram group, email). In the background, so a slow relay never slows the learner.
         question = next((m.text for m in reversed(body.conversation) if m.role == "learner"), "")
@@ -85,9 +107,9 @@ async def create_escalation(body: EscalationIn, tasks: BackgroundTasks, db: Sess
     return EscalationOut(ticketId=ticket.id, helper_online=online, token=ticket.access_token, telegram_link=link)
 
 
-@router.get("/escalations", response_model=list[TicketOut], summary="Helper page: tickets by status",
-            dependencies=[Depends(require_helper)])
-def list_escalations(status: str = Query("waiting", pattern="^(waiting|active|closed|open|all)$"), db: Session = Depends(get_db)) -> list[TicketOut]:
+@router.get("/escalations", response_model=list[TicketOut], summary="Helper page: tickets by status (a tutor sees their sites' requests)")
+def list_escalations(status: str = Query("waiting", pattern="^(waiting|active|closed|open|all)$"), db: Session = Depends(get_db),
+                     who: tutor_svc.Principal = Depends(principal)) -> list[TicketOut]:
     q = select(Ticket).order_by(Ticket.created_at)
     if status == "open":
         q = q.where(Ticket.status != "closed")
@@ -96,6 +118,8 @@ def list_escalations(status: str = Query("waiting", pattern="^(waiting|active|cl
     now = datetime.now(timezone.utc)
     out = []
     for tk in db.scalars(q).all():
+        if not tutor_svc.can_access(db, who, tk):
+            continue
         created = tk.created_at if tk.created_at.tzinfo else tk.created_at.replace(tzinfo=timezone.utc)
         item = TicketOut.model_validate(tk)
         item.has_screenshot = bool(tk.screenshot)
@@ -104,19 +128,18 @@ def list_escalations(status: str = Query("waiting", pattern="^(waiting|active|cl
     return out
 
 
-@router.get("/escalations/{ticket_id}/screenshot", summary="Helper page: the learner's screenshot",
-            dependencies=[Depends(require_helper)])
-def get_screenshot(ticket_id: int, db: Session = Depends(get_db)) -> dict:
-    return {"screenshot": _ticket(db, ticket_id).screenshot}
+@router.get("/escalations/{ticket_id}/screenshot", summary="Helper page: the learner's screenshot")
+def get_screenshot(ticket_id: int, db: Session = Depends(get_db), who: tutor_svc.Principal = Depends(principal)) -> dict:
+    return {"screenshot": _helper_ticket(db, ticket_id, who).screenshot}
 
 
-@router.patch("/escalations/{ticket_id}", response_model=TicketOut, summary="Helper: accept or close a ticket",
-              dependencies=[Depends(require_helper)])
-def update_escalation(ticket_id: int, body: TicketUpdate, db: Session = Depends(get_db)) -> TicketOut:
-    ticket = _ticket(db, ticket_id)
+@router.patch("/escalations/{ticket_id}", response_model=TicketOut, summary="Helper: accept or close a ticket")
+def update_escalation(ticket_id: int, body: TicketUpdate, db: Session = Depends(get_db), who: tutor_svc.Principal = Depends(principal)) -> TicketOut:
+    ticket = _helper_ticket(db, ticket_id, who)
     ticket.status = body.status
     if body.helper_name:
         ticket.helper_name = body.helper_name
+    _mark_accepted(ticket, who, body.status)
     db.commit()
     return TicketOut.model_validate(ticket)
 
@@ -124,13 +147,14 @@ def update_escalation(ticket_id: int, body: TicketUpdate, db: Session = Depends(
 @router.get("/escalations/{ticket_id}/messages", response_model=list[MessageOut], summary="Messages after an id (polling)")
 def list_messages(
     ticket_id: int,
+    request: Request,
     after: int = 0,
     token: str | None = None,
     x_helper_key: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ) -> list[Message]:
     ticket = _ticket(db, ticket_id)
-    _learner_or_helper(ticket, token, x_helper_key)
+    _learner_or_helper(ticket, token, x_helper_key, request, db)
     q = select(Message).where(Message.ticket_id == ticket_id, Message.id > after).order_by(Message.id)
     return list(db.scalars(q).all())
 
@@ -139,20 +163,25 @@ def list_messages(
 async def post_message(
     ticket_id: int,
     body: MessageIn,
+    request: Request,
     token: str | None = None,
     x_helper_key: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ) -> Message:
     ticket = _ticket(db, ticket_id)
+    who: tutor_svc.Principal | None = None
     if body.author in ("helper", "system"):
-        require_helper(x_helper_key)
+        who = principal(request, x_helper_key)
+        if not tutor_svc.can_access(db, who, ticket):
+            raise HTTPException(404, f"Ticket {ticket_id} not found.")
     else:
-        _learner_or_helper(ticket, token, None)
+        _learner_or_helper(ticket, token, None, request, db)
     msg = Message(ticket_id=ticket_id, author=body.author, name=body.name, text=body.text, lang=body.lang)
     db.add(msg)
     if body.author == "helper":
         ticket.status = "active"
         ticket.helper_name = body.name or ticket.helper_name
+        _mark_accepted(ticket, who, "active")
     db.commit()
     chat = decrypt(ticket.notify_enc)
     if body.author == "helper" and chat:
@@ -160,7 +189,7 @@ async def post_message(
     return msg
 
 
-@router.post("/helper/presence", status_code=204, response_class=Response, summary="Helper page heartbeat: a tutor is online",
+@router.post("/helper/presence", status_code=204, response_class=Response, summary="Team helper page heartbeat (key-based; tutors use /tutor/presence)",
              dependencies=[Depends(require_helper)])
 def presence(name: str = Query("Tutor", max_length=80), db: Session = Depends(get_db)) -> None:
     row = db.scalar(select(HelperPresence).where(HelperPresence.name == name))
@@ -205,9 +234,10 @@ async def post_frame(ticket_id: int, request: Request, token: str = Query(max_le
     _frames[ticket_id] = (data, datetime.now(timezone.utc))
 
 
-@router.get("/escalations/{ticket_id}/screen", summary="Helper: latest screen-share frame", dependencies=[Depends(require_helper)],
+@router.get("/escalations/{ticket_id}/screen", summary="Helper: latest screen-share frame",
             responses={200: {"content": {"image/jpeg": {}}}, 404: {"description": "Not sharing"}})
-def get_frame(ticket_id: int) -> Response:
+def get_frame(ticket_id: int, db: Session = Depends(get_db), who: tutor_svc.Principal = Depends(principal)) -> Response:
+    _helper_ticket(db, ticket_id, who)
     frame = _frames.get(ticket_id)
     if not frame or datetime.now(timezone.utc) - frame[1] > timedelta(seconds=10):
         _frames.pop(ticket_id, None)

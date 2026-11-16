@@ -53,6 +53,12 @@ class Ticket(Base):
     # Learner-side secret: ticket ids are sequential, so reads need this token too.
     access_token: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    # Which registered site the learner came from (the public site key), who accepted it and when, and whether the
+    # "nobody has picked this up" reminder was sent. All empty for requests that predate tutor accounts.
+    site_key: Mapped[str | None] = mapped_column(String(40), nullable=True, index=True)
+    helper_email: Mapped[str | None] = mapped_column(String(320), nullable=True)
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    reminded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class Message(Base):
@@ -149,3 +155,27 @@ class Site(Base):
     settings: Mapped[dict] = mapped_column(JSON, default=dict)
     bot_username: Mapped[str | None] = mapped_column(String(40), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class TutorCode(Base):
+    """A 6-digit sign-in code sent to a tutor's e-mail address. Only a hash is stored; it expires and allows 5 tries."""
+
+    __tablename__ = "tutor_codes"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(320), index=True)
+    code_hash: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    used: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class TutorPresence(Base):
+    """A signed-in tutor: available or away, and when we last heard from them (a heartbeat while they are really there)."""
+
+    __tablename__ = "tutor_presence"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(80), default="")
+    status: Mapped[str] = mapped_column(String(12), default="away")  # available | away
+    seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)

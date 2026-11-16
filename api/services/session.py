@@ -47,3 +47,29 @@ def read(cookie: str | None, now: float | None = None) -> int | None:
         return int(data["aid"])
     except (ValueError, KeyError, TypeError):
         return None
+
+
+# A tutor's cookie is a separate cookie with a different payload (an e-mail address, not an account id), so neither can pass for the other.
+TUTOR_COOKIE = "syly_tutor"
+TUTOR_MAX_AGE = 12 * 3600  # one shift
+
+
+def make_tutor(email: str, now: float | None = None) -> str:
+    body = _b64(json.dumps({"tm": email, "exp": int((now or time.time()) + TUTOR_MAX_AGE)}, separators=(",", ":")).encode())
+    return f"{body}.{_mac(body)}"
+
+
+def read_tutor(cookie: str | None, now: float | None = None) -> str | None:
+    """The e-mail address in a valid, unexpired tutor cookie, else None."""
+    if not cookie or "." not in cookie:
+        return None
+    body, mac = cookie.rsplit(".", 1)
+    if not hmac.compare_digest(mac, _mac(body)):
+        return None
+    try:
+        data = json.loads(_unb64(body))
+        if int(data["exp"]) <= (now or time.time()):
+            return None
+        return str(data["tm"])
+    except (ValueError, KeyError, TypeError):
+        return None

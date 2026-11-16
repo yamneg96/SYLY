@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -87,12 +87,13 @@ def get_content(db: Session = Depends(get_db)) -> ContentOut:
 
 
 @router.get("/config", response_model=ConfigOut, summary="What the widget needs to know at start")
-async def get_config(page_url: str | None = Query(default=None, max_length=1000), db: Session = Depends(get_db)) -> ConfigOut:
+async def get_config(page_url: str | None = Query(default=None, max_length=1000), db: Session = Depends(get_db),
+                     x_site_key: str | None = Header(default=None)) -> ConfigOut:
     page_sections = sum(1 for s in content.index(db).sections if page_url and same_page(s["url"], page_url))
     return ConfigOut(
         page_sections=page_sections,
         ai=settings.ai_enabled,
         provider=settings.provider if settings.ai_enabled else "none",
-        helper_online=helper_online(db),
+        helper_online=helper_online(db, x_site_key),
         telegram_bot=await notify.bot_username(),
     )

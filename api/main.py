@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -16,8 +17,8 @@ import models  # noqa: F401 - registers tables
 from config import settings
 from db import SessionLocal
 from migrate import upgrade_to_head
-from routers import ask, data, help, jobs, portal, root, sms, voice
-from services import content, sites
+from routers import ask, data, help, jobs, portal, root, sms, tutors, voice
+from services import content, reminders, sites
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 for noisy in ("httpx", "httpcore"):  # these log every request URL at INFO: keep URLs (and anything in them) out of the logs
@@ -31,7 +32,11 @@ async def lifespan(_app: FastAPI):  # noqa: ANN201
     with SessionLocal() as db:
         content.seed(db)
     log.info("provider=%s ai_enabled=%s", settings.provider, settings.ai_enabled)
-    yield
+    task = asyncio.create_task(reminders.loop())
+    try:
+        yield
+    finally:
+        task.cancel()
 
 
 app = FastAPI(
@@ -131,5 +136,5 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-for r in (root.router, ask.router, help.router, jobs.router, sms.router, voice.router, data.router, portal.router):
+for r in (root.router, ask.router, help.router, jobs.router, sms.router, voice.router, data.router, portal.router, tutors.router):
     app.include_router(r)
