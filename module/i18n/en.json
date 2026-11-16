@@ -44,6 +44,7 @@
   "translateNeedsConsent": "To translate, first turn on online answers.",
   "translateHint": "Online answers are off, so this answer stays in its own language. Turn them on to read it in {language}.",
   "noAnswerToTranslate": "There is no answer to translate yet. Ask a question first.",
+  "needsTranslation": "This page is in English and your question is in another language. Turn on online answers so SYLY can translate your question.",
   "examplesTitle": "Try one of these:",
   "example1": "Will AI replace virtual assistants?",
   "example2": "What skills will clients value?",
