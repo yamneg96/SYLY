@@ -351,7 +351,24 @@ All interface text is in JSON: `module/i18n/{en,am,ar}.json` (widget; inlined in
 
 **Amharic DRAFT – needs native reader check.** The Amharic lesson text in `demo/data/content.json`, the Amharic job text, every Amharic interface string, the pre-generated Amharic audio and the Amharic eval questions were drafted by the team (machine-assisted) and have not yet been checked by a native reader. After corrections run `python api/scripts/gen_audio.py --force` to regenerate the audio.
 
-Arabic: the interface is complete and right-to-left. The lesson has no Arabic text, so Arabic questions are answered when an AI provider is on (the question is translated for search, then answered in Arabic); without AI, Arabic questions get "could not find".
+### Voice in every language
+
+The widget, the API and the Telegram bot offer the same six languages: English, Amharic, Arabic and, as **beta** (machine-assisted drafts: **needs a native reader check**), Afaan Oromo (`om`), Tigrinya (`ti`) and Somali (`so`). The language list at the top of the panel shows all six, in their own names.
+
+| Language | Panel text | Reading aloud (Listen) | Microphone in the widget | Voice notes in Telegram | Measured (16 Nov, synthetic clips) |
+| --- | --- | --- | --- | --- | --- |
+| English | Done | Online read-aloud voice (Aria) | Chrome's own recognition | Groq, then Gemini | voice to text and back 100% |
+| Amharic | Draft | Online voice (Mekdes) and pre-recorded MP3s | Chrome (`am-ET`); on failure, recorded and sent to the server | Addis AI, Gemini, Groq | voice works; listening 5 to 16% (Addis AI has no credit) |
+| Arabic | Done, right to left | Online voice (Zariyah) | Chrome (`ar-SA`); on failure, recorded | Groq, then Gemini | voice to text and back 90% |
+| Somali (beta) | Draft | Online voice (Ubax) | Chrome (`so-SO`, unverified); on failure, recorded | Gemini, then Groq | voice works; listening 20 to 27% |
+| Afaan Oromo (beta) | Draft | **Gemini voice** (no voice in the online list) | **Recorded and sent to the server** (Chrome has no recognition for it) | Addis AI, then Gemini | voice produced; pronunciation unverified; listening untested (Addis AI has no credit) |
+| Tigrinya (beta) | Draft | **Gemini voice** | **Recorded and sent to the server** | Gemini | voice produced; pronunciation unverified; listening 0 to 33% |
+
+How the microphone chooses: English, Amharic, Arabic and Somali use Chrome's recognition (free, needs the network). Afaan Oromo and Tigrinya, a browser without recognition (Firefox, Safari), and any language Chrome refuses are **recorded for up to 30 seconds and sent to `POST /api/v1/voice/transcribe`**. That sends audio to an online service, so it needs the learner's consent ("Online answers"); without it the panel says so in words and opens no microphone. The text goes into the question box and is **not sent** until the learner presses Send.
+
+Questions: the lesson text is English and Amharic. A question in Arabic, Afaan Oromo, Tigrinya or Somali is translated to English for the search (needs consent), and the answer is written in the learner's language. Without consent those languages get the English or Amharic course text, or "could not find".
+
+Reading aloud for Afaan Oromo and Tigrinya uses Gemini's text-to-speech (`gemini-3.8-flash-tts`, then the lite and preview models in `GEMINI_TTS_MODEL`). **The free Gemini voice has small quotas** (a model answers 429 when used up; it is skipped for 5 minutes and the next one is tried), and a native speaker must still judge the pronunciation. If no voice can be made, the panel says "No voice is available for this answer. It is shown as text." and the bot says it in the chat's language: never silence. `python scripts/voice_roundtrip.py` and `npm --prefix module run voice` test this (testing guide Y2.5, Y2.6).
 
 Dates: Ethiopian calendar for Amharic via `Intl.DateTimeFormat('am-ET-u-ca-ethiopic', …)` (job deadlines, with the Gregorian date beside it).
 
