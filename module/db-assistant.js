@@ -171,7 +171,9 @@
       "micRecording": "Recording. Press Stop when you finish.",
       "micTranscribing": "Turning your voice into text…",
       "micNeedsConsent": "Voice in this language needs an online service. Press “Online answers” to allow it, or type your question.",
-      "micServerFailed": "I could not turn your voice into text. Please try again, or type your question."
+      "micServerFailed": "I could not turn your voice into text. Please try again, or type your question.",
+      "comeBackNote": "You can close this page. When you open it again on this phone, the answer will be here.",
+      "ticketResumed": "Your request {id} is still open. If the tutor has answered, the reply will appear here."
     },
     "am": {
       "dir": "ltr",
@@ -307,7 +309,9 @@
       "micRecording": "በመቅዳት ላይ። ሲጨርሱ «ቀረጻውን አቁም» ይጫኑ።",
       "micTranscribing": "ድምፅዎን ወደ ጽሑፍ በመቀየር ላይ…",
       "micNeedsConsent": "በዚህ ቋንቋ የድምፅ ግብዓት የመስመር ላይ አገልግሎት ይፈልጋል። ለመፍቀድ «የመስመር ላይ መልሶች»ን ይጫኑ፣ ወይም ጥያቄዎን ይጻፉ።",
-      "micServerFailed": "ድምፅዎን ወደ ጽሑፍ መቀየር አልቻልኩም። እባክዎ እንደገና ይሞክሩ፣ ወይም ጥያቄዎን ይጻፉ።"
+      "micServerFailed": "ድምፅዎን ወደ ጽሑፍ መቀየር አልቻልኩም። እባክዎ እንደገና ይሞክሩ፣ ወይም ጥያቄዎን ይጻፉ።",
+      "comeBackNote": "ይህን ገጽ መዝጋት ይችላሉ። በዚህ ስልክ እንደገና ሲከፍቱት መልሱ እዚህ ይሆናል።",
+      "ticketResumed": "የጥያቄ ቁጥር {id} አሁንም ክፍት ነው። አስጠኚው ከመለሰ፣ መልሱ እዚህ ይታያል።"
     },
     "ar": {
       "dir": "rtl",
@@ -443,7 +447,9 @@
       "micRecording": "جارٍ التسجيل. اضغط «إيقاف التسجيل» عند الانتهاء.",
       "micTranscribing": "جارٍ تحويل صوتك إلى نص…",
       "micNeedsConsent": "الإدخال الصوتي بهذه اللغة يحتاج إلى خدمة عبر الإنترنت. اضغط «الإجابات عبر الإنترنت» للسماح بذلك، أو اكتب سؤالك.",
-      "micServerFailed": "لم أستطع تحويل صوتك إلى نص. حاول مرة أخرى، أو اكتب سؤالك."
+      "micServerFailed": "لم أستطع تحويل صوتك إلى نص. حاول مرة أخرى، أو اكتب سؤالك.",
+      "comeBackNote": "يمكنك إغلاق هذه الصفحة. عندما تفتحها مرة أخرى على هذا الهاتف ستجد الجواب هنا.",
+      "ticketResumed": "طلبك رقم {id} لا يزال مفتوحًا. إذا أجاب المعلّم فسيظهر الرد هنا."
     }
   };
   /* I18N:END */
@@ -871,6 +877,7 @@
   var BETA_LANGS = ['om', 'ti', 'so']; // interface text is a draft that needs a native reader check
   var BROWSER_STT = { en: 'en-US', am: 'am-ET', ar: 'ar-SA', so: 'so-SO' };
   var RECORD_MAX_MS = 30000;
+  var TICKET_KEEP_MS = 14 * 24 * 3600 * 1000; // how long a request is remembered on the phone
   function micRoute(lang, hasBrowser, hasRecorder, hasApi) {
     if (hasBrowser && BROWSER_STT[lang]) return 'browser';
     if (hasRecorder && hasApi) return 'server';
@@ -1056,6 +1063,7 @@
       Promise.all([this._loadContent(), this._loadConfig()]).then(function (r) {
         var mode = (self.getAttribute('read-page') || '').toLowerCase();
         if (decidePageReading(mode, r[0], r[1])) self._startPageReading(mode === 'fallback');
+        self._resumeTicket();
       });
     }
 
@@ -1868,9 +1876,13 @@
       this._afterId = 0;
       // FR-H2: say honestly what happens next, in words.
       this._status(res.helper_online ? t.escalatedOnline : t.escalatedLater);
-      this._addMessage({ role: 'bot', emoji: '🙋', text: (res.helper_online ? t.escalatedOnline : t.escalatedLater) + '\n' + fmt(t.ticketNumber, { id: res.ticketId }),
+      this._ticketAt = Date.now();
+      this._rememberTicket();
+      // Nobody online: say the learner may leave; the request is kept on this phone and the reply is fetched when they come back.
+      var wait = res.helper_online ? t.escalatedOnline : t.escalatedLater + ' ' + t.comeBackNote;
+      this._addMessage({ role: 'bot', emoji: '🙋', text: wait + '\n' + fmt(t.ticketNumber, { id: res.ticketId }),
         link: res.telegram_link ? { href: res.telegram_link, text: t.telegramOption } : null,
-        extra: this._helpTools(),
+        extra: this._helpTools(!!res.helper_online),
         audio: this._lang === 'am' ? [res.helper_online ? 'phrases/escalatedOnline.am.mp3' : 'phrases/escalatedLater.am.mp3'] : [] });
       this._emit('escalated', { ticketId: res.ticketId });
       clearInterval(this._poll);
@@ -1883,20 +1895,45 @@
         (list || []).forEach(function (m) {
           self._afterId = Math.max(self._afterId, m.id || 0);
           if (m.author === 'system' && m.text === 'screen_request') {
-            self._addMessage({ role: 'bot', text: self._t.shareAsked, extra: self._helpTools() });
+            self._addMessage({ role: 'bot', text: self._t.shareAsked, extra: self._helpTools(true) });
             return;
           }
           if (m.author !== 'helper') return;
           if (!self._helperName) { self._helperName = m.name || self._t.tutor; self._status(fmt(self._t.tutorJoined, { name: self._helperName })); }
           self._addMessage({ role: 'tutor', name: m.name, text: m.text, lang: m.lang || undefined });
         });
-      }).catch(function () { /* keep polling quietly */ });
+        self._rememberTicket();
+      }).catch(function (err) {
+        // The request no longer exists on the server (deleted): stop asking. Any other failure: keep polling quietly.
+        if (err && err.status === 404) self._forgetTicket();
+      });
+    }
+    /* "I will come back here": the request number and key stay on this phone for 14 days, so the reply is shown on return. */
+    _rememberTicket() {
+      if (this._ticket) save('ticket', { id: this._ticket, token: this._ticketToken || '', after: this._afterId || 0, at: this._ticketAt || Date.now() });
+    }
+    _forgetTicket() {
+      this._ticket = null; this._ticketToken = ''; this._afterId = 0;
+      clearInterval(this._poll);
+      save('ticket', null);
+    }
+    _resumeTicket() {
+      var saved = load('ticket', null), self = this;
+      if (this._ticket || !saved || !saved.id || !saved.token || !this._apiBase()) return;
+      if (Date.now() - (saved.at || 0) > TICKET_KEEP_MS) { save('ticket', null); return; }
+      this._ticket = saved.id; this._ticketToken = saved.token; this._afterId = saved.after || 0; this._ticketAt = saved.at;
+      this._addMessage({ role: 'bot', emoji: '🙋', text: fmt(this._t.ticketResumed, { id: saved.id }) });
+      clearInterval(this._poll);
+      this._poll = setInterval(function () { self._pollTicket(); }, POLL_MS);
+      this._pollTicket();
     }
 
     /* screen share (desktop) and screenshot (Android fallback) (FR-H4, FR-H5) */
-    _helpTools() {
+    // allowShare: live screen sharing only helps when a tutor is watching (online, or has just asked to see the screen).
+    // A screenshot is kept on the request, so it helps even when nobody is online.
+    _helpTools(allowShare) {
       var self = this, t = this._t, tools = [];
-      if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      if (allowShare && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
         tools.push(h('button', { type: 'button', class: 'btn', onclick: function () { self._startShare(); } }, iconText('share', { text: t.shareScreen })));
       }
       var file = h('input', { type: 'file', accept: 'image/*' });
@@ -1981,7 +2018,7 @@
         self._history = [];
         self.$log.textContent = '';
         self.$intro.hidden = false;
-        self._ticket = null; clearInterval(self._poll);
+        self._forgetTicket();
         save('queue', []);
         self._sessionId = uid(); save('cid', self._sessionId);
         self._status(serverFailed === true ? self._t.dataDeleteFailed : self._t.dataDeleted);
